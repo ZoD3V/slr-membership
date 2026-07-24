@@ -7,7 +7,163 @@ Endpoints that return errors or behave against the PRD, found while integrating 
 - **Captured:** 2026-07-08 · **Re-verified:** 2026-07-17
 - **Envelope:** every response is `{ success, message, data, meta }`.
 
-> **Reading order.** Only the section directly below blocks **Sprint 2 (Ronde 2)**. Everything after it belongs to **Ronde 3+** (Stripe, TPAL export, upgrade/downgrade) and is filed early so it isn't rediscovered later — not for action this sprint.
+> **Reading order.** The **Sprint 3 (Ronde 3)** section directly below is the active sprint (Giveaway, Stripe, pembayaran). Sprint 2 follows it (CLEAR — no blockers). Everything after that is older history.
+
+---
+
+# 🔧 SPRINT 3 (Ronde 3) — Laporan & Pertanyaan untuk Backend
+
+**Base:** `https://api.smartliferewards.com.au/api/v1` · Diverifikasi 2026-07-24 (Jum 13:21 AEST), akun `red@`
+Legend: ✅ = dites live 2026-07-24 · 📄 = dari kontrak/handoff sebelumnya
+
+## A. 🔴 BLOCKER — Sprint 3 tidak bisa selesai penuh tanpa ini
+
+### A1. Registrasi tier berbayar tidak bisa sampai Stripe Checkout ✅📄
+
+Blocker utama sprint (*register RED/BLUE harus jalan penuh sampai transaksi*).
+
+```json
+// POST /api/v1/auth/register
+{ "full_name":"FE Test","email":"throwaway@example.com","password":"Secret123!",
+  "state":"VIC","phone":"+61400000000","dob":"1990-01-01","tier":"red","sub_tier":"r4" }
+→ 201 { "success":true, "data":{ "user_id":"019f6e1b-…",
+        "requires_otp":false, "requires_payment":true, "spin_available":true } }   // tanpa token
+
+// POST /api/v1/auth/login  (kredensial sama, langsung setelahnya)
+{ "email":"throwaway@example.com","password":"Secret123!" }
+→ 401 { "success":false, "code":"UNAUTHORIZED",
+        "message":"Email verification is pending. Please verify your OTP to activate your account." }
+```
+
+`register` mengembalikan `requires_otp:false` **dan tanpa token**, tapi `login` menolak dengan alasan OTP. Karena `/stripe/checkout` butuh Bearer token, user paid baru **tidak punya cara mendapat token** → checkout tak terjangkau.
+
+**Pertanyaan — pilih satu:** (1) izinkan akun paid **login walau belum verifikasi** (verifikasi via Stripe, sesuai PRD); atau (2) kembalikan **access token / checkout URL langsung dari `register`** saat `requires_payment:true`; atau (3) konfirmasi paid **memang butuh OTP** → perbaiki `register` jadi `requires_otp:true` (bertentangan dengan PRD → perlu keputusan produk).
+
+### A2. `GET /memberships/me` tidak mengembalikan `pending_upgrade` ✅
+
+Dibuktikan live. Jadwalkan r4→r7, lalu baca `me`:
+
+```json
+// POST /api/v1/memberships/upgrade  { "targetSubTierId":"r7" }
+→ 200 { "success":true, "message":"Upgrade scheduled for next renewal",
+        "data":{ "target_sub_tier":"r7", "effective_at":"2026-07-30T05:20:22.145Z" },
+        "meta":{ "status":"scheduled" } }
+
+// GET /api/v1/memberships/me  (tepat setelah dijadwalkan)
+→ 200 { "data":{ "subTierId":"r4", "billingStatus":"ACTIVE", "pendingBonusNextCycle":0 } }
+        // tidak ada field pending_upgrade sama sekali
+
+// DELETE /api/v1/memberships/upgrade → 200 "Pending upgrade cancelled."  (akun dikembalikan)
+```
+
+**Dampak:** setelah refresh halaman, FE tak punya sumber untuk menampilkan "perubahan terjadwal ke r7 pada 30 Jul" atau tombol "Batalkan perubahan terjadwal". Kontrak §5 (`GET /me`) sudah mencantumkan `pending_upgrade`; live `/memberships/me` tidak.
+
+**Permintaan:** tambahkan `pending_upgrade: { target_sub_tier, effective_at } | null` pada `GET /api/v1/memberships/me` (sesuai kontrak §5).
+
+### A3. `GET /billing/invoices` tidak punya `hosted_invoice_url` ✅
+
+DTO invoice live: `{ invoice_id, amount_cents, discount_cents, stripe_invoice_id, paid_at, type }` — tanpa `hosted_invoice_url`. Catatan client: *tombol download invoice diarahkan ke `hosted_invoice_url` dari Stripe (jangan generate PDF sendiri)*. FE tak bisa memasang tombol download tanpa field ini.
+
+**Permintaan:** tambahkan `hosted_invoice_url` pada tiap invoice di `GET /api/v1/billing/invoices` (dan simpan ke `payments`, lihat B1). Akun seed juga `data:[]` (0 invoice) → belum bisa dites sampai ada pembayaran nyata (lihat C3).
+
+## B. 🟠 WAJIB DIKERJAKAN DULU DI BACKEND (tidak ada UI, prioritas awal) 📄
+
+### B1. Metadata Stripe — tidak bisa di-backfill, pasang di awal sprint
+
+Saat **create Customer + Checkout Session**, sertakan `metadata`: `user_id, full_name, email, phone, state, tier, sub_tier`. Simpan balikan Stripe ke `payments`: `stripe_invoice_id, hosted_invoice_url, currency, payment_method_brand, payment_method_last4, sub_tier_snapshot, state_snapshot`.
+
+⚡ Kalau baru dipasang di tengah/akhir sprint, transaksi yang sudah jalan **tidak bisa di-backfill**. Body FE `/stripe/checkout` tetap `{tier, couponId?}` — metadata diambil backend dari user login → **tidak ada perubahan FE**; mohon konfirmasi kontrak tetap.
+
+### B2. Webhook wajib menangani perubahan dari luar aplikasi
+
+Client kelola billing langsung dari Stripe dashboard → **tidak perlu UI billing khusus di admin**. Konsekuensinya webhook wajib menangani:
+
+| Event | Aksi wajib |
+|---|---|
+| `customer.subscription.deleted` | membership → inactive, **`draw_pass = 0`** (termasuk saat admin cancel langsung di Stripe) |
+| `customer.subscription.updated` | sinkron plan/pause/resume → update tier/status di DB |
+| `charge.refunded` | catat refund di `payments`, evaluasi ulang status membership |
+
+🔴 **Risiko kalau tidak:** admin cancel di Stripe → web tidak tahu → member yang berhenti bayar **tetap masuk CSV undian**.
+
+### B3. 🔴 CSV TPAL: 1 baris per member, token jadi kolom (bukan baris berulang) 📄
+
+```csv
+// POST /api/v1/admin/csv/generate
+id,email,full_name,state,phone,total_token
+019f2145-…,red@smartliferewards.com.au,SLR Red Paid Member,VIC,+61400000004,7
+```
+
+`row_count`: red=1, blue=2, visitor=8 (masing-masing 1 baris). PRD: *token* = **jumlah baris/entry** per giveaway. randomdraws.com pilih **1 baris acak** → semua member peluangnya sama; R1 (1 token) = B10 (10 token) → **ladder token/harga tidak berfungsi**.
+
+**Pertanyaan — konfirmasi satu:** (1) ulang tiap member sebanyak `total_token` (1 baris per token) → perbaiki exporter; atau (2) randomdraws.com baca `total_token` sebagai **bobot** → dokumentasikan. Juga konfirmasi exporter memfilter `draw_pass > 0`.
+
+## C. 🟡 GAP VERIFIKASI (menghambat sign-off / tes live, bukan build)
+
+### C3. Akun seed pakai Stripe sub palsu → cancel / grace / invoice belum bisa dites ✅
+
+```
+GET /api/v1/billing/status (red@) → { "billing_status":"active", "stripe_subscription_id":"sub_seeded_red_123", "grace_period":null }
+GET /api/v1/subscriptions/me     → [ { "id":"019f2145-…","status":"ACTIVE","currentPeriodEnd":"2026-07-30T05:20:21.667Z" } ]
+```
+
+`sub_seeded_red_123` / `cus_seeded_red_123` = placeholder → `POST /stripe/portal` = 400 "No such customer". Jadi **`POST /subscriptions/me/cancel`** (cancel akhir periode) dan **`POST /billing/pay-manual`** (grace) **tidak bisa diverifikasi** di seed. (Cancel sengaja tidak dipanggil live agar akun dev tak tertinggal status cancelling.)
+
+**Permintaan:** sediakan ≥1 customer Stripe **test** (kartu `4242…`) di akun dev untuk menguji cancel-subscription + grace-pay + list invoice. Juga dibutuhkan untuk C4.
+
+### C4. Allocator entry jalur paid belum pernah dieksekusi; token seed salah 📄
+
+| Akun | sub_tier | config token | seed `total_token` | |
+|---|---|---|---|---|
+| red@ | r4 | 4 | **7** | ❌ |
+| blue@ | b4 | 4 | **15** | ❌ |
+
+Artefak seed-script (0 invoice, sub palsu, cycle ditulis 7.56s setelah row user → allocator/webhook tak pernah jalan). Allocator Visitor terbukti benar via signup+OTP baru; jalur **paid belum terbukti**.
+
+**Permintaan:** (1) re-seed red@/blue@ ke 4/4; (2) 1 checkout Stripe test nyata → pastikan `current_cycle.total_token == config sub_tier` (r4⇒4); (3) konfirmasi renewal **mereset** token+draw_pass (tidak akumulatif).
+
+## D. 🟢 DRIFT KONTRAK / DATA KURANG (FE menyesuaikan; mohon konfirmasi)
+
+### D1. Endpoint upgrade — drift kontrak vs live ✅
+
+| | Kontrak §4 | Live (dipakai FE) |
+|---|---|---|
+| Path | `POST /membership/upgrade` | `POST /memberships/upgrade` |
+| Body | `{ target_sub_tier }` (snake) | `{ targetSubTierId }` (camel) |
+| Response `data` | `{ status, pending_upgrade:{…} }` | `{ target_sub_tier, effective_at }` + `meta.status:"scheduled"` |
+| Downgrade | endpoint terpisah `/membership/downgrade` | **tidak ada** — 1 endpoint, arah dari target |
+
+**Pertanyaan:** konfirmasi versi **live** kanonik + update kontrak; konfirmasi 1 endpoint menangani upgrade & downgrade.
+
+### D2. Detail giveaway tidak lengkap vs kontrak ✅
+
+`GET /api/v1/giveaways/{id}` → key `data`: `closes_at, draws_at, giveaway_id, name, opens_at, prize, tier, type, winners`. Tidak ada `rules`, `tpal_cert_note`, `entry_count`/jumlah pool, `entry_status`. Kontrak §6: detail harus berisi *"hadiah, aturan, TPAL cert note, entry history, past winners"*.
+
+**Permintaan:** tambahkan `rules`, `tpal_cert_note`, `entry_count`/jumlah pool, dan `entry_status` pada detail.
+
+### D3. Tidak ada write-back pemenang di giveaway ✅📄
+
+`GET /giveaways/winners` bisa baca pemenang, tapi tak ada endpoint terintegrasi FE untuk **mencatat pemenang** setelah draw eksternal. Kontrak punya admin `PUT /admin/giveaways/{id}/winners` + `PUT /admin/members/{id}/draw-pass`, tapi tak ada di inventori live.
+
+**Pertanyaan:** konfirmasi jalur pencatatan pemenang oleh admin untuk Sprint 3.
+
+### D4. Safe Hours — mohon konfirmasi enforcement ✅(sebagian)
+
+Kontrak: sign-up/upgrade/downgrade diblokir **Jum 16:00–19:00 AEST** → `403 SAFE_HOURS_LOCKED`. Tes upgrade jalan Jum 13:21 AEST (di luar window) → sukses, lock belum tersentuh.
+
+**Pertanyaan:** konfirmasi `/memberships/upgrade` dan `/stripe/checkout` mengembalikan persis `{ code:"SAFE_HOURS_LOCKED" }` (403) di dalam window, dan konfirmasi window + timezone. FE akan menangani error ini.
+
+## Ringkasan — apa memblokir apa
+
+| Deliverable Sprint 3 | Blocker |
+|---|---|
+| Register→transaksi paid (headline) | **A1** |
+| UI upgrade/downgrade (persisten) | **A2** |
+| Download invoice | **A3** |
+| Semua pembayaran (kualitas data) | **B1** (dulu, tak bisa backfill) |
+| Integritas CSV undian | **B2, B3** |
+| Tes live cancel / grace | **C3** |
+| Sign-off entry engine | **C4** |
 
 ---
 
