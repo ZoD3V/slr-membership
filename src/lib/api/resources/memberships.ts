@@ -98,6 +98,24 @@ export const changeMemberTier = (userId: string, subTierId: MemberSubTierId, tok
     });
 };
 
+// ─── Upgrade / downgrade scheduling (Paid → Paid, applied at next renewal) ────
+
+// Live POST /memberships/upgrade response `data`. Handles BOTH directions —
+// direction is inferred from the target sub-tier (there is no separate
+// /downgrade endpoint). See docs/BACKEND-ISSUES.md D1 for contract drift.
+export interface ScheduledTierChange {
+    target_sub_tier: string;
+    effective_at: string;
+}
+
+/** Schedule a paid tier change for the member's next renewal (no proration). */
+export const scheduleMembershipChange = (targetSubTierId: MemberSubTierId, token: string) =>
+    apiFetch<ScheduledTierChange>(API.memberships.upgrade, { method: 'POST', body: { targetSubTierId }, token });
+
+/** Cancel a scheduled (pending) tier change before it applies. */
+export const cancelScheduledChange = (token: string) =>
+    apiFetch<null>(API.memberships.upgrade, { method: 'DELETE', token });
+
 // ─── Membership stats (admin-viewable sub-tier distribution) ─────────────────
 
 // Raw Prisma-groupBy row as returned by GET /memberships/stats.

@@ -18,7 +18,8 @@ export const API = {
         tiers: '/api/v1/memberships/tiers',
         me: '/api/v1/memberships/me',
         changeTier: '/api/v1/memberships/change-tier',
-        stats: '/api/v1/memberships/stats'
+        stats: '/api/v1/memberships/stats',
+        upgrade: '/api/v1/memberships/upgrade'
     },
     admin: {
         members: '/api/v1/admin/members',
@@ -78,5 +79,6 @@ export const API = {
     stripe: {
         checkout: '/api/v1/stripe/checkout',
         portal: '/api/v1/stripe/portal'
-    }
+    },
+    subscriptions: { cancel: '/api/v1/subscriptions/me/cancel' }
 } as const;
