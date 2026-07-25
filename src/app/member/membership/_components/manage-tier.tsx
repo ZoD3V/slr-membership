@@ -1,12 +1,22 @@
+import { SUB_TIERS } from '@/constant/tiers';
+import { formatAud, formatTierName } from '@/lib/member';
+import type { SubTierCode } from '@/types/member';
+
+import { ManageMembershipActions } from './manage-membership-actions';
 import { UpgradeTierButtons } from './upgrade-tier-buttons';
 
 interface ManageTierProps {
     isVisitor: boolean;
+    currentSubTier: SubTierCode;
+    nextRenewalIso: string | null;
 }
 
-// Visitor → Stripe checkout (live). Paid → paid change / cancel is Ronde 3;
-// shown disabled until POST /memberships/upgrade + cancel are wired.
-export function ManageTier({ isVisitor }: ManageTierProps) {
+// Visitor → Stripe checkout (new subscription). Paid → schedule a tier change or
+// cancel, via ManageMembershipActions (POST/DELETE /memberships/upgrade +
+// POST /subscriptions/me/cancel).
+export function ManageTier({ isVisitor, currentSubTier, nextRenewalIso }: ManageTierProps) {
+    const meta = SUB_TIERS[currentSubTier];
+
     return (
         <section className='bg-slr-navy-card border-slr-navy-border rounded-2xl border p-5 md:p-6'>
             <h2 className='font-bebas-neue text-xl tracking-wide text-white uppercase md:text-2xl'>
@@ -22,23 +32,13 @@ export function ManageTier({ isVisitor }: ManageTierProps) {
                     <UpgradeTierButtons />
                 </div>
             ) : (
-                <div className='mt-4 space-y-3'>
-                    <div className='flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/3 p-4'>
-                        <span className='text-sm text-white/90'>Change plan (upgrade / downgrade)</span>
-                        <span className='text-slr-dim rounded-md border border-white/10 px-2 py-1 text-xs'>
-                            Coming soon
-                        </span>
-                    </div>
-                    <div className='flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/3 p-4'>
-                        <span className='text-sm text-white/90'>Cancel membership</span>
-                        <span className='text-slr-dim rounded-md border border-white/10 px-2 py-1 text-xs'>
-                            Coming soon
-                        </span>
-                    </div>
-                    <p className='text-slr-dim text-xs'>
-                        Plan changes and cancellation open in a later release. Use Manage Billing to update your card.
+                <>
+                    <p className='text-slr-muted mt-2 text-sm'>
+                        Current plan: <span className='text-white/90'>{formatTierName(currentSubTier)}</span> —{' '}
+                        {formatAud(meta.price_cents)} / 28 days
                     </p>
-                </div>
+                    <ManageMembershipActions currentSubTier={currentSubTier} nextRenewalIso={nextRenewalIso} />
+                </>
             )}
         </section>
     );

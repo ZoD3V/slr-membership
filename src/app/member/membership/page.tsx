@@ -66,7 +66,11 @@ export default async function MembershipPage() {
                 nextRenewal={billing?.next_renewal_at ?? null}
             />
 
-            <ManageTier isVisitor={isVisitor} />
+            <ManageTier
+                isVisitor={isVisitor}
+                currentSubTier={subTier}
+                nextRenewalIso={billing?.next_renewal_at ?? null}
+            />
 
             {/* Payment method */}
             <section className='bg-slr-navy-card border-slr-navy-border rounded-2xl border p-5 md:p-6'>
