@@ -1,5 +1,6 @@
 'use server';
 
+import { payGraceInvoice } from '@/lib/api/resources/billing';
 import {
     type MemberSubTierId,
     type ScheduledTierChange,
@@ -109,5 +110,21 @@ export async function cancelMembershipAction(): Promise<{ ok: true } | { ok: fal
         return { ok: true };
     } catch (error) {
         return { ok: false, message: toActionMessage(error, 'Could not cancel your membership.') };
+    }
+}
+
+// Start manual payment for a grace-period invoice → hosted Stripe checkout URL.
+// Grace state can't be reproduced on seed accounts (docs/BACKEND-ISSUES.md C3),
+// so this is built blind and guarded.
+export async function payGraceInvoiceAction(): Promise<{ ok: true; url: string } | { ok: false; message: string }> {
+    const token = await getAccessToken();
+    if (!token) return { ok: false, message: 'Not authenticated.' };
+
+    try {
+        const { checkout_url } = await payGraceInvoice(token);
+
+        return { ok: true, url: checkout_url };
+    } catch (error) {
+        return { ok: false, message: toActionMessage(error, 'Could not start the grace payment.') };
     }
 }

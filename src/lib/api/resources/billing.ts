@@ -35,3 +35,13 @@ export const getBillingInvoices = cache((token: string, page = 1, perPage = 10) 
         cache: 'no-store'
     })
 );
+
+// POST /billing/pay-manual → hosted Stripe checkout for a grace-period invoice.
+export interface GraceCheckout {
+    checkout_url: string;
+    session_id: string;
+}
+
+/** Start a manual payment for the current grace-period invoice (redirect to `checkout_url`). */
+export const payGraceInvoice = (token: string) =>
+    apiFetch<GraceCheckout>(API.billing.payManual, { method: 'POST', token });

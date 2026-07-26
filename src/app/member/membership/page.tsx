@@ -16,6 +16,7 @@ import { type MembershipRecord, getMyMembership } from '@/lib/api/resources/memb
 import { getAccessToken } from '@/lib/api/server';
 import { formatAud, formatShortDate, subTierCodeOf, tierGroupOf } from '@/lib/member';
 
+import { GraceBanner } from './_components/grace-banner';
 import { ManageBillingButton } from './_components/manage-billing-button';
 import { ManageTier } from './_components/manage-tier';
 import { TierCard } from './_components/tier-card';
@@ -58,6 +59,10 @@ export default async function MembershipPage() {
     return (
         <div className='mx-auto w-full max-w-4xl flex-1 space-y-6 px-4 py-6 md:px-6 md:py-8'>
             <h1 className='font-bebas-neue text-3xl tracking-wide text-white uppercase sm:text-4xl'>Membership</h1>
+
+            {billing?.billing_status === 'grace' ? (
+                <GraceBanner expiresAt={billing.grace_period?.expires_at ?? null} />
+            ) : null}
 
             <TierCard
                 subTier={subTier}

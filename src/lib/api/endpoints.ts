@@ -74,7 +74,8 @@ export const API = {
     },
     billing: {
         status: '/api/v1/billing/status',
-        invoices: '/api/v1/billing/invoices'
+        invoices: '/api/v1/billing/invoices',
+        payManual: '/api/v1/billing/pay-manual'
     },
     stripe: {
         checkout: '/api/v1/stripe/checkout',
