@@ -21,6 +21,12 @@ export interface BillingInvoice {
     stripe_invoice_id: string | null;
     paid_at: string | null;
     type: 'initial' | 'renewal' | 'manual_grace' | string;
+    /**
+     * Stripe-hosted invoice page (client note A3, backend added 2026-07-26). Optional
+     * + guarded: not present on the public OpenAPI schema yet and no paid invoice exists
+     * to verify live — render the download link only when the field is populated.
+     */
+    hosted_invoice_url?: string | null;
 }
 
 // ─── Resource functions ──────────────────────────────────────────────────────

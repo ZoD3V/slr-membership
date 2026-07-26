@@ -64,7 +64,9 @@ Dibuktikan live. Jadwalkan r4→r7, lalu baca `me`:
 
 **Permintaan:** tambahkan `pending_upgrade: { target_sub_tier, effective_at } | null` pada `GET /api/v1/memberships/me` (sesuai kontrak §5).
 
-### A3. `GET /billing/invoices` tidak punya `hosted_invoice_url` ✅
+### A3. `GET /billing/invoices` `hosted_invoice_url` — 🟡 backend bilang sudah ditambah 2026-07-26 (FE wired, belum bisa live-verify)
+
+> 🟡 **UPDATE 2026-07-26.** Backend menyatakan `hosted_invoice_url` sudah ada di `GET /billing/invoices`. **Belum bisa dikonfirmasi live**: field belum muncul di OpenAPI publik (kemungkinan schema drift / belum ke-regenerate), dan tak ada akun test dengan invoice berbayar (`red@` = 0 invoice). FE sudah wire tombol **"View"** di tabel payment-history `/member/membership` secara defensif (field opsional + guard) → otomatis muncul begitu ada invoice nyata. **Ask:** regenerate OpenAPI + sediakan 1 invoice test untuk verifikasi. Laporan asli di bawah.
 
 DTO invoice live: `{ invoice_id, amount_cents, discount_cents, stripe_invoice_id, paid_at, type }` — tanpa `hosted_invoice_url`. Catatan client: *tombol download invoice diarahkan ke `hosted_invoice_url` dari Stripe (jangan generate PDF sendiri)*. FE tak bisa memasang tombol download tanpa field ini.
 
@@ -163,7 +165,7 @@ Kontrak: sign-up/upgrade/downgrade diblokir **Jum 16:00–19:00 AEST** → `403 
 |---|---|
 | Register→transaksi paid (headline) | ~~A1~~ ✅ resolved 2026-07-26 |
 | UI upgrade/downgrade (persisten) | ~~A2~~ ✅ resolved 2026-07-26 |
-| Download invoice | **A3** (masih open) |
+| Download invoice | 🟡 A3 backend added, FE wired (belum live-verify) |
 | Semua pembayaran (kualitas data) | **B1** (dulu, tak bisa backfill) |
 | Integritas CSV undian | **B2, B3** |
 | Tes live cancel / grace | **C3** |

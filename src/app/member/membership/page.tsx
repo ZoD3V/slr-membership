@@ -20,7 +20,7 @@ import { GraceBanner } from './_components/grace-banner';
 import { ManageBillingButton } from './_components/manage-billing-button';
 import { ManageTier } from './_components/manage-tier';
 import { TierCard } from './_components/tier-card';
-import { CreditCard, ReceiptText } from 'lucide-react';
+import { CreditCard, ExternalLink, ReceiptText } from 'lucide-react';
 
 export const metadata: Metadata = { title: 'Membership · SLR Member', robots: { index: false } };
 
@@ -111,7 +111,8 @@ export default async function MembershipPage() {
                                     <th className='py-2 pr-4 font-medium'>Date</th>
                                     <th className='py-2 pr-4 font-medium'>Type</th>
                                     <th className='py-2 pr-4 font-medium'>Amount</th>
-                                    <th className='py-2 font-medium'>Status</th>
+                                    <th className='py-2 pr-4 font-medium'>Status</th>
+                                    <th className='py-2 font-medium'>Invoice</th>
                                 </tr>
                             </thead>
                             <tbody className='divide-y divide-white/5'>
@@ -122,8 +123,21 @@ export default async function MembershipPage() {
                                         </td>
                                         <td className='py-2.5 pr-4'>{INVOICE_TYPE[inv.type] ?? inv.type}</td>
                                         <td className='py-2.5 pr-4 tabular-nums'>{formatAud(inv.amount_cents ?? 0)}</td>
-                                        <td className='py-2.5'>
+                                        <td className='py-2.5 pr-4'>
                                             <span className='font-semibold text-emerald-400'>Paid</span>
+                                        </td>
+                                        <td className='py-2.5'>
+                                            {inv.hosted_invoice_url ? (
+                                                <a
+                                                    href={inv.hosted_invoice_url}
+                                                    target='_blank'
+                                                    rel='noopener noreferrer'
+                                                    className='text-slr-gold-label inline-flex items-center gap-1 hover:underline'>
+                                                    View <ExternalLink className='size-3' />
+                                                </a>
+                                            ) : (
+                                                <span className='text-slr-dim'>-</span>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
