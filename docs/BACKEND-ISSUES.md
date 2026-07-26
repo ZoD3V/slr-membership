@@ -100,6 +100,19 @@ GET /memberships/me     → { "subTierId":"r4", "billingStatus":"INACTIVE" }
 
 **Catatan:** memblokir verifikasi **A3** (`hosted_invoice_url` — invoice tak pernah dibuat) dan **C4** (allocator paid — cycle tak pernah dibuat). Sekali webhook jalan, ketiganya bisa diverifikasi dalam 1 pembayaran. Akun `fe-stripe-test-1785041074@example.com` siap dipakai backend untuk trace (aman dipurge).
 
+### A5. 🔴 Harga di Stripe Checkout tampil **IDR**, bukan **AUD** ✅
+
+**Captured 2026-07-26** saat test payment. Di halaman hosted Stripe Checkout, harga muncul dalam **IDR**. Project ini **khusus Australia** — CLAUDE.md/PRD: semua nominal **AUD** (integer cents).
+
+**Root cause (backend/Stripe config):** object **Price/Product di Stripe dibuat dengan `currency: idr`**, bukan `aud`. FE tidak bisa memperbaiki ini — hosted Checkout memakai currency dari Price object; FE hanya kirim `{ tier }` lalu redirect.
+
+**Dampak:** pelanggan AU melihat + ditagih dalam IDR; ladder harga AUD ($10/$20/$30/$26/$39/$52/$65) tidak terpetakan benar. Salah mata uang = salah tagih.
+
+**Ask:**
+1. Buat ulang Stripe **Product/Price per sub-tier dalam `aud`** (r1=$10, r4=$20, r7=$30, b1=$26, b4=$39, b7=$52, b10=$65 → integer cents AUD).
+2. Pastikan Checkout Session line items mereferensikan Price **AUD** yang benar per `tier`/`sub_tier`.
+3. Pastikan `payments.currency` (client note B1) menyimpan `aud`.
+
 ## B. 🟠 WAJIB DIKERJAKAN DULU DI BACKEND (tidak ada UI, prioritas awal) 📄
 
 ### B1. Metadata Stripe — tidak bisa di-backfill, pasang di awal sprint
