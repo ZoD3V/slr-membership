@@ -154,7 +154,7 @@ export default async function MemberDashboardPage() {
                         icon={CircleAlert}
                         title='Membership Unavailable'
                         description='We couldn’t load your membership right now. Please try again shortly.'
-                        className='lg:col-span-1'
+                        className='h-full w-full max-w-none justify-center lg:col-span-1'
                     />
                 )}
                 {draw ? (
@@ -170,7 +170,7 @@ export default async function MemberDashboardPage() {
                         icon={Gift}
                         title='No Active Draw'
                         description='Your draw will appear here once your membership is active.'
-                        className='lg:col-span-2'
+                        className='h-full w-full max-w-none justify-center lg:col-span-2'
                     />
                 )}
             </div>
