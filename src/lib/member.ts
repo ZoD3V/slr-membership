@@ -100,12 +100,20 @@ export function formatTierName(code: SubTierCode): string {
     return `SLR ${TIER_VISUALS[meta.group].poolLabel} · ${meta.marketingName}`;
 }
 
-/** Short date, e.g. "28 Jul 2026". */
-export function formatShortDate(iso: string): string {
-    return format(new Date(iso), 'd MMM yyyy');
+/** Short date, e.g. "28 Jul 2026". Returns '-' for missing/invalid input (never throws). */
+export function formatShortDate(iso: string | null | undefined): string {
+    if (!iso) return '-';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '-';
+
+    return format(d, 'd MMM yyyy');
 }
 
-/** Draw date + time, e.g. "Fri, 3 Jul · 8:00 PM". */
-export function formatDrawDateTime(iso: string): string {
-    return format(new Date(iso), 'EEE, d MMM · h:mm a');
+/** Draw date + time, e.g. "Fri, 3 Jul · 8:00 PM". Returns '-' for missing/invalid input. */
+export function formatDrawDateTime(iso: string | null | undefined): string {
+    if (!iso) return '-';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '-';
+
+    return format(d, 'EEE, d MMM · h:mm a');
 }
