@@ -72,6 +72,34 @@ DTO invoice live: `{ invoice_id, amount_cents, discount_cents, stripe_invoice_id
 
 **Permintaan:** tambahkan `hosted_invoice_url` pada tiap invoice di `GET /api/v1/billing/invoices` (dan simpan ke `payments`, lihat B1). Akun seed juga `data:[]` (0 invoice) → belum bisa dites sampai ada pembayaran nyata (lihat C3).
 
+### A4. 🔴 Webhook `checkout.session.completed` TIDAK mengaktivasi — bayar sukses, member tetap inactive ✅
+
+**Captured 2026-07-26 via real Stripe test payment.** Blocker paling kritikal Sprint 3 — lebih dalam dari A1.
+
+**Repro (end-to-end):**
+1. `POST /auth/register` (paid red/r4, throwaway `fe-stripe-test-1785041074@example.com`) → 201 + `access_token` ✅ (A1 fixed).
+2. `POST /stripe/checkout {tier:"RED"}` → `200 { url, sessionId: "cs_test_b1PxwF2SgOIrdiMElP2j2cw4Fzn3sHOnaIUdByOP1JdElrwKJgl3Z7rqRA" }` ✅.
+3. Bayar kartu test `4242 4242 4242 4242` di hosted checkout → **sukses**, redirect ke `…/payment/success?session_id=cs_test_b1PxwF2…` (Stripe konfirmasi bayar).
+4. **Poll `GET /billing/status` 12× / ~48 detik → SELALU `inactive`.** State akhir:
+
+```json
+GET /billing/status     → { "billing_status":"inactive", "next_renewal_at":null, "grace_period":null, "stripe_subscription_id":null }
+GET /billing/invoices   → { "data": [] }          // 0 invoice
+GET /entries/           → { "current_cycle": null }
+GET /memberships/me     → { "subTierId":"r4", "billingStatus":"INACTIVE" }
+```
+
+**Dampak:** Stripe menerima pembayaran, tapi backend tidak pernah tahu → member **bayar tapi dapat nol**: tak diaktivasi, tak dapat token/draw_pass, tak masuk pool undian, tak ada invoice. Ini menggagalkan **seluruh** alur berbayar Sprint 3 (headline).
+
+**Expected (Kontrak §12):** `checkout.session.completed` → aktifkan akun, assign token + 4 draw_pass, set exact-time billing, generate referral code, buat invoice row.
+
+**Ask (mohon telusuri di Stripe Dashboard):**
+1. Cek webhook endpoint `POST /api/v1/webhooks/stripe/` terdaftar di Stripe Dashboard (test mode) → Developers → Webhooks.
+2. Cari event untuk session `cs_test_b1PxwF2…` → lihat **delivery attempts** + response code (200? 4xx/5xx? signature error?).
+3. Pastikan handler `checkout.session.completed` benar-benar mengaktivasi + membuat cycle/invoice.
+
+**Catatan:** memblokir verifikasi **A3** (`hosted_invoice_url` — invoice tak pernah dibuat) dan **C4** (allocator paid — cycle tak pernah dibuat). Sekali webhook jalan, ketiganya bisa diverifikasi dalam 1 pembayaran. Akun `fe-stripe-test-1785041074@example.com` siap dipakai backend untuk trace (aman dipurge).
+
 ## B. 🟠 WAJIB DIKERJAKAN DULU DI BACKEND (tidak ada UI, prioritas awal) 📄
 
 ### B1. Metadata Stripe — tidak bisa di-backfill, pasang di awal sprint
@@ -163,9 +191,9 @@ Kontrak: sign-up/upgrade/downgrade diblokir **Jum 16:00–19:00 AEST** → `403 
 
 | Deliverable Sprint 3 | Blocker |
 |---|---|
-| Register→transaksi paid (headline) | ~~A1~~ ✅ resolved 2026-07-26 |
+| Register→transaksi paid (headline) | A1 ✅ tapi 🔴 **A4** (webhook aktivasi tak jalan) memblokir end-to-end |
 | UI upgrade/downgrade (persisten) | ~~A2~~ ✅ resolved 2026-07-26 |
-| Download invoice | 🟡 A3 backend added, FE wired (belum live-verify) |
+| Download invoice | 🟡 A3 backend added, FE wired — verifikasi diblokir 🔴 **A4** |
 | Semua pembayaran (kualitas data) | **B1** (dulu, tak bisa backfill) |
 | Integritas CSV undian | **B2, B3** |
 | Tes live cancel / grace | **C3** |
