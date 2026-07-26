@@ -1,4 +1,5 @@
 import { SUB_TIERS } from '@/constant/tiers';
+import type { ScheduledTierChange } from '@/lib/api/resources/memberships';
 import { formatAud, formatTierName } from '@/lib/member';
 import type { SubTierCode } from '@/types/member';
 
@@ -9,12 +10,13 @@ interface ManageTierProps {
     isVisitor: boolean;
     currentSubTier: SubTierCode;
     nextRenewalIso: string | null;
+    scheduledChange: ScheduledTierChange | null;
 }
 
 // Visitor → Stripe checkout (new subscription). Paid → schedule a tier change or
 // cancel, via ManageMembershipActions (POST/DELETE /memberships/upgrade +
 // POST /subscriptions/me/cancel).
-export function ManageTier({ isVisitor, currentSubTier, nextRenewalIso }: ManageTierProps) {
+export function ManageTier({ isVisitor, currentSubTier, nextRenewalIso, scheduledChange }: ManageTierProps) {
     const meta = SUB_TIERS[currentSubTier];
 
     return (
@@ -37,7 +39,11 @@ export function ManageTier({ isVisitor, currentSubTier, nextRenewalIso }: Manage
                         Current plan: <span className='text-white/90'>{formatTierName(currentSubTier)}</span> —{' '}
                         {formatAud(meta.price_cents)} / 28 days
                     </p>
-                    <ManageMembershipActions currentSubTier={currentSubTier} nextRenewalIso={nextRenewalIso} />
+                    <ManageMembershipActions
+                        currentSubTier={currentSubTier}
+                        nextRenewalIso={nextRenewalIso}
+                        scheduledChange={scheduledChange}
+                    />
                 </>
             )}
         </section>

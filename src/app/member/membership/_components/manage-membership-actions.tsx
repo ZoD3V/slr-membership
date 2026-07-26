@@ -17,6 +17,8 @@ import { toast } from 'sonner';
 interface ManageMembershipActionsProps {
     currentSubTier: SubTierCode;
     nextRenewalIso: string | null;
+    // Persisted scheduled change from memberships/me.pending_upgrade (A2, live 2026-07-26).
+    scheduledChange: ScheduledTierChange | null;
 }
 
 interface ChangeOption {
@@ -30,11 +32,15 @@ interface ChangeOption {
 // stopping payment is "Cancel membership", not a plan change.
 const PAID_CODES: SubTierCode[] = ['R1', 'R4', 'R7', 'B1', 'B4', 'B7', 'B10'];
 
-export function ManageMembershipActions({ currentSubTier, nextRenewalIso }: ManageMembershipActionsProps) {
+export function ManageMembershipActions({
+    currentSubTier,
+    nextRenewalIso,
+    scheduledChange
+}: ManageMembershipActionsProps) {
     const [planOpen, setPlanOpen] = useState(false);
     const [cancelOpen, setCancelOpen] = useState(false);
     const [selected, setSelected] = useState<MemberSubTierId | null>(null);
-    const [scheduled, setScheduled] = useState<ScheduledTierChange | null>(null);
+    const [scheduled, setScheduled] = useState<ScheduledTierChange | null>(scheduledChange);
     const [pending, startTransition] = useTransition();
 
     const options = useMemo<ChangeOption[]>(
@@ -96,7 +102,7 @@ export function ManageMembershipActions({ currentSubTier, nextRenewalIso }: Mana
 
     return (
         <div className='mt-4 space-y-3'>
-            {/* Optimistic scheduled banner — memberships/me has no pending_upgrade yet (BACKEND GAP A2). */}
+            {/* Scheduled banner — hydrated from memberships/me.pending_upgrade (A2), updated optimistically on action. */}
             {scheduled ? (
                 <div className='flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#E2B42B4D] bg-[#E2B42B14] p-4'>
                     <span className='text-sm text-white/90'>

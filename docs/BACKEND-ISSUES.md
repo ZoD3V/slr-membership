@@ -18,7 +18,9 @@ Legend: ✅ = dites live 2026-07-24 · 📄 = dari kontrak/handoff sebelumnya
 
 ## A. 🔴 BLOCKER — Sprint 3 tidak bisa selesai penuh tanpa ini
 
-### A1. Registrasi tier berbayar tidak bisa sampai Stripe Checkout ✅📄
+### A1. Registrasi tier berbayar tidak bisa sampai Stripe Checkout — ✅ RESOLVED 2026-07-26
+
+> ✅ **RESOLVED 2026-07-26 (verified live).** `POST /auth/register` (paid) kini mengembalikan `access_token` + `refresh_token` langsung (`requires_otp:false, requires_payment:true`), **dan** `POST /auth/login` juga 200 + token. Register→checkout tidak lagi terblokir. Wiring checkout di register-wizard (`step-checkout.tsx`) jadi slice FE terpisah berikutnya. Laporan asli di bawah.
 
 Blocker utama sprint (*register RED/BLUE harus jalan penuh sampai transaksi*).
 
@@ -39,7 +41,9 @@ Blocker utama sprint (*register RED/BLUE harus jalan penuh sampai transaksi*).
 
 **Pertanyaan — pilih satu:** (1) izinkan akun paid **login walau belum verifikasi** (verifikasi via Stripe, sesuai PRD); atau (2) kembalikan **access token / checkout URL langsung dari `register`** saat `requires_payment:true`; atau (3) konfirmasi paid **memang butuh OTP** → perbaiki `register` jadi `requires_otp:true` (bertentangan dengan PRD → perlu keputusan produk).
 
-### A2. `GET /memberships/me` tidak mengembalikan `pending_upgrade` ✅
+### A2. `GET /memberships/me` tidak mengembalikan `pending_upgrade` — ✅ RESOLVED 2026-07-26
+
+> ✅ **RESOLVED 2026-07-26 (verified live).** `GET /memberships/me` kini mengembalikan `pending_upgrade: { target_sub_tier, effective_at } | null`. FE sudah pakai sumber ini — banner "terjadwal" persisten lintas reload (bukan optimistic-only lagi). Laporan asli di bawah.
 
 Dibuktikan live. Jadwalkan r4→r7, lalu baca `me`:
 
@@ -157,9 +161,9 @@ Kontrak: sign-up/upgrade/downgrade diblokir **Jum 16:00–19:00 AEST** → `403 
 
 | Deliverable Sprint 3 | Blocker |
 |---|---|
-| Register→transaksi paid (headline) | **A1** |
-| UI upgrade/downgrade (persisten) | **A2** |
-| Download invoice | **A3** |
+| Register→transaksi paid (headline) | ~~A1~~ ✅ resolved 2026-07-26 |
+| UI upgrade/downgrade (persisten) | ~~A2~~ ✅ resolved 2026-07-26 |
+| Download invoice | **A3** (masih open) |
 | Semua pembayaran (kualitas data) | **B1** (dulu, tak bisa backfill) |
 | Integritas CSV undian | **B2, B3** |
 | Tes live cancel / grace | **C3** |

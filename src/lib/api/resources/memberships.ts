@@ -55,6 +55,8 @@ export interface MembershipRecord {
     billingStatus: string;
     activatedAt: string;
     pendingBonusNextCycle: number;
+    /** Scheduled paid tier change applied at next renewal, or null. Live since 2026-07-26. */
+    pending_upgrade: ScheduledTierChange | null;
     createdAt: string;
     updatedAt: string;
     subTier: MembershipSubTier;
