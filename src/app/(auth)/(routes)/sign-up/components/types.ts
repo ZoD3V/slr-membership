@@ -13,7 +13,6 @@ export type SignUpFormData = {
     dob: string;
     tier: TierKey | null;
     sub_tier: SubTierCode | null; // R1/R4/R7/B1/B4/B7/B10 (or VISITOR)
-    beny: boolean;
 };
 
 export type SpinPrize = {
@@ -33,6 +32,7 @@ export const TIER_LABEL: Record<TierKey, string> = {
     blue: 'SLR Blue'
 };
 
+/** Shown as information only — checkout can't charge it, so it is never added to a total. */
 export const BENY_PRICE = 4;
 
 // ── Sub-tier presentation (levels + spin discount) ───────────────────────────

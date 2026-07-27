@@ -7,10 +7,12 @@ import {
     cancelScheduledChange,
     scheduleMembershipChange
 } from '@/lib/api/resources/memberships';
-import { type CheckoutTier, createCheckoutSession, createPortalSession } from '@/lib/api/resources/stripe';
+import { createMembershipCheckout, createPortalSession } from '@/lib/api/resources/stripe';
 import { cancelMySubscription } from '@/lib/api/resources/subscriptions';
 import { getAccessToken } from '@/lib/api/server';
 import { ApiError, apiErrorMessage } from '@/lib/api/types';
+import { SAFE_HOURS_MESSAGE, isSafeHoursError } from '@/lib/safe-hours';
+import type { SubTierCode } from '@/types/member';
 
 // Opens the Stripe Billing Portal. Returns the hosted URL for the client to
 // redirect to (manage cards / cancel). Real members get a URL; seed dev accounts
@@ -28,37 +30,39 @@ export async function openBillingPortal(): Promise<{ ok: true; url: string } | {
     }
 }
 
-// Starts a hosted Stripe Checkout for a paid tier and returns the URL for the
-// client to redirect to. Stripe sends the member to /payment/success (which
-// polls until the webhook activates them) or /payment/cancel.
+// Starts a hosted Stripe Checkout for one specific paid sub-tier and returns the
+// URL for the client to redirect to. Stripe sends the member to
+// /payment/success (which polls until the webhook activates them) or
+// /payment/cancel.
+//
+// Sends `sub_tier`, not `tier` — a bare tier makes the backend pick the entry
+// sub-tier (r1/b1), so R4/R7/B4/B7/B10 would be unsellable from here.
 //
 // Only offer this to members with no live subscription (Visitor). A paid→paid
 // change is POST /memberships/upgrade (scheduled at renewal) — running checkout
 // for an existing subscriber would open a second subscription.
-export async function startTierCheckout(
-    tier: CheckoutTier
+export async function startSubTierCheckout(
+    subTier: SubTierCode
 ): Promise<{ ok: true; url: string } | { ok: false; message: string }> {
     const token = await getAccessToken();
     if (!token) return { ok: false, message: 'Not authenticated.' };
 
     try {
-        const { url } = await createCheckoutSession(token, { tier });
+        const { url } = await createMembershipCheckout(token, { sub_tier: subTier.toLowerCase() });
 
         return { ok: true, url };
     } catch (error) {
-        return { ok: false, message: error instanceof ApiError ? error.message : 'Could not start checkout.' };
+        return { ok: false, message: toActionMessage(error, 'Could not start checkout.') };
     }
 }
 
 // Maps an API failure to a user-facing message. Business error codes live in
 // the envelope, exposed via ApiError.payload.code (the ApiError instance has no
-// `code` field). Safe Hours (Fri 16:00–19:00 AEST) gets a specific message.
+// `code` field). The Friday lockout gets the shared copy so the toast and the
+// on-page notice always say the same thing.
 function toActionMessage(error: unknown, fallback: string): string {
     if (error instanceof ApiError) {
-        const code = (error.payload as { code?: string } | null | undefined)?.code;
-        if (code === 'SAFE_HOURS_LOCKED') {
-            return 'Plan changes are paused Fridays 4–7pm AEST. Please try again after 7pm.';
-        }
+        if (isSafeHoursError(error)) return SAFE_HOURS_MESSAGE;
 
         return apiErrorMessage(error);
     }

@@ -8,6 +8,7 @@ import { type Discount, getPublicDiscounts } from '@/lib/api/resources/discounts
 import { getEntryHistory } from '@/lib/api/resources/entries';
 import { type ApiGiveaway, getGiveaways, tierGroupFromApi, toGiveaway } from '@/lib/api/resources/giveaways';
 import { getMyMembership } from '@/lib/api/resources/memberships';
+import { getSpinStatus } from '@/lib/api/resources/spin';
 import { getAccessToken } from '@/lib/api/server';
 import {
     cycleEndFrom,
@@ -25,6 +26,7 @@ import { FeaturedDiscounts } from './_components/dashboard/featured-discounts';
 import { Greeting } from './_components/dashboard/greeting';
 import { MembershipSummaryCard } from './_components/dashboard/membership-summary-card';
 import { QuickActions } from './_components/dashboard/quick-actions';
+import { RenewalSpinCard } from './_components/dashboard/renewal-spin-card';
 import { UpcomingGiveaways } from './_components/dashboard/upcoming-giveaways';
 import { VisitorUpgradeBanner } from './_components/dashboard/visitor-upgrade-banner';
 import { CircleAlert, Gift } from 'lucide-react';
@@ -39,12 +41,17 @@ export default async function MemberDashboardPage() {
 
     // Independent authed reads — allSettled so the giveaways 500 can't blank the
     // membership/cycle cards (per API-INTEGRATION.md degradation rules).
-    const [membershipR, entriesR, giveawaysR] = token
-        ? await Promise.allSettled([getMyMembership(token), getEntryHistory(token), getGiveaways(token)])
+    const [membershipR, entriesR, giveawaysR, spinR] = token
+        ? await Promise.allSettled([
+              getMyMembership(token),
+              getEntryHistory(token),
+              getGiveaways(token),
+              getSpinStatus(token)
+          ])
         : [];
 
     // Any expired-session failure → force logout (never returns).
-    for (const result of [membershipR, entriesR, giveawaysR]) {
+    for (const result of [membershipR, entriesR, giveawaysR, spinR]) {
         if (result?.status === 'rejected') handleApiAuthError(result.reason);
     }
 
@@ -55,6 +62,16 @@ export default async function MemberDashboardPage() {
     const membership = membershipR?.status === 'fulfilled' ? membershipR.value : null;
     const cycle = entriesR?.status === 'fulfilled' ? entriesR.value.current_cycle : null;
     const giveaways = giveawaysR?.status === 'fulfilled' ? giveawaysR.value : [];
+    // A rejected read is not an empty read: keep them apart so a dead endpoint
+    // never renders as "you have no draws / no membership".
+    const giveawaysFailed = giveawaysR?.status === 'rejected';
+    const drawDataFailed = giveawaysFailed || entriesR?.status === 'rejected';
+
+    // PRD §4.5 moment 2 — offered 24h before auto-renewal, and only for the
+    // token-upgrade sub-tiers the API already gates on. A registration-moment
+    // spin belongs to the sign-up wizard, so it is ignored here.
+    const spin = spinR?.status === 'fulfilled' ? spinR.value : null;
+    const renewalSpin = spin?.available && spin.moment === 'renewal' ? spin : null;
 
     const subTier = membership ? subTierCodeOf(membership.subTierId) : member.sub_tier;
     const memberGroup = tierGroupOf(subTier);
@@ -67,7 +84,7 @@ export default async function MemberDashboardPage() {
     const summary: MembershipSummary = {
         sub_tier: subTier,
         state: member.state,
-        billing_status: mapBillingStatus(membership?.billingStatus),
+        billing_status: membership ? mapBillingStatus(membership.billingStatus) : null,
         price_cents: membership?.subTier.priceCents ?? SUB_TIERS[subTier].price_cents,
         next_payment_date: nextPayment,
         beny_addon: null // hidden until the BENY endpoint lands (SP4)
@@ -146,6 +163,10 @@ export default async function MemberDashboardPage() {
 
             {isVisitor ? <VisitorUpgradeBanner /> : null}
 
+            {renewalSpin ? (
+                <RenewalSpinCard discount={renewalSpin.discount_cents / 100} expiresAt={renewalSpin.expires_at} />
+            ) : null}
+
             <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
                 {membership || cycle ? (
                     <MembershipSummaryCard summary={summary} isVisitor={isVisitor} className='lg:col-span-1' />
@@ -165,6 +186,13 @@ export default async function MemberDashboardPage() {
                         dateWord={drawDateWord}
                         className='lg:col-span-2'
                     />
+                ) : drawDataFailed ? (
+                    <EmptyState
+                        icon={CircleAlert}
+                        title='Draw Status Unavailable'
+                        description='We couldn’t load your entries and draws right now. Your entries are unaffected — please try again shortly.'
+                        className='h-full w-full max-w-none justify-center lg:col-span-2'
+                    />
                 ) : (
                     <EmptyState
                         icon={Gift}
@@ -181,6 +209,12 @@ export default async function MemberDashboardPage() {
 
             {upcomingGiveaways.length > 0 ? (
                 <UpcomingGiveaways giveaways={upcomingGiveaways} />
+            ) : giveawaysFailed ? (
+                <EmptyState
+                    icon={CircleAlert}
+                    title='Giveaways Unavailable'
+                    description='We couldn’t load the upcoming draws right now. Please try again shortly.'
+                />
             ) : isVisitor ? null : (
                 <EmptyState
                     icon={Gift}

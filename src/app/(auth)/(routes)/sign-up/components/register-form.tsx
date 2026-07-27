@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 
+import { useRouter } from 'next/navigation';
+
 import { register } from '@/lib/api/resources/auth';
-import { ApiError, apiErrorMessage } from '@/lib/api/types';
+import { ApiError, apiErrorCode, apiErrorMessage } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 import StepAccount from './step-account';
@@ -32,8 +34,7 @@ const initialData: SignUpFormData = {
     phone: '',
     dob: '',
     tier: null,
-    sub_tier: null,
-    beny: false
+    sub_tier: null
 };
 
 type Step = 'account' | 'tier' | 'spin' | 'otp' | 'checkout' | 'success';
@@ -56,24 +57,36 @@ const stepIndexForLabel = (step: Step): number => {
 };
 
 export function RegisterForm({ className, ...props }: React.ComponentProps<'div'>) {
+    const router = useRouter();
     const [data, setData] = useState<SignUpFormData>(initialData);
     const [spinPrize, setSpinPrize] = useState<SpinPrize | null>(null);
     const [step, setStep] = useState<Step>('account');
-    // Visitor registration state — the created account whose OTP we verify next.
+    // The created account: Visitor verifies its OTP next, paid goes to Stripe.
     const [userId, setUserId] = useState<string | null>(null);
     const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
     const [registering, setRegistering] = useState(false);
+    // Session token returned by register on paid tiers — needed by Stripe Checkout.
+    const [checkoutToken, setCheckoutToken] = useState<string | null>(null);
 
     const patchData = (patch: Partial<SignUpFormData>) => {
         setData((d) => ({ ...d, ...patch }));
     };
 
-    // Visitor path: create the account (sends the OTP email), then verify.
-    // Skip re-registering if we already created this exact email (Back → forward
-    // must not 409 on a duplicate).
-    const registerVisitor = async () => {
+    // Create the account, then route by what the API says is still owed: Visitor
+    // gets an OTP email, paid gets a session token and goes to Stripe (the
+    // payment itself verifies them). Skip re-registering if we already created
+    // this exact email (Back → forward must not 409 on a duplicate).
+    const createAccount = async (patch: Partial<SignUpFormData>) => {
+        const tier = patch.tier ?? data.tier;
+        const subTier = patch.sub_tier ?? data.sub_tier;
+        // Spin only for token-upgrade sub-tiers (R4/R7/B4/B7/B10), and only if
+        // the API still offers it.
+        const goPay = (spinAvailable: boolean) =>
+            setStep(spinAvailable && isSpinEligible(subTier) ? 'spin' : 'checkout');
+
         if (userId && registeredEmail === data.email) {
-            setStep('otp');
+            if (tier === 'visitor') setStep('otp');
+            else goPay(true);
 
             return;
         }
@@ -86,12 +99,27 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
                 state: data.state as Exclude<SignUpFormData['state'], ''>,
                 phone: data.phone,
                 dob: data.dob,
-                tier: 'visitor'
+                tier: tier ?? 'visitor',
+                sub_tier: tier === 'visitor' ? undefined : subTier?.toLowerCase()
             });
             setUserId(res.user_id);
             setRegisteredEmail(data.email);
-            setStep('otp');
+            if (res.requires_otp) {
+                setStep('otp');
+
+                return;
+            }
+            setCheckoutToken(res.access_token ?? null);
+            goPay(res.spin_available);
         } catch (err) {
+            // Signed up before but never paid: the account is fine, so don't dead-end
+            // them on a duplicate error — send them to sign in and finish paying.
+            if (err instanceof ApiError && apiErrorCode(err) === 'ACCOUNT_PENDING_PAYMENT') {
+                toast.info(apiErrorMessage(err));
+                router.push(`/sign-in?email=${encodeURIComponent(data.email)}`);
+
+                return;
+            }
             toast.error(err instanceof ApiError ? apiErrorMessage(err) : 'Registration failed. Please try again.');
             // Send them back to the account step to fix the email/phone.
             setStep('account');
@@ -102,13 +130,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
 
     const goNextFromTier = (patch: Partial<SignUpFormData>) => {
         patchData(patch);
-        if (patch.tier === 'visitor') {
-            registerVisitor();
-
-            return;
-        }
-        // Paid: spin only for token-upgrade sub-tiers (R4/R7/B4/B7/B10), else straight to checkout.
-        setStep(isSpinEligible(patch.sub_tier ?? data.sub_tier) ? 'spin' : 'checkout');
+        createAccount(patch);
     };
 
     const goSpinDone = (prize: SpinPrize) => {
@@ -142,6 +164,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
                 return (
                     <StepSpinWheel
                         winDiscount={spinDiscountFor(data.sub_tier)}
+                        token={checkoutToken}
                         onNext={goSpinDone}
                         onBack={() => setStep('tier')}
                     />
@@ -160,7 +183,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
                     <StepCheckout
                         data={data}
                         spinPrize={spinPrize}
-                        onNext={() => setStep('success')}
+                        token={checkoutToken}
                         onBack={() => setStep(isSpinEligible(data.sub_tier) ? 'spin' : 'tier')}
                     />
                 );

@@ -37,7 +37,9 @@ export function MembershipSummaryCard({
     className?: string;
 }) {
     const meta = SUB_TIERS[summary.sub_tier];
-    const billing = BILLING[summary.billing_status];
+    // Unknown ≠ active: when the membership read failed, say so rather than
+    // painting a green dot the API never confirmed.
+    const billing = summary.billing_status ? BILLING[summary.billing_status] : null;
 
     const tierName = meta.group === 'visitor' ? 'Visitor Pass' : formatTierName(summary.sub_tier);
     const price = meta.price_cents === 0 ? 'Free' : formatAud(meta.price_cents);
@@ -63,10 +65,17 @@ export function MembershipSummaryCard({
                 {!isVisitor && (
                     <>
                         <Row icon={<CreditCard className='size-4' />} label='Billing'>
-                            <span className={cn('inline-flex items-center gap-1.5', billing.text)}>
-                                <span className={cn('size-1.5 rounded-full', billing.dot)} />
-                                {billing.label}
-                            </span>
+                            {billing ? (
+                                <span className={cn('inline-flex items-center gap-1.5', billing.text)}>
+                                    <span className={cn('size-1.5 rounded-full', billing.dot)} />
+                                    {billing.label}
+                                </span>
+                            ) : (
+                                <span className='text-slr-dim inline-flex items-center gap-1.5'>
+                                    <span className='bg-slr-dim size-1.5 rounded-full' />
+                                    Unavailable
+                                </span>
+                            )}
                         </Row>
                         <Row icon={<CalendarClock className='size-4' />} label='Next payment'>
                             {formatShortDate(summary.next_payment_date)}

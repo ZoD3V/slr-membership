@@ -6,7 +6,7 @@ import { type EbookListItem, getEbooks } from '@/lib/api/resources/ebooks';
 import { getAccessToken } from '@/lib/api/server';
 
 import { EbookCard } from './_components/ebook-card';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, CircleAlert } from 'lucide-react';
 
 export const metadata: Metadata = {
     title: 'E-Books · SLR Member'
@@ -36,7 +36,13 @@ export default async function EbooksPage() {
                 </p>
             </header>
 
-            {failed || ebooks.length === 0 ? (
+            {failed ? (
+                <EmptyState
+                    icon={CircleAlert}
+                    title='E-Books Unavailable'
+                    description='We couldn’t load the library right now. Please try again shortly.'
+                />
+            ) : ebooks.length === 0 ? (
                 <EmptyState
                     icon={BookOpen}
                     title='No E-Books Yet'

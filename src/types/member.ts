@@ -21,7 +21,7 @@ export interface CurrentMember {
 export interface MembershipSummary {
     sub_tier: SubTierCode;
     state: string;
-    billing_status: BillingStatus;
+    billing_status: BillingStatus | null; // null = membership read failed; never assume 'active'
     price_cents: number; // integer cents AUD, billed per 28-day cycle
     next_payment_date: string; // ISO date — next renewal
     beny_addon: boolean | null; // BENY $4/mo add-on active; null = unknown (row hidden until the BENY endpoint lands)
@@ -191,32 +191,18 @@ export interface EntryHistoryEntry {
 
 // ── Profile & Account (PRD §4.7) ─────────────────────────────────────────────
 
-export interface Invoice {
-    id: string;
-    date: string; // ISO
-    description: string; // e.g. 'SLR RED (R4) — 28-day cycle'
-    amount_cents: number;
-    status: 'paid' | 'failed' | 'refunded';
-}
-
-// Paid→Paid tier changes are SCHEDULED (applied at next renewal) and cancelable.
-export interface PendingUpgrade {
-    to_sub_tier: SubTierCode;
-    effective_date: string; // ISO — applied at next renewal
-}
-
+/**
+ * Everything the profile page renders, and nothing else — every field comes from
+ * `GET /auth/me` (session as fallback). Billing, plan changes and invoices live
+ * on /member/membership off billing/memberships; they are not duplicated here.
+ * `member_id` and `joined_at` are absent on purpose: the API exposes neither, and
+ * inventing them is what made this page show a stranger's join date.
+ */
 export interface MemberProfile {
     name: string;
     email: string;
-    phone: string | null; // from live /auth/me, "-" in UI when null
+    phone: string | null; // "-" in UI when null
     sub_tier: SubTierCode;
     state: string;
-    dob: string | null; // ISO — from live /auth/me, "-" in UI when null
-    member_id: string; // shown on the digital card / QR
-    joined_at: string; // ISO
-    billing_status: BillingStatus;
-    next_payment_date: string; // ISO
-    price_cents: number;
-    pending_upgrade: PendingUpgrade | null;
-    invoices: Invoice[];
+    dob: string | null; // ISO date, "-" in UI when null
 }

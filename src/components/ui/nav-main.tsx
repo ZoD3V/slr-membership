@@ -1,4 +1,5 @@
 'use client';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -7,107 +8,40 @@ import {
     SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarMenuSub,
-    SidebarMenuSubButton,
-    SidebarMenuSubItem
+    SidebarMenuItem
 } from '@/components/ui/sidebar';
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './collapsible';
 import {
     BookOpen,
-    Box,
-    ChevronDown,
     ClipboardList,
     FileSpreadsheet,
     LayoutGrid,
+    type LucideIcon,
     Ticket,
     Trophy,
-    UserCheck,
-    UsersIcon
+    UserCheck
 } from 'lucide-react';
 
-export function NavMain({ user }) {
-    const isSuperAdmin = user?.role?.includes('ROLE_SUPER_ADMIN');
-    const isSVP = user?.role?.includes('ROLE_SPV');
+type NavItem = {
+    title: string;
+    href: string;
+    icon: LucideIcon;
+};
 
-    const baseItems: any[] = [
-        {
-            title: 'Dashboard',
-            href: '/dashboard',
-            icon: LayoutGrid
-        },
-        {
-            title: 'Members',
-            href: '/dashboard/members',
-            icon: ClipboardList
-        },
-        {
-            title: 'Draw Exports',
-            href: '/dashboard/draw-exports',
-            icon: FileSpreadsheet
-        },
-        {
-            title: 'Winners',
-            href: '/dashboard/winners',
-            icon: Trophy
-        },
-        {
-            title: 'Discounts',
-            href: '/dashboard/discounts',
-            icon: Ticket
-        },
-        {
-            title: 'Ebooks',
-            href: '/dashboard/ebooks',
-            icon: BookOpen
-        },
-        {
-            title: 'BENY',
-            href: '/dashboard/beny',
-            icon: UserCheck
-        }
-    ];
+// PRD §3.2 (Navigasi Admin), narrowed to the sections that exist as routes today.
+// No role filter: the PRD defines a single Admin role, and auth.config already
+// keeps non-admins out of /dashboard entirely.
+const ITEMS: NavItem[] = [
+    { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
+    { title: 'Members', href: '/dashboard/members', icon: ClipboardList },
+    { title: 'Winners', href: '/dashboard/winners', icon: Trophy },
+    { title: 'TPAL Exports', href: '/dashboard/draw-exports', icon: FileSpreadsheet },
+    { title: 'Discounts', href: '/dashboard/discounts', icon: Ticket },
+    { title: 'BENY', href: '/dashboard/beny', icon: UserCheck },
+    { title: 'Ebooks', href: '/dashboard/ebooks', icon: BookOpen }
+];
 
-    const adminOnlyItems = [
-        {
-            title: 'Master Data',
-            icon: Box,
-            items: [
-                {
-                    title: 'Wilayah',
-                    href: '/dashboard/master-data/wilayah'
-                },
-                {
-                    title: 'Commodity',
-                    href: '/dashboard/master-data/commodity'
-                }
-                // {
-                //     title: 'Categories',
-                //     href: '/dashboard/master-data/categories'
-                // }
-            ]
-        }
-    ];
-
-    const userManagementItems = [
-        {
-            title: 'Users',
-            href: '/dashboard/users',
-            icon: UsersIcon
-        }
-    ];
-
-    let items = [...baseItems];
-
-    if (isSuperAdmin || isSVP) {
-        items = [...items, ...userManagementItems];
-    }
-
-    if (isSuperAdmin) {
-        items = [...items, ...adminOnlyItems];
-    }
-
+export function NavMain() {
     const pathname = usePathname();
 
     return (
@@ -115,63 +49,24 @@ export function NavMain({ user }) {
             <SidebarGroupLabel>Menu</SidebarGroupLabel>
 
             <SidebarMenu>
-                {items?.map((item) => {
-                    const href = typeof item.href === 'string' ? item.href : item.href;
-                    const hasChildren = !!item.items && item.items.length > 0;
-
-                    const isActive = !!href && pathname === href;
-                    const isChildActive = hasChildren
-                        ? item.items!.some((child) => pathname.startsWith(child.href))
-                        : false;
-
-                    if (!hasChildren) {
-                        return (
-                            <SidebarMenuItem key={href ?? item.title}>
-                                <SidebarMenuButton
-                                    asChild
-                                    isActive={isActive}
-                                    tooltip={{ children: item.title, className: 'dashboard-theme dark' }}>
-                                    <Link href={href ?? '#'} prefetch>
-                                        {item.icon && <item.icon />}
-                                        <span className='group-data-[collapsible=icon]:hidden'>{item.title}</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        );
-                    }
+                {ITEMS.map((item) => {
+                    // Exact match for the index route, prefix match for the rest so a
+                    // detail page keeps its parent highlighted.
+                    const isActive =
+                        item.href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(item.href);
 
                     return (
-                        <Collapsible key={item.title} defaultOpen={isChildActive} className='group/collapsible'>
-                            <SidebarMenuItem>
-                                <CollapsibleTrigger asChild>
-                                    <SidebarMenuButton
-                                        isActive={isChildActive || isActive}
-                                        tooltip={{ children: item.title, className: 'dashboard-theme dark' }}>
-                                        {item.icon && <item.icon />}
-                                        <span className='group-data-[collapsible=icon]:hidden'>{item.title}</span>
-                                        <ChevronDown className='ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180' />
-                                    </SidebarMenuButton>
-                                </CollapsibleTrigger>
-
-                                <CollapsibleContent>
-                                    <SidebarMenuSub>
-                                        {item.items!.map((child) => {
-                                            const childActive = pathname === child.href;
-
-                                            return (
-                                                <SidebarMenuSubItem key={child.href}>
-                                                    <SidebarMenuSubButton asChild isActive={childActive}>
-                                                        <Link href={child.href} prefetch>
-                                                            <span>{child.title}</span>
-                                                        </Link>
-                                                    </SidebarMenuSubButton>
-                                                </SidebarMenuSubItem>
-                                            );
-                                        })}
-                                    </SidebarMenuSub>
-                                </CollapsibleContent>
-                            </SidebarMenuItem>
-                        </Collapsible>
+                        <SidebarMenuItem key={item.href}>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={isActive}
+                                tooltip={{ children: item.title, className: 'dashboard-theme dark' }}>
+                                <Link href={item.href} prefetch>
+                                    <item.icon />
+                                    <span className='group-data-[collapsible=icon]:hidden'>{item.title}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
                     );
                 })}
             </SidebarMenu>

@@ -4,7 +4,7 @@ import { formatAud, formatTierName } from '@/lib/member';
 import type { SubTierCode } from '@/types/member';
 
 import { ManageMembershipActions } from './manage-membership-actions';
-import { UpgradeTierButtons } from './upgrade-tier-buttons';
+import { UpgradePlanPicker } from './upgrade-plan-picker';
 
 interface ManageTierProps {
     isVisitor: boolean;
@@ -26,13 +26,7 @@ export function ManageTier({ isVisitor, currentSubTier, nextRenewalIso, schedule
             </h2>
 
             {isVisitor ? (
-                <div className='mt-4'>
-                    <p className='text-slr-muted mb-3 text-sm'>
-                        Upgrade to unlock member draws, partner discounts and e-books. You’ll be taken to Stripe’s
-                        secure checkout — no charge until you confirm.
-                    </p>
-                    <UpgradeTierButtons />
-                </div>
+                <UpgradePlanPicker />
             ) : (
                 <>
                     <p className='text-slr-muted mt-2 text-sm'>

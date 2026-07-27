@@ -37,3 +37,10 @@ export function apiErrorMessage(error: ApiError): string {
 
     return typeof first?.message === 'string' && first.message.length > 0 ? first.message : error.message;
 }
+
+/** Machine-readable envelope code (`ACCOUNT_PENDING_PAYMENT`, `NOT_FOUND`, …). */
+export function apiErrorCode(error: ApiError): string | null {
+    const code = (error.payload as { code?: unknown } | null | undefined)?.code;
+
+    return typeof code === 'string' ? code : null;
+}

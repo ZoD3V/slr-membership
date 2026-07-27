@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 
 import { TierBadge } from '@/components/common/tier-badge';
 import { getMemberProfile } from '@/data/profile';
-import { formatShortDate } from '@/lib/member';
 
 import { PersonalInfoSection } from './_components/personal-info-section';
 import { SecuritySection } from './_components/security-section';
@@ -14,12 +13,15 @@ export const metadata: Metadata = {
 };
 
 function initials(name: string): string {
-    return name
+    const letters = name
         .split(' ')
+        .filter(Boolean)
         .map((w) => w[0])
         .slice(0, 2)
         .join('')
         .toUpperCase();
+
+    return letters || '—';
 }
 
 export default async function ProfilePage() {
@@ -40,9 +42,10 @@ export default async function ProfilePage() {
                             <MapPin className='size-3' /> {profile.state}
                         </span>
                     </div>
-                    <p className='text-slr-dim mt-1.5 text-xs'>
-                        {profile.email} · Member since {formatShortDate(profile.joined_at)}
-                    </p>
+                    {/* No join date: /auth/me doesn't expose created_at, and the
+                        placeholder that used to sit here showed the same seeded
+                        date to every member. */}
+                    <p className='text-slr-dim mt-1.5 text-xs'>{profile.email || '-'}</p>
                 </div>
             </header>
 

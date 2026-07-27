@@ -19,6 +19,14 @@ export interface PortalSession {
 // ⚠️ Seed dev accounts have placeholder Stripe customer ids → 400 "No such
 // customer"; real (checked-out) members return a live URL.
 
+// Sign-up + "change plan" while payment is still pending. `sub_tier`
+// (r1/r4/r7/b1/b4/b7/b10) picks an exact sub-tier; passing `tier` alone lets the
+// backend choose, which lands every signup on the cheapest one (r1/b1).
+// Safe to call repeatedly — each call mints a fresh session (the previous one
+// expires after 24h). Any won spin discount is resolved server-side here.
+export const createMembershipCheckout = (token: string, body: { sub_tier?: string; tier?: CheckoutTier }) =>
+    apiFetch<CheckoutSession>(API.memberships.checkout, { method: 'POST', token, body });
+
 export const createCheckoutSession = (token: string, body: { tier: CheckoutTier; couponId?: string }) =>
     apiFetch<CheckoutSession>(API.stripe.checkout, { method: 'POST', token, body });
 

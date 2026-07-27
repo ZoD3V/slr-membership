@@ -47,6 +47,9 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
                         tier: session.user.tier,
                         sub_tier: session.user.sub_tier ?? null,
                         state: me.state,
+                        // Signed up but never paid → the app routes them to
+                        // /complete-payment instead of the member area.
+                        requiresPayment: session.user.requires_payment === true,
                         accessToken: session.access_token,
                         refreshToken: session.refresh_token ?? null
                     };

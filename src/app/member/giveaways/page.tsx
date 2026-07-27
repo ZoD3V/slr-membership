@@ -10,7 +10,7 @@ import { tierGroupOf } from '@/lib/member';
 import type { Giveaway } from '@/types/member';
 
 import { GiveawaysBoard } from './_components/giveaways-board';
-import { Gift } from 'lucide-react';
+import { CircleAlert, Gift } from 'lucide-react';
 
 export const metadata: Metadata = {
     title: 'Giveaways · SLR Member'
@@ -47,7 +47,13 @@ export default async function GiveawaysPage() {
                 </p>
             </header>
 
-            {failed || giveaways.length === 0 ? (
+            {failed ? (
+                <EmptyState
+                    icon={CircleAlert}
+                    title='Giveaways Unavailable'
+                    description='We couldn’t load the draws for your tier right now. Please try again shortly.'
+                />
+            ) : giveaways.length === 0 ? (
                 <EmptyState
                     icon={Gift}
                     title='No Giveaways Right Now'

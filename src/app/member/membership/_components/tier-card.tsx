@@ -22,7 +22,8 @@ const BENEFITS = [
 interface TierCardProps {
     subTier: SubTierCode;
     priceCents: number;
-    billingStatus: BillingStatus | string;
+    /** `null` when neither billing nor membership could be read — say so instead of implying "active". */
+    billingStatus: BillingStatus | string | null;
     nextRenewal?: string | null;
 }
 
@@ -38,9 +39,14 @@ export function TierCard({ subTier, priceCents, billingStatus, nextRenewal }: Ti
                     <p className='text-slr-muted mt-1 text-sm'>
                         <span className='text-gradient-gold font-semibold'>{formatAud(priceCents)}</span> / 28-day cycle
                         ·{' '}
-                        <span className={BILLING_TEXT[String(billingStatus)] ?? 'text-slr-muted'}>
-                            {String(billingStatus).replace('_', ' ')}
-                        </span>
+                        {billingStatus ? (
+                            // memberships/me returns it UPPERCASE, billing/status lowercase.
+                            <span className={BILLING_TEXT[String(billingStatus).toLowerCase()] ?? 'text-slr-muted'}>
+                                {String(billingStatus).toLowerCase().replace('_', ' ')}
+                            </span>
+                        ) : (
+                            <span className='text-slr-dim'>status unavailable</span>
+                        )}
                     </p>
                     {nextRenewal ? (
                         <p className='text-slr-dim mt-1 text-xs'>Next renewal {formatShortDate(nextRenewal)}</p>

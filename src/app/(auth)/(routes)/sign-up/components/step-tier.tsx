@@ -82,7 +82,6 @@ const StepTier = ({ data, onNext, onBack }: StepTierProps) => {
     const [phase, setPhase] = useState<'group' | 'subtier'>('group');
     const [group, setGroup] = useState<TierKey | null>(data.tier);
     const [subCode, setSubCode] = useState<SubTierCode | null>(data.sub_tier);
-    const [beny, setBeny] = useState<boolean>(data.beny);
     const [touched, setTouched] = useState(false);
 
     const handleGroupContinue = () => {
@@ -92,7 +91,7 @@ const StepTier = ({ data, onNext, onBack }: StepTierProps) => {
             return;
         }
         if (group === 'visitor') {
-            onNext({ tier: 'visitor', sub_tier: 'VISITOR', beny: false });
+            onNext({ tier: 'visitor', sub_tier: 'VISITOR' });
 
             return;
         }
@@ -173,29 +172,21 @@ const StepTier = ({ data, onNext, onBack }: StepTierProps) => {
                     })}
                 </div>
 
-                <label
-                    className={cn(
-                        'flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors',
-                        beny ? 'border-[#D4AF3759] bg-[#D4AF370D]' : 'border-white/10 bg-white/2 hover:border-white/20'
-                    )}>
-                    <input
-                        type='checkbox'
-                        checked={beny}
-                        onChange={(e) => setBeny(e.target.checked)}
-                        className='mt-0.5 size-4 shrink-0 cursor-pointer accent-[#D4AF37]'
-                    />
-                    <div className='flex-1'>
-                        <div className='flex flex-wrap items-baseline gap-2'>
-                            <span className='font-bebas-neue text-lg tracking-wider text-white uppercase'>
-                                Add BENY
-                            </span>
-                            <span className='text-sm font-semibold text-[#FFDC75]'>+${BENY_PRICE}/month</span>
-                        </div>
-                        <p className='text-slr-muted mt-0.5 text-xs'>
-                            Premium third-party discount platform. Optional. Requires phone for activation.
-                        </p>
+                {/* BENY add-on used to be a checkbox here. POST /membership/checkout
+                    accepts only a sub-tier, so ticking it charged nothing while the
+                    review screen still added $4 to "Due today". It is sold from the
+                    member dashboard instead (PRD: "checkout awal ATAU halaman BENY
+                    terpisah") until checkout can carry the line item. */}
+                <div className='rounded-xl border border-white/10 bg-white/2 p-4'>
+                    <div className='flex flex-wrap items-baseline gap-2'>
+                        <span className='font-bebas-neue text-lg tracking-wider text-white uppercase'>BENY add-on</span>
+                        <span className='text-sm font-semibold text-[#FFDC75]'>${BENY_PRICE}/month</span>
                     </div>
-                </label>
+                    <p className='text-slr-muted mt-0.5 text-xs'>
+                        Premium third-party discount platform. Optional, billed separately — add it from your dashboard
+                        once your membership is active.
+                    </p>
+                </div>
 
                 <div className='flex flex-wrap gap-3'>
                     <Button type='button' variant='outline' onClick={() => setPhase('group')} className={backBtn}>
@@ -204,7 +195,7 @@ const StepTier = ({ data, onNext, onBack }: StepTierProps) => {
                     </Button>
                     <Button
                         type='button'
-                        onClick={() => group && subCode && onNext({ tier: group, sub_tier: subCode, beny })}
+                        onClick={() => group && subCode && onNext({ tier: group, sub_tier: subCode })}
                         style={goldButtonStyle}
                         className={nextBtn}>
                         Continue

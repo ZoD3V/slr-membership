@@ -19,7 +19,10 @@ export const API = {
         me: '/api/v1/memberships/me',
         changeTier: '/api/v1/memberships/change-tier',
         stats: '/api/v1/memberships/stats',
-        upgrade: '/api/v1/memberships/upgrade'
+        upgrade: '/api/v1/memberships/upgrade',
+        // Sign-up + "change plan" while pending payment. NOT `upgrade` — that one
+        // is for members with an active subscription.
+        checkout: '/api/v1/membership/checkout'
     },
     admin: {
         members: '/api/v1/admin/members',
@@ -80,6 +83,10 @@ export const API = {
     stripe: {
         checkout: '/api/v1/stripe/checkout',
         portal: '/api/v1/stripe/portal'
+    },
+    spin: {
+        status: '/api/v1/spin/status',
+        execute: '/api/v1/spin/execute'
     },
     subscriptions: { cancel: '/api/v1/subscriptions/me/cancel' }
 } as const;

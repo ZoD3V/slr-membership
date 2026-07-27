@@ -1,3 +1,5 @@
+import { cache } from 'react';
+
 import type { AuStateCode } from '@/constant/au-states';
 
 import { API } from '../endpoints';
@@ -22,6 +24,17 @@ export interface RegisterResult {
     requires_otp: boolean;
     requires_payment: boolean;
     spin_available: boolean;
+    // Paid tiers get a session straight from register (verified by the Stripe
+    // payment instead of an OTP email), so checkout can be called immediately.
+    access_token?: string;
+    refresh_token?: string;
+    expires_in?: number;
+    user?: {
+        user_id: string;
+        role: string;
+        tier: string;
+        sub_tier: string | null;
+    };
 }
 
 export interface LoginResult {
@@ -33,7 +46,14 @@ export interface LoginResult {
         user_id: string;
         role: string;
         tier: string;
+        /** ⚠️ Registration-time value — stale after a plan change. Read the live
+         *  one from `GET /memberships/me`. */
         sub_tier: string | null;
+        status?: string;
+        billing_status?: string;
+        /** Signed up but never paid. Login is allowed so they can finish. */
+        requires_payment?: boolean;
+        spin_available?: boolean;
     };
 }
 
@@ -71,7 +91,12 @@ export interface MeResult {
 export const login = (email: string, password: string) =>
     apiFetch<LoginResult>(API.auth.login, { method: 'POST', body: { email, password } });
 
-export const getMe = (token: string) => apiFetch<MeResult>(API.auth.me, { token, cache: 'no-store' });
+/**
+ * Live identity + membership snapshot. Wrapped in `cache` because several
+ * independent surfaces need it in one render (layout sidebar, page body,
+ * profile) — this collapses them to a single request per server render.
+ */
+export const getMe = cache((token: string) => apiFetch<MeResult>(API.auth.me, { token, cache: 'no-store' }));
 
 /** Create an account. Visitor → `requires_otp`; paid → `requires_payment` (Stripe, later). */
 export const register = (payload: RegisterPayload) =>

@@ -2,10 +2,12 @@
 
 import { useMemo, useState, useTransition } from 'react';
 
+import { SafeHoursNotice } from '@/components/common/safe-hours-notice';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { SUB_TIERS } from '@/constant/tiers';
+import { useSafeHours } from '@/hooks/use-safe-hours';
 import { type MemberSubTierId, type ScheduledTierChange } from '@/lib/api/resources/memberships';
 import { formatAud, formatShortDate, formatTierName } from '@/lib/member';
 import { goldButtonStyle } from '@/lib/styles';
@@ -42,6 +44,9 @@ export function ManageMembershipActions({
     const [selected, setSelected] = useState<MemberSubTierId | null>(null);
     const [scheduled, setScheduled] = useState<ScheduledTierChange | null>(scheduledChange);
     const [pending, startTransition] = useTransition();
+    // PRD locks sign-up, upgrade and downgrade during the Friday draw window.
+    // Cancelling is not on that list, so it stays available.
+    const safeHoursLocked = useSafeHours();
 
     const options = useMemo<ChangeOption[]>(
         () =>
@@ -119,11 +124,13 @@ export function ManageMembershipActions({
                 </div>
             ) : null}
 
+            {safeHoursLocked ? <SafeHoursNotice /> : null}
+
             <div className='flex flex-wrap gap-3'>
                 <Button
                     className='h-11 rounded-xl font-bold uppercase'
                     style={goldButtonStyle}
-                    disabled={pending}
+                    disabled={pending || safeHoursLocked}
                     onClick={() => setPlanOpen(true)}>
                     Change plan
                 </Button>

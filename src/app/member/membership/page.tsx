@@ -20,7 +20,7 @@ import { GraceBanner } from './_components/grace-banner';
 import { ManageBillingButton } from './_components/manage-billing-button';
 import { ManageTier } from './_components/manage-tier';
 import { TierCard } from './_components/tier-card';
-import { CreditCard, ExternalLink, ReceiptText } from 'lucide-react';
+import { CircleAlert, CreditCard, ExternalLink, ReceiptText } from 'lucide-react';
 
 export const metadata: Metadata = { title: 'Membership · SLR Member', robots: { index: false } };
 
@@ -34,6 +34,9 @@ export default async function MembershipPage() {
     let invoices: BillingInvoice[] = [];
     let membership: MembershipRecord | null = null;
     let benyStatus: BenyStatusValue = 'inactive';
+    // Tracked separately from the data: a failed read must never render as "you
+    // have none" — a member who has paid would be told they never did.
+    let invoicesFailed = false;
 
     if (token) {
         const [b, i, m, y] = await Promise.allSettled([
@@ -45,7 +48,10 @@ export default async function MembershipPage() {
         if (b.status === 'fulfilled') billing = b.value;
         else handleApiAuthError(b.reason);
         if (i.status === 'fulfilled') invoices = i.value;
-        else handleApiAuthError(i.reason);
+        else {
+            handleApiAuthError(i.reason);
+            invoicesFailed = true;
+        }
         if (m.status === 'fulfilled') membership = m.value;
         else handleApiAuthError(m.reason);
         if (y.status === 'fulfilled') benyStatus = y.value.beny_status ?? 'inactive';
@@ -67,7 +73,7 @@ export default async function MembershipPage() {
             <TierCard
                 subTier={subTier}
                 priceCents={priceCents}
-                billingStatus={billing?.billing_status ?? membership?.billingStatus ?? 'active'}
+                billingStatus={billing?.billing_status ?? membership?.billingStatus ?? null}
                 nextRenewal={billing?.next_renewal_at ?? null}
             />
 
@@ -101,7 +107,14 @@ export default async function MembershipPage() {
                     <ReceiptText className='text-slr-gold-label size-5' />
                     <h2 className='font-bebas-neue text-xl tracking-wide text-white uppercase'>Payment History</h2>
                 </div>
-                {invoices.length === 0 ? (
+                {invoicesFailed ? (
+                    <EmptyState
+                        icon={CircleAlert}
+                        title='History Unavailable'
+                        description='We couldn’t load your invoices right now. Any payments you’ve made are still recorded — please try again shortly.'
+                        className='mx-auto max-w-sm border-0 bg-transparent px-0 py-6'
+                    />
+                ) : invoices.length === 0 ? (
                     <p className='text-slr-dim text-sm'>No payments yet.</p>
                 ) : (
                     <div className='overflow-x-auto'>
@@ -148,7 +161,15 @@ export default async function MembershipPage() {
             </section>
 
             {!billing && !membership ? (
-                <EmptyState icon={CreditCard} title='Billing Unavailable' description='Please sign in and try again.' />
+                <EmptyState
+                    icon={CircleAlert}
+                    title='Billing Unavailable'
+                    description={
+                        token
+                            ? 'We couldn’t reach the billing service, so the plan shown above may be out of date. Please try again shortly.'
+                            : 'Please sign in and try again.'
+                    }
+                />
             ) : null}
         </div>
     );

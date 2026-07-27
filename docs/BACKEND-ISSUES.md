@@ -200,6 +200,42 @@ Kontrak: sign-up/upgrade/downgrade diblokir **Jum 16:00–19:00 AEST** → `403 
 
 **Pertanyaan:** konfirmasi `/memberships/upgrade` dan `/stripe/checkout` mengembalikan persis `{ code:"SAFE_HOURS_LOCKED" }` (403) di dalam window, dan konfirmasi window + timezone. FE akan menangani error ini.
 
+### D5. `GET /auth/me` tanpa `created_at` dan `member_id` — 2 elemen PRD §4.7 tak bisa dibangun
+
+Dicek pada OpenAPI live 2026-07-27. `/auth/me` sekarang sudah kaya (`token`, `billing_status`, `current_cycle`, `beny_active`, `pending_upgrade`, `referral_code` — bagus, FE sudah pakai). Dua field masih hilang:
+
+| Field | Dipakai untuk | Status |
+|---|---|---|
+| `created_at` (tanggal bergabung) | PRD §4.7 header profil: *"avatar, nama, badge tier, negara bagian, **tanggal bergabung**"* | Tidak ada di `/auth/me`. Ada di `GET /admin/members/{userId}` (admin-only) → member tak bisa membaca miliknya sendiri |
+| `member_id` (mis. `SLR-NSW-004821`) | PRD §4.7 + flowchart 7.9: **kartu keanggotaan digital + QR**, isi QR = member ID untuk verifikasi kasir partner | Tidak ada. `user_id` cuma UUID — tidak layak dicetak di kartu/QR |
+
+**Dampak:** baris "Member since" sudah **dihapus** dari `/member/profile` — sebelumnya menampilkan tanggal seed yang sama untuk setiap member (data palsu). Kartu keanggotaan + QR belum bisa dibangun sama sekali.
+
+**Ask:** (1) tambahkan `created_at` ke `GET /auth/me`; (2) konfirmasi apakah `member_id` format `SLR-{STATE}-{NNNNNN}` sudah ada di DB — kalau ya, ekspos di `/auth/me`; kalau belum, perlu keputusan produk: siapa yang men-generate dan kapan (saat aktivasi pembayaran?).
+
+### D6. BENY tidak bisa dijual saat checkout awal — `checkout` tak punya field add-on
+
+PRD (§4.1 + bagian BENY) menyebut member bisa membeli add-on BENY **\$4/bulan** *"saat checkout awal atau dari halaman BENY terpisah"*. Jalur pertama tidak bisa dibangun sekarang.
+
+Request schema `POST /membership/checkout` (OpenAPI live 2026-07-27) — `additionalProperties: false`, field tak dikenal di-strip:
+
+```json
+{ "tier": "RED|BLUE", "subTierId": "…", "sub_tier": "…", "couponId": "…", "coupon_id": "…" }
+```
+
+Tidak ada `beny` / `addons` / `line_items`. Sementara itu `POST /beny/subscribe` masih mengembalikan `{ beny_status }` saja — membuat `pending_activation` **tanpa charge dan tanpa checkout URL** (isu lama yang belum tertutup).
+
+⇒ Akibatnya tidak ada satu pun jalur yang benar-benar menagih \$4 BENY.
+
+**Status FE (sudah diperbaiki):** wizard sign-up dulu punya checkbox BENY dan **menambahkan \$4 ke "Due today"** di layar review — padahal request checkout tidak pernah membawa BENY, jadi angka yang ditampilkan ≠ yang ditagih Stripe. Checkbox + baris \$4 itu **sudah dihapus**; BENY kini hanya dijual dari dashboard member (jalur "halaman BENY terpisah" versi PRD), dan di sign-up hanya tampil sebagai info.
+
+**Ask — pilih satu:**
+
+1. Tambahkan `beny: boolean` ke `POST /membership/checkout` → Checkout Session dapat **line item kedua** (\$4 AUD recurring, Price terpisah), lalu webhook membuat row BENY `pending_activation` setelah bayar; atau
+2. `POST /beny/subscribe` mengembalikan **Stripe Checkout session** (`{ url, sessionId }`) untuk langganan \$4 terpisah — FE tinggal redirect, sama seperti tier.
+
+Opsi 1 lebih dekat ke PRD (satu transaksi saat sign-up). Opsi 2 menutup jalur dashboard yang sekarang juga belum menagih. Mohon konfirmasi mana yang dipakai, plus konfirmasi Price BENY sudah dibuat dalam **AUD**.
+
 ## Ringkasan — apa memblokir apa
 
 | Deliverable Sprint 3 | Blocker |

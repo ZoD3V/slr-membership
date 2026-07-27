@@ -2,22 +2,30 @@
 
 import { useState } from 'react';
 
+import { SafeHoursNotice } from '@/components/common/safe-hours-notice';
 import { Button } from '@/components/ui/button';
 import { AU_STATES } from '@/constant/au-states';
+import { useSafeHours } from '@/hooks/use-safe-hours';
+import { createMembershipCheckout } from '@/lib/api/resources/stripe';
+import { ApiError, apiErrorMessage } from '@/lib/api/types';
+import { SAFE_HOURS_MESSAGE, isSafeHoursError } from '@/lib/safe-hours';
 import { goldButtonStyle } from '@/lib/styles';
 
 import { BENY_PRICE, SignUpFormData, SpinPrize, subTierLabel, subTierPrice } from './types';
 import { ArrowLeft, CreditCard, Loader2Icon, ShieldCheck } from 'lucide-react';
+import { toast } from 'sonner';
 
 type StepCheckoutProps = {
     data: SignUpFormData;
     spinPrize: SpinPrize | null;
-    onNext: () => void;
+    /** Session token from register — paid tiers get one without an OTP. */
+    token: string | null;
     onBack: () => void;
 };
 
-const StepCheckout = ({ data, spinPrize, onNext, onBack }: StepCheckoutProps) => {
+const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => {
     const [redirecting, setRedirecting] = useState(false);
+    const safeHoursLocked = useSafeHours();
 
     const tier = data.tier;
     const subTier = data.sub_tier;
@@ -25,18 +33,37 @@ const StepCheckout = ({ data, spinPrize, onNext, onBack }: StepCheckoutProps) =>
         return null;
     }
 
-    const tierPrice = subTierPrice(subTier);
-    const benyPrice = data.beny ? BENY_PRICE : 0;
-    const subtotal = tierPrice + benyPrice;
+    // BENY is deliberately absent from this total: POST /membership/checkout takes
+    // only a sub-tier, so a $4 line here would be shown but never charged.
+    const subtotal = subTierPrice(subTier);
     const discount = Math.min(spinPrize?.discountAmount ?? 0, subtotal);
     const total = subtotal - discount;
 
     const stateLabel = AU_STATES.find((s) => s.code === data.state)?.label ?? data.state;
 
+    // Hosted Stripe: we only redirect. The webhook activates the membership and
+    // Stripe returns the member to /payment/success, so there is no local
+    // "success" step on the paid path.
     const handleCheckout = async () => {
+        if (!token) {
+            toast.error('Your sign-up session expired. Please start again.');
+
+            return;
+        }
         setRedirecting(true);
-        await new Promise((resolve) => setTimeout(resolve, 1400));
-        onNext();
+        try {
+            const { url } = await createMembershipCheckout(token, { sub_tier: subTier.toLowerCase() });
+            window.location.href = url;
+        } catch (err) {
+            // The window can open between render and submit, so the server's 403 is
+            // what actually decides — translate it instead of showing the raw message.
+            if (isSafeHoursError(err)) toast.error(SAFE_HOURS_MESSAGE);
+            else
+                toast.error(
+                    err instanceof ApiError ? apiErrorMessage(err) : 'Could not open checkout. Please try again.'
+                );
+            setRedirecting(false);
+        }
     };
 
     return (
@@ -55,15 +82,8 @@ const StepCheckout = ({ data, spinPrize, onNext, onBack }: StepCheckoutProps) =>
                     <SummaryRow
                         label={subTierLabel(subTier)}
                         sub='Monthly subscription'
-                        value={`$${tierPrice.toFixed(2)}`}
+                        value={`$${subtotal.toFixed(2)}`}
                     />
-                    {data.beny && (
-                        <SummaryRow
-                            label='BENY add-on'
-                            sub='Premium discount platform'
-                            value={`$${BENY_PRICE.toFixed(2)}`}
-                        />
-                    )}
 
                     <div className='h-px w-full bg-white/10' />
 
@@ -101,6 +121,17 @@ const StepCheckout = ({ data, spinPrize, onNext, onBack }: StepCheckoutProps) =>
                 </p>
             </div>
 
+            <div className='rounded-xl border border-white/10 bg-white/2 p-4'>
+                <p className='text-slr-dim text-[10px] font-semibold tracking-widest uppercase'>Optional add-on</p>
+                <p className='mt-1 text-sm text-white'>BENY — ${BENY_PRICE.toFixed(2)}/month</p>
+                <p className='text-slr-muted mt-1 text-xs'>
+                    Premium third-party discount platform. Add it any time from your dashboard once your membership is
+                    active — it&apos;s billed separately, so it isn&apos;t part of today&apos;s payment.
+                </p>
+            </div>
+
+            {safeHoursLocked ? <SafeHoursNotice /> : null}
+
             <div className='flex flex-wrap gap-3'>
                 <Button
                     type='button'
@@ -114,7 +145,7 @@ const StepCheckout = ({ data, spinPrize, onNext, onBack }: StepCheckoutProps) =>
                 <Button
                     type='button'
                     onClick={handleCheckout}
-                    disabled={redirecting}
+                    disabled={redirecting || safeHoursLocked}
                     style={goldButtonStyle}
                     className='h-11 min-w-max flex-1 rounded-xl font-bold uppercase shadow-md transition-opacity hover:opacity-90 disabled:opacity-70'>
                     {redirecting ? (
