@@ -108,6 +108,7 @@ src/
 - Auth flow: NextAuth credentials provider → calls Express `/auth/login` → stores JWT in session. See [auth.ts](src/auth.ts), [auth.config.ts](src/auth.config.ts).
 - API base URL from `NEXT_PUBLIC_API_URL` (or server-only `API_URL` for server actions). Check [.env.example](.env.example) when adding new vars.
 - **Stripe Checkout is hosted** — frontend redirects, backend handles webhooks. Don't build PCI-handling forms.
+- **Backend Verification & Rules:** Wajib merujuk ke [RULES.md](RULES.md) untuk pedoman verifikasi API, penanganan duplikasi email, rules spin wheel, dan pengetesan Stripe webhook.
 
 ---
 
