@@ -100,7 +100,9 @@ GET /memberships/me     → { "subTierId":"r4", "billingStatus":"INACTIVE" }
 
 **Catatan:** memblokir verifikasi **A3** (`hosted_invoice_url` — invoice tak pernah dibuat) dan **C4** (allocator paid — cycle tak pernah dibuat). Sekali webhook jalan, ketiganya bisa diverifikasi dalam 1 pembayaran. Akun `fe-stripe-test-1785041074@example.com` siap dipakai backend untuk trace (aman dipurge).
 
-### A5. 🔴 Harga di Stripe Checkout tampil **IDR**, bukan **AUD** ✅
+### A5. Harga Stripe Checkout tampil IDR — ✅ CLOSED 2026-07-26 (Adaptive Pricing, base AUD)
+
+> ✅ **CLOSED 2026-07-26.** Ternyata **Stripe Adaptive Pricing**: base Price = AUD, IDR cuma presentment lokal (viewer dari Indonesia). Checkout tampil AUD + IDR-equivalent. Bukan Price salah, bukan urusan FE — customer AU ditagih AUD. Laporan awal (mis-diagnosa) di bawah.
 
 **Captured 2026-07-26** saat test payment. Di halaman hosted Stripe Checkout, harga muncul dalam **IDR**. Project ini **khusus Australia** — CLAUDE.md/PRD: semua nominal **AUD** (integer cents).
 
