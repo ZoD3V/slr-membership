@@ -21,6 +21,7 @@ interface ManageMembershipActionsProps {
     nextRenewalIso: string | null;
     // Persisted scheduled change from memberships/me.pending_upgrade (A2, live 2026-07-26).
     scheduledChange: ScheduledTierChange | null;
+    billingStatus: string | null;
 }
 
 interface ChangeOption {
@@ -37,13 +38,21 @@ const PAID_CODES: SubTierCode[] = ['R1', 'R4', 'R7', 'B1', 'B4', 'B7', 'B10'];
 export function ManageMembershipActions({
     currentSubTier,
     nextRenewalIso,
-    scheduledChange
+    scheduledChange,
+    billingStatus
 }: ManageMembershipActionsProps) {
     const [planOpen, setPlanOpen] = useState(false);
     const [cancelOpen, setCancelOpen] = useState(false);
     const [selected, setSelected] = useState<MemberSubTierId | null>(null);
     const [scheduled, setScheduled] = useState<ScheduledTierChange | null>(scheduledChange);
     const [pending, startTransition] = useTransition();
+
+    const isSubscriptionCanceledOrInactive = useMemo(() => {
+        if (!billingStatus) return false;
+        const status = billingStatus.toLowerCase();
+        
+return status === 'canceled' || status === 'cancelled' || status === 'inactive';
+    }, [billingStatus]);
     // PRD locks sign-up, upgrade and downgrade during the Friday draw window.
     // Cancelling is not on that list, so it stays available.
     const safeHoursLocked = useSafeHours();
@@ -134,13 +143,15 @@ export function ManageMembershipActions({
                     onClick={() => setPlanOpen(true)}>
                     Change plan
                 </Button>
-                <Button
-                    variant='outline'
-                    className='h-11 rounded-xl border-white/15 bg-white/5 text-white/90 uppercase hover:bg-white/10'
-                    disabled={pending}
-                    onClick={() => setCancelOpen(true)}>
-                    Cancel membership
-                </Button>
+                {!isSubscriptionCanceledOrInactive && (
+                    <Button
+                        variant='outline'
+                        className='h-11 rounded-xl border-white/15 bg-white/5 text-white/90 uppercase hover:bg-white/10'
+                        disabled={pending}
+                        onClick={() => setCancelOpen(true)}>
+                        Cancel membership
+                    </Button>
+                )}
             </div>
 
             {/* Change plan */}

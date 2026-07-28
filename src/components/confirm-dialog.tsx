@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { goldButtonStyle } from '@/lib/styles';
 
 type ConfirmDialogProps = {
     open: boolean;
@@ -42,21 +43,32 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
 
     return (
         <AlertDialog {...actions}>
-            <AlertDialogContent className={cn(className && className)}>
+            <AlertDialogContent className={cn('slr-member dark border-slr-navy-border bg-slr-navy-deep text-white', className)}>
                 <AlertDialogHeader className='text-start'>
-                    <AlertDialogTitle>{title}</AlertDialogTitle>
-                    <AlertDialogDescription asChild>
+                    <AlertDialogTitle className='font-bebas-neue text-2xl tracking-wider text-white uppercase'>
+                        {title}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription className='text-slr-muted text-sm' asChild>
                         <div>{desc}</div>
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 {children}
-                <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isLoading}>{cancelBtnText ?? 'Cancel'}</AlertDialogCancel>
+                <AlertDialogFooter className='mt-2 flex-wrap gap-2'>
+                    <AlertDialogCancel
+                        disabled={isLoading}
+                        className='h-11 rounded-xl border border-white/15 bg-white/5 text-white/90 hover:bg-white/10 hover:text-white uppercase transition-colors'>
+                        {cancelBtnText ?? 'Cancel'}
+                    </AlertDialogCancel>
                     <Button
                         type={form ? 'submit' : 'button'}
                         form={form}
                         onClick={handleConfirm}
                         variant={destructive ? 'destructive' : 'default'}
+                        style={destructive ? undefined : goldButtonStyle}
+                        className={cn(
+                            'h-11 rounded-xl font-bold uppercase transition-opacity hover:opacity-90',
+                            destructive ? 'text-white' : 'text-[#1a1408]'
+                        )}
                         disabled={disabled || isLoading}>
                         {confirmText ?? 'Continue'}
                     </Button>

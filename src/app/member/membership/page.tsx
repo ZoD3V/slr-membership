@@ -82,6 +82,7 @@ export default async function MembershipPage() {
                 currentSubTier={subTier}
                 nextRenewalIso={billing?.next_renewal_at ?? null}
                 scheduledChange={membership?.pending_upgrade ?? null}
+                billingStatus={billing?.billing_status ?? membership?.billingStatus ?? null}
             />
 
             {/* Payment method */}

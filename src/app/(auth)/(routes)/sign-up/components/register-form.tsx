@@ -18,6 +18,7 @@ import Stepper from './stepper';
 import { SignUpFormData, SpinPrize, isSpinEligible, spinDiscountFor } from './types';
 import { Loader2Icon } from 'lucide-react';
 import { toast } from 'sonner';
+import { signIn } from 'next-auth/react';
 
 const glassStyle: React.CSSProperties = {
     background: 'linear-gradient(117.58deg, rgba(215, 237, 237, 0.16) -47.79%, rgba(204, 235, 235, 0) 100%)',
@@ -108,6 +109,16 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
                 setStep('otp');
 
                 return;
+            }
+            // Auto log in via NextAuth so the session is active before they go to Stripe
+            try {
+                await signIn('credentials', {
+                    email: data.email,
+                    password: data.password,
+                    redirect: false
+                });
+            } catch (signInErr) {
+                console.error('Auto sign-in failed:', signInErr);
             }
             setCheckoutToken(res.access_token ?? null);
             goPay(res.spin_available);

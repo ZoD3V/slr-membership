@@ -11,12 +11,13 @@ interface ManageTierProps {
     currentSubTier: SubTierCode;
     nextRenewalIso: string | null;
     scheduledChange: ScheduledTierChange | null;
+    billingStatus: string | null;
 }
 
 // Visitor → Stripe checkout (new subscription). Paid → schedule a tier change or
 // cancel, via ManageMembershipActions (POST/DELETE /memberships/upgrade +
 // POST /subscriptions/me/cancel).
-export function ManageTier({ isVisitor, currentSubTier, nextRenewalIso, scheduledChange }: ManageTierProps) {
+export function ManageTier({ isVisitor, currentSubTier, nextRenewalIso, scheduledChange, billingStatus }: ManageTierProps) {
     const meta = SUB_TIERS[currentSubTier];
 
     return (
@@ -37,6 +38,7 @@ export function ManageTier({ isVisitor, currentSubTier, nextRenewalIso, schedule
                         currentSubTier={currentSubTier}
                         nextRenewalIso={nextRenewalIso}
                         scheduledChange={scheduledChange}
+                        billingStatus={billingStatus}
                     />
                 </>
             )}
