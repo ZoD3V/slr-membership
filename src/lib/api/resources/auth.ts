@@ -84,6 +84,7 @@ export interface MeResult {
     beny_active: boolean;
     pending_upgrade: PendingUpgrade | null;
     referral_code: string | null;
+    requires_payment?: boolean;
 }
 
 // ─── Resource functions ──────────────────────────────────────────────────────
