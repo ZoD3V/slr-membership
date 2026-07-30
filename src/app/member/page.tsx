@@ -99,7 +99,7 @@ export default async function MemberDashboardPage() {
               prize_label: '-',
               entry_status: cycle.entry_status,
               total_entries: cycle.total_token,
-              draws_at: cycle.end_at
+              draws_at: cycle.end_at ?? ''
           }
         : null;
 

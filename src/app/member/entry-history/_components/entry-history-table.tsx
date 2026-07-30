@@ -9,9 +9,15 @@ function tokenText(value: number, prefix = ''): string {
     return value > 0 ? `${prefix}${value}` : '-';
 }
 
-function formatDateRange(startStr: string, endStr: string): string {
+// Past-cycle rows from the API can omit start_at/end_at entirely (seen after a
+// plan swap mid-checkout) — never let a missing/invalid date crash the page.
+function formatDateRange(startStr: string | null | undefined, endStr: string | null | undefined): string {
+    if (!startStr || !endStr) return '-';
+
     const start = new Date(startStr);
     const end = new Date(endStr);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return '-';
+
     const fmt = new Intl.DateTimeFormat('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
 
     return `${fmt.format(start)} – ${fmt.format(end)}`;

@@ -5,8 +5,10 @@ import { apiFetch } from '../http';
 
 export interface EntryCycle {
     cycle_id: string;
-    start_at: string;
-    end_at: string;
+    // Past-cycle rows (`history[]`) can omit these entirely — seen live after a
+    // plan swap mid-checkout. Never assume they're present.
+    start_at?: string | null;
+    end_at?: string | null;
     tier: string;
     base_token: number;
     referral_bonus: number;
