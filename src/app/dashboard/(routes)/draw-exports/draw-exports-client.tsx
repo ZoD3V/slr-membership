@@ -1,16 +1,17 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 
 import EmptyState from '@/components/common/empty-state';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import Heading from '@/components/ui/heading';
 import type { DrawCsvHistoryItem, DrawCsvTier } from '@/lib/api/resources/admin';
 import { cn } from '@/lib/utils';
 
 import { generateDrawCsvAction } from './actions';
-import { Download, FileSpreadsheet, Loader2Icon, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, FileSpreadsheet, Loader2Icon, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 const TIER_STYLE: Record<DrawCsvTier, string> = {
@@ -26,6 +27,33 @@ function formatDate(value: string): string {
     return Number.isNaN(d.getTime()) ? value : d.toLocaleString('en-AU');
 }
 
+function getPaginationRange(currentPage: number, totalPages: number) {
+    const range: (number | '...')[] = [];
+
+    if (totalPages <= 5) {
+        for (let i = 1; i <= totalPages; i++) range.push(i);
+        
+return range;
+    }
+
+    let start = Math.max(1, currentPage - 2);
+    let end = Math.min(totalPages, currentPage + 2);
+
+    if (currentPage <= 3) {
+        start = 1;
+        end = 5;
+    } else if (currentPage >= totalPages - 2) {
+        start = totalPages - 4;
+        end = totalPages;
+    }
+
+    for (let i = start; i <= end; i++) {
+        range.push(i);
+    }
+
+    return range;
+}
+
 interface DrawExportsClientProps {
     initialHistory: DrawCsvHistoryItem[];
     failed: boolean;
@@ -35,12 +63,37 @@ export function DrawExportsClient({ initialHistory, failed }: DrawExportsClientP
     const router = useRouter();
     const [pending, startTransition] = useTransition();
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [jumpPage, setJumpPage] = useState(currentPage.toString());
+    const itemsPerPage = 10;
+    const totalItems = initialHistory.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+
+    useEffect(() => {
+        setJumpPage(currentPage.toString());
+    }, [currentPage]);
+
+    const submitJump = () => {
+        const page = parseInt(jumpPage);
+        if (!isNaN(page) && page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        } else {
+            setJumpPage(currentPage.toString());
+        }
+    };
+
+    const displayedHistory = initialHistory.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
     const generate = () => {
         startTransition(async () => {
             const res = await generateDrawCsvAction();
             if (res.ok) {
                 const total = res.data.files.reduce((sum, f) => sum + (f.row_count ?? 0), 0);
                 toast.success(`${res.data.files.length} CSV files generated — ${total} rows total.`);
+                setCurrentPage(1);
                 router.refresh();
             } else {
                 toast.error(res.message);
@@ -92,7 +145,7 @@ export function DrawExportsClient({ initialHistory, failed }: DrawExportsClientP
                                 </tr>
                             </thead>
                             <tbody className='divide-y divide-white/5'>
-                                {initialHistory.map((row) => (
+                                {displayedHistory.map((row) => (
                                     <tr key={row.id} className='transition-colors hover:bg-white/5'>
                                         <td className='px-3 py-4'>
                                             <span
@@ -123,6 +176,63 @@ export function DrawExportsClient({ initialHistory, failed }: DrawExportsClientP
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Pagination Controls */}
+                    {totalItems > itemsPerPage && (
+                        <div className='mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/5 pt-4'>
+                            <div className='text-muted-foreground text-sm'>
+                                Total: <span className='text-foreground font-medium text-white'>{totalItems}</span> entries
+                            </div>
+
+                            <div className='flex items-center gap-4'>
+                                {/* Jump to Page Input */}
+                                <div className='flex items-center gap-2'>
+                                    <span className='text-muted-foreground text-sm'>Jump to</span>
+                                    <Input
+                                        type='number'
+                                        value={jumpPage}
+                                        onChange={(e) => setJumpPage(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && submitJump()}
+                                        onBlur={submitJump}
+                                        className='h-8 w-14 [appearance:textfield] px-2 text-center bg-slr-navy border-slr-navy-border text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
+                                    />
+                                    <span className='text-muted-foreground text-sm'>of {totalPages}</span>
+                                </div>
+
+                                <div className='flex items-center gap-1'>
+                                    <Button
+                                        variant='outline'
+                                        size='sm'
+                                        className='h-8 w-8 p-0 border-white/10 hover:bg-white/5 text-white'
+                                        disabled={currentPage === 1 || pending}
+                                        onClick={() => setCurrentPage(currentPage - 1)}>
+                                        <ChevronLeft className='h-4 w-4' />
+                                    </Button>
+
+                                    {getPaginationRange(currentPage, totalPages).map((p, idx) => (
+                                        <Button
+                                            key={idx}
+                                            size='sm'
+                                            className='h-8 w-8 p-0 border-white/10'
+                                            variant={p === currentPage ? 'default' : 'outline'}
+                                            disabled={p === '...' || pending}
+                                            onClick={() => typeof p === 'number' && setCurrentPage(p)}>
+                                            {p}
+                                        </Button>
+                                    ))}
+
+                                    <Button
+                                        variant='outline'
+                                        size='sm'
+                                        className='h-8 w-8 p-0 border-white/10 hover:bg-white/5 text-white'
+                                        disabled={currentPage === totalPages || pending}
+                                        onClick={() => setCurrentPage(currentPage + 1)}>
+                                        <ChevronRight className='h-4 w-4' />
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

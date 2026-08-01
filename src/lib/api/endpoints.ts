@@ -32,6 +32,8 @@ export const API = {
         updateMemberStatus: (userId: string) => `/api/v1/admin/members/${userId}/status`,
         benyPending: '/api/v1/admin/beny/pending',
         benyActivate: (id: string) => `/api/v1/admin/beny/${id}/activate`,
+        benyList: '/api/v1/admin/beny',
+        benyDeactivate: (id: string) => `/api/v1/admin/beny/${id}/deactivate`,
         csvGenerate: '/api/v1/admin/csv/generate',
         csvHistory: '/api/v1/admin/csv/history'
     },

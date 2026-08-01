@@ -19,6 +19,9 @@ export interface StateCount {
 export interface DashboardAlerts {
     failed_payments_30d: number;
     pending_beny_activations: number;
+    active_beny_subscriptions?: number;
+    pending_beny_deactivations?: number;
+    cancelled_beny_subscriptions?: number;
 }
 
 export interface AdminDashboardMetrics {
@@ -108,6 +111,26 @@ export interface BenyPendingItem {
     created_at: string;
 }
 
+// Extends for the new 4-state cycle: pending_activation | active | pending_deactivation | cancelled
+export interface BenySubscriptionItem {
+    beny_subscription_id: string;
+    user_id: string;
+    name: string;
+    email: string;
+    phone: string;
+    status: 'pending_activation' | 'active' | 'pending_deactivation' | 'cancelled' | 'canceled' | string;
+    created_at: string;
+    activated_at?: string | null;
+    access_ends_at?: string | null;
+    deactivated_at?: string | null;
+    deactivation_reason?: string | null;
+}
+
+export interface BenyListResult {
+    data: BenySubscriptionItem[];
+    total: number;
+}
+
 // Mirrors POST /admin/beny/{id}/activate response.
 export interface BenyActivateResult {
     beny_subscription_id: string;
@@ -146,8 +169,27 @@ export const getBenyPending = cache((token: string) => {
     return apiFetch<BenyPendingItem[]>(API.admin.benyPending, { token, cache: 'no-store' });
 });
 
+export const getBenySubscriptions = cache((status: string, token: string, page = 1, limit = 10) => {
+    // Falls back/adapts format if backend returns a list of items or paginated format
+    return apiFetch<any>(
+        `${API.admin.benyList}?status=${status}&page=${page}&limit=${limit}`,
+        { token, cache: 'no-store' }
+    );
+});
+
 export const activateBeny = (id: string, token: string) => {
     return apiFetch<BenyActivateResult>(API.admin.benyActivate(id), { method: 'POST', token });
+};
+
+export const deactivateBeny = (id: string, token: string, reason?: string) => {
+    return apiFetch<{ success?: boolean; status?: string }>(
+        API.admin.benyDeactivate(id),
+        {
+            method: 'POST',
+            token,
+            body: reason ? { reason } : undefined
+        }
+    );
 };
 
 // ── TPAL draw exports ─────────────────────────────────────────────────────────

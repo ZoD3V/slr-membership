@@ -41,9 +41,12 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
         ...actions
     } = props;
 
+    const isAdmin = className?.includes('slr-admin') || className?.includes('dashboard-theme');
+    const defaultTheme = isAdmin ? 'slr-admin' : 'slr-member';
+
     return (
         <AlertDialog {...actions}>
-            <AlertDialogContent className={cn('slr-member dark border-slr-navy-border bg-slr-navy-deep text-white', className)}>
+            <AlertDialogContent className={cn(defaultTheme, 'dark border-slr-navy-border bg-slr-navy-deep text-white', className)}>
                 <AlertDialogHeader className='text-start'>
                     <AlertDialogTitle className='font-bebas-neue text-2xl tracking-wider text-white uppercase'>
                         {title}
@@ -64,10 +67,10 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
                         form={form}
                         onClick={handleConfirm}
                         variant={destructive ? 'destructive' : 'default'}
-                        style={destructive ? undefined : goldButtonStyle}
+                        style={destructive || isAdmin ? undefined : goldButtonStyle}
                         className={cn(
                             'h-11 rounded-xl font-bold uppercase transition-opacity hover:opacity-90',
-                            destructive ? 'text-white' : 'text-[#1a1408]'
+                            destructive ? 'text-white' : (isAdmin ? '' : 'text-[#1a1408]')
                         )}
                         disabled={disabled || isLoading}>
                         {confirmText ?? 'Continue'}
