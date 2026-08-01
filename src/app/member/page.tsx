@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 import EmptyState from '@/components/common/empty-state';
-import { SUB_TIERS } from '@/constant/tiers';
+import { SPIN_ELIGIBLE_SUB_TIERS, SUB_TIERS } from '@/constant/tiers';
 import { getCurrentMember } from '@/data/member-dashboard';
 import { handleApiAuthError } from '@/lib/api/guard';
 import { type Discount, getPublicDiscounts } from '@/lib/api/resources/discounts';
@@ -39,6 +39,10 @@ export default async function MemberDashboardPage() {
     const member = await getCurrentMember();
     const token = await getAccessToken();
 
+    // Spin status only exists for token-upgrade sub-tiers — below-eligible tiers
+    // (Visitor/R1/B1) get a 403, so skip the call instead of logging an error.
+    const spinEligible = SPIN_ELIGIBLE_SUB_TIERS.has(member.sub_tier);
+
     // Independent authed reads — allSettled so the giveaways 500 can't blank the
     // membership/cycle cards (per API-INTEGRATION.md degradation rules).
     const [membershipR, entriesR, giveawaysR, spinR] = token
@@ -46,7 +50,7 @@ export default async function MemberDashboardPage() {
               getMyMembership(token),
               getEntryHistory(token),
               getGiveaways(token),
-              getSpinStatus(token)
+              spinEligible ? getSpinStatus(token) : Promise.resolve(null)
           ])
         : [];
 
@@ -55,9 +59,11 @@ export default async function MemberDashboardPage() {
         if (result?.status === 'rejected') handleApiAuthError(result.reason);
     }
 
-    // Featured offers use the PUBLIC discounts endpoint (no tier gate) so they show
-    // for every member, Visitor included. Failure is non-fatal → empty list.
-    const publicDiscounts = await getPublicDiscounts().catch(() => [] as Discount[]);
+    // Featured offers use the PUBLIC discounts endpoint (no tier gate). Discounts
+    // are a RED/BLUE benefit though — Visitor gets no access, so skip the fetch
+    // entirely for them. Failure is non-fatal → empty list.
+    const publicDiscounts =
+        tierGroupOf(member.sub_tier) === 'visitor' ? [] : await getPublicDiscounts().catch(() => [] as Discount[]);
 
     const membership = membershipR?.status === 'fulfilled' ? membershipR.value : null;
     const cycle = entriesR?.status === 'fulfilled' ? entriesR.value.current_cycle : null;
@@ -158,7 +164,7 @@ export default async function MemberDashboardPage() {
         });
 
     return (
-        <div className='mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 md:px-6 md:py-8'>
+        <div className='mx-auto w-full max-w-7xl flex-1 space-y-8 px-4 py-6 md:space-y-12 md:px-6 md:py-8'>
             <Greeting member={member} />
 
             {isVisitor ? <VisitorUpgradeBanner /> : null}
@@ -203,9 +209,9 @@ export default async function MemberDashboardPage() {
                 )}
             </div>
 
-            <QuickActions />
+            <QuickActions isVisitor={isVisitor} />
 
-            {featuredDiscounts.length > 0 && <FeaturedDiscounts discounts={featuredDiscounts} />}
+            {!isVisitor && featuredDiscounts.length > 0 && <FeaturedDiscounts discounts={featuredDiscounts} />}
 
             {upcomingGiveaways.length > 0 ? (
                 <UpcomingGiveaways giveaways={upcomingGiveaways} />

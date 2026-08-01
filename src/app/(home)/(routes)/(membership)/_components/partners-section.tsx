@@ -91,7 +91,7 @@ const PartnersSection = ({ logos }: { logos?: string[] }) => {
     };
 
     return (
-        <section id='partners' className='bg-slr-navy-deep relative overflow-hidden pt-16 md:pt-24'>
+        <section id='partners' className='bg-slr-ink relative overflow-hidden pt-16 md:pt-24'>
             <div className='px-4 pb-12 text-center'>
                 <div className='flex justify-center'>
                     <Image

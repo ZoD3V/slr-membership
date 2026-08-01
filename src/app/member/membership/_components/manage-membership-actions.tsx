@@ -2,6 +2,8 @@
 
 import { useMemo, useState, useTransition } from 'react';
 
+import Image from 'next/image';
+
 import { SafeHoursNotice } from '@/components/common/safe-hours-notice';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
@@ -11,6 +13,7 @@ import { useSafeHours } from '@/hooks/use-safe-hours';
 import { type MemberSubTierId, type ScheduledTierChange } from '@/lib/api/resources/memberships';
 import { formatAud, formatShortDate, formatTierName } from '@/lib/member';
 import { goldButtonStyle } from '@/lib/styles';
+import { cn } from '@/lib/utils';
 import type { SubTierCode } from '@/types/member';
 
 import { cancelMembershipAction, cancelScheduledTierChangeAction, scheduleTierChangeAction } from '../actions';
@@ -29,6 +32,7 @@ interface ChangeOption {
     label: string;
     priceLabel: string;
     tokens: number;
+    badgeIcon: string | null;
 }
 
 // Paid sub-tiers a member may switch to. Visitor is intentionally excluded —
@@ -50,8 +54,8 @@ export function ManageMembershipActions({
     const isSubscriptionCanceledOrInactive = useMemo(() => {
         if (!billingStatus) return false;
         const status = billingStatus.toLowerCase();
-        
-return status === 'canceled' || status === 'cancelled' || status === 'inactive';
+
+        return status === 'canceled' || status === 'cancelled' || status === 'inactive';
     }, [billingStatus]);
     // PRD locks sign-up, upgrade and downgrade during the Friday draw window.
     // Cancelling is not on that list, so it stays available.
@@ -66,7 +70,8 @@ return status === 'canceled' || status === 'cancelled' || status === 'inactive';
                     id: code.toLowerCase() as MemberSubTierId,
                     label: formatTierName(code),
                     priceLabel: `${formatAud(meta.price_cents)} / 28 days`,
-                    tokens: meta.tokens
+                    tokens: meta.tokens,
+                    badgeIcon: meta.badgeIcon
                 };
             }),
         [currentSubTier]
@@ -173,9 +178,23 @@ return status === 'canceled' || status === 'cancelled' || status === 'inactive';
                         <label
                             key={opt.id}
                             htmlFor={opt.id}
-                            className='flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/3 p-3 hover:bg-white/5'>
+                            className={cn(
+                                'flex cursor-pointer items-center justify-between gap-3 rounded-xl border p-3 transition-colors',
+                                selected === opt.id
+                                    ? 'border-slr-gold-edge bg-slr-gold-wash'
+                                    : 'border-white/10 bg-white/3 hover:bg-white/5'
+                            )}>
                             <span className='flex items-center gap-3'>
                                 <RadioGroupItem id={opt.id} value={opt.id} />
+                                {opt.badgeIcon && (
+                                    <Image
+                                        src={opt.badgeIcon}
+                                        alt=''
+                                        width={56}
+                                        height={56}
+                                        className='size-7 shrink-0 object-contain'
+                                    />
+                                )}
                                 <span className='text-sm text-white/90'>{opt.label}</span>
                             </span>
                             <span className='text-slr-dim text-xs'>

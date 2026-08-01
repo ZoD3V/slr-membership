@@ -65,7 +65,10 @@ export function MemberSidebar({ user, member }: MemberSidebarProps) {
 
             <SidebarContent>
                 <SidebarGroup className='px-2 py-2'>
-                    <SidebarGroupLabel className='mb-1'>Menu</SidebarGroupLabel>
+                    <SidebarGroupLabel className='text-slr-dim mb-2 gap-2 text-[10px] font-semibold tracking-[0.2em] uppercase'>
+                        Menu
+                        <span className='slr-hairline-gold h-px flex-1 opacity-60 group-data-[collapsible=icon]:hidden' />
+                    </SidebarGroupLabel>
                     <SidebarMenu className='gap-1.5'>
                         {MEMBER_NAV.map((item) => (
                             <SidebarMenuItem key={item.href}>
@@ -74,7 +77,7 @@ export function MemberSidebar({ user, member }: MemberSidebarProps) {
                                     size='lg'
                                     isActive={isActive(item.href)}
                                     tooltip={{ children: item.title }}
-                                    className='gap-3 text-base group-data-[collapsible=icon]:gap-0! group-data-[collapsible=icon]:pl-0! [&>svg]:size-5'>
+                                    className='data-[active=true]:bg-gold-tint data-[active=true]:text-slr-gold-label data-[active=true]:border-slr-gold-edge-soft gap-3 text-base transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0! group-data-[collapsible=icon]:pl-0! hover:bg-white/5 data-[active=true]:border data-[active=true]:font-semibold data-[active=true]:shadow-[inset_2px_0_0_var(--slr-gold-label)] group-data-[collapsible=icon]:data-[active=true]:shadow-none [&>svg]:size-5'>
                                     <Link href={item.href} onClick={closeOnMobile}>
                                         <item.icon />
                                         <span className='group-data-[collapsible=icon]:hidden'>{item.title}</span>
@@ -87,10 +90,10 @@ export function MemberSidebar({ user, member }: MemberSidebarProps) {
             </SidebarContent>
 
             <SidebarFooter>
-                <div className='border-sidebar-border bg-sidebar-accent/10 flex items-center gap-2 rounded-lg border p-2 group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0'>
-                    <Avatar className='size-8'>
+                <div className='border-slr-gold-edge-faint bg-slr-gold-wash flex items-center gap-2 rounded-lg border p-2 group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0'>
+                    <Avatar className='border-slr-gold-edge-soft size-8 border'>
                         <AvatarImage src={user?.image ?? ''} alt={member.name} />
-                        <AvatarFallback className='bg-slr-navy-card text-sidebar-foreground text-xs font-semibold'>
+                        <AvatarFallback className='bg-card-dark-navy text-slr-gold-label text-xs font-semibold'>
                             {getInitials(member.name)}
                         </AvatarFallback>
                     </Avatar>

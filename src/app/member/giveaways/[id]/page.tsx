@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -145,12 +146,23 @@ export default async function GiveawayDetailPage({ params }: { params: Promise<{
 
                 {giveaway.locked && (
                     <div className='mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 p-4'>
-                        <p className='text-sm text-white/90'>
-                            This draw is exclusive to <span className='font-semibold'>SLR {visual.label}</span> members.
-                            Upgrade to start earning entries.
-                        </p>
+                        <div className='flex items-center gap-3'>
+                            {visual.cardArt && (
+                                <Image
+                                    src={visual.cardArt}
+                                    alt=''
+                                    width={160}
+                                    height={130}
+                                    className='w-16 shrink-0 object-contain drop-shadow-[0_6px_16px_rgba(0,0,0,0.6)]'
+                                />
+                            )}
+                            <p className='max-w-md text-sm text-white/90'>
+                                This draw is exclusive to <span className='font-semibold'>SLR {visual.label}</span>{' '}
+                                members. Upgrade to start earning entries.
+                            </p>
+                        </div>
                         <Link
-                            href='/member/profile'
+                            href='/member/membership'
                             className='inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold uppercase'
                             style={goldButtonStyle}>
                             Upgrade to {visual.label} <ArrowRight className='size-4' />

@@ -9,7 +9,7 @@ export function ComingSoon({ title, description }: { title: string; description?
                 <h1 className='font-bebas-neue text-3xl tracking-wide uppercase sm:text-4xl'>{title}</h1>
             </header>
 
-            <div className='bg-card-dark-navy border-slr-navy-border flex flex-col items-center rounded-2xl border px-6 py-16 text-center'>
+            <div className='flex flex-col items-center px-6 py-16 text-center'>
                 <span className='bg-gold-tint mb-4 flex size-14 items-center justify-center rounded-2xl border border-[#D4AF3759]'>
                     <Clock className='text-slr-gold-label size-7' />
                 </span>

@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import Image from 'next/image';
+
 import { SafeHoursNotice } from '@/components/common/safe-hours-notice';
 import { Button } from '@/components/ui/button';
 import { SUB_TIERS } from '@/constant/tiers';
@@ -60,28 +62,43 @@ const CompletePaymentClient = ({
             <div className='flex flex-col gap-3'>
                 {safeHoursLocked ? <SafeHoursNotice /> : null}
                 <p className='text-slr-dim text-[10px] font-semibold tracking-widest uppercase'>Pick a plan</p>
-                <div className='grid grid-cols-1 gap-2 sm:grid-cols-2'>
-                    {PAID_CODES.map((code) => (
-                        <button
-                            key={code}
-                            type='button'
-                            disabled={busy !== null || safeHoursLocked}
-                            onClick={() => go(code)}
-                            className={`flex items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors disabled:opacity-60 ${
-                                code === subTier
-                                    ? 'border-[#FFD147] bg-[#FFD1471A]'
-                                    : 'border-slr-navy-border bg-white/2 hover:bg-white/5'
-                            }`}>
-                            <span className='text-sm font-medium text-white'>{planLabel(code)}</span>
-                            <span className='text-sm font-semibold text-[#FFDC75]'>
-                                {busy === code ? (
-                                    <Loader2Icon className='h-4 w-4 animate-spin' />
-                                ) : (
-                                    `${priceLabel(code)} / 28 days`
-                                )}
-                            </span>
-                        </button>
-                    ))}
+                <div className='grid grid-cols-1 gap-2'>
+                    {PAID_CODES.map((code) => {
+                        const meta = SUB_TIERS[code];
+
+                        return (
+                            <button
+                                key={code}
+                                type='button'
+                                disabled={busy !== null || safeHoursLocked}
+                                onClick={() => go(code)}
+                                className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-colors disabled:opacity-60 ${
+                                    code === subTier
+                                        ? 'border-[#FFD147] bg-[#FFD1471A]'
+                                        : 'border-slr-navy-border bg-white/2 hover:bg-white/5'
+                                }`}>
+                                <span className='flex items-center gap-3'>
+                                    {meta.badgeIcon && (
+                                        <Image
+                                            src={meta.badgeIcon}
+                                            alt=''
+                                            width={56}
+                                            height={56}
+                                            className='size-8 shrink-0 object-contain'
+                                        />
+                                    )}
+                                    <span className='text-sm font-medium text-white'>{planLabel(code)}</span>
+                                </span>
+                                <span className='text-sm font-semibold whitespace-nowrap text-[#FFDC75]'>
+                                    {busy === code ? (
+                                        <Loader2Icon className='h-4 w-4 animate-spin' />
+                                    ) : (
+                                        `${priceLabel(code)} / 28 days`
+                                    )}
+                                </span>
+                            </button>
+                        );
+                    })}
                 </div>
                 <Button
                     type='button'

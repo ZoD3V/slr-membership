@@ -30,6 +30,13 @@
     --slr-gold-label: #e2b42b; /* eyebrow / accent label gold */
     --slr-ink: #040404; /* deep section background */
 
+    /* Gold edge/fill alphas (promoted from repeated arbitrary hex values) */
+    --slr-gold-edge: #d4af3759; /* card border gold */
+    --slr-gold-edge-soft: #d4af3740; /* softer border gold */
+    --slr-gold-edge-faint: #d4af3733; /* faintest border gold */
+    --slr-gold-wash: #d4af370a; /* faint gold surface fill */
+    --slr-gold-metal: #d4af37; /* metallic gold base — glows via /alpha modifiers */
+
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0);
@@ -132,36 +139,36 @@
     --sidebar-ring: var(--slr-gold);
 }
 
-/* Member area scoped theme — premium navy palette matching the home page
-   (navy-deep base, gold primary). Distinct from .slr-admin (near-black ink). */
+/* Member area scoped theme — premium ink palette matching the home page
+   (near-ink base, gold primary). Distinct from .slr-admin (navy-deep). */
 .slr-member {
     color-scheme: dark;
-    --background: #131619;
+    --background: #060708;
     --foreground: oklch(0.985 0 0);
-    --card: oklch(22% 0.05 250);
+    --card: #141820;
     --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(20% 0.06 250);
+    --popover: #10141b;
     --popover-foreground: oklch(0.985 0 0);
     --primary: var(--slr-gold);
     --primary-foreground: #0c1132;
-    --secondary: oklch(0.27 0.03 250);
+    --secondary: oklch(0.26 0.015 250);
     --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.24 0.02 250);
+    --muted: oklch(0.23 0.012 250);
     --muted-foreground: #adb0b5;
-    --accent: oklch(0.27 0.03 250);
+    --accent: oklch(0.26 0.015 250);
     --accent-foreground: oklch(0.985 0 0);
     --destructive: oklch(0.55 0.2 25);
     --destructive-foreground: oklch(0.985 0 0);
     --border: oklch(30% 0.04 250);
     --input: oklch(30% 0.04 250);
     --ring: var(--slr-gold);
-    --sidebar: #0f1316;
+    --sidebar: #0b0e11;
     --sidebar-foreground: oklch(0.95 0 0);
     --sidebar-primary: var(--slr-gold);
     --sidebar-primary-foreground: #0c1132;
-    --sidebar-accent: oklch(0.26 0.04 250);
+    --sidebar-accent: oklch(0.24 0.03 250);
     --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(28% 0.03 250);
+    --sidebar-border: oklch(24% 0.02 250);
     --sidebar-ring: var(--slr-gold);
 }
 
@@ -272,6 +279,11 @@
     --color-slr-dim: var(--slr-dim);
     --color-slr-gold-label: var(--slr-gold-label);
     --color-slr-ink: var(--slr-ink);
+    --color-slr-gold-edge: var(--slr-gold-edge);
+    --color-slr-gold-edge-soft: var(--slr-gold-edge-soft);
+    --color-slr-gold-edge-faint: var(--slr-gold-edge-faint);
+    --color-slr-gold-wash: var(--slr-gold-wash);
+    --color-slr-gold-metal: var(--slr-gold-metal);
 
     @keyframes accordion-down {
         from {
@@ -417,15 +429,32 @@
         background: linear-gradient(154.36deg, #141820 0.82%, #1e2530 49.73%, #141820 98.65%);
     }
 
-    /* Soft gold tint — brand gold gradient at 15% alpha, used behind icon chips */
-    .bg-gold-tint {
-        background: linear-gradient(
-            89.12deg,
-            rgba(245, 215, 142, 0.15) 3.07%,
-            rgba(212, 175, 55, 0.15) 41.36%,
-            rgba(255, 224, 102, 0.15) 60.5%,
-            rgba(160, 112, 24, 0.15) 98.79%
-        );
+    /* Warm gold-ink card gradient — membership / spin / upgrade hero cards */
+    .bg-card-gold {
+        background: linear-gradient(154.36deg, #140e00 0.82%, #1e1600 49.73%, #140e00 98.65%);
+    }
+
+    /* Gold gradient border-frame — p-px wrapper behind .bg-card-gold hero cards */
+    .bg-frame-gold {
+        background: linear-gradient(160deg, #f5d78e 0%, rgba(212, 175, 55, 0.4) 35%, #3a2b08 70%, #a07018 100%);
+    }
+
+    /* Star-field overlay — transparent version of slr-stars-bg for layering
+       above themed backgrounds (member area backdrop, hero cards) */
+    .slr-stars-overlay {
+        background-image:
+            radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.5), transparent 70%),
+            radial-gradient(1px 1px at 70% 60%, rgba(255, 255, 255, 0.4), transparent 70%),
+            radial-gradient(1.5px 1.5px at 85% 20%, rgba(255, 255, 255, 0.5), transparent 70%);
+        background-size:
+            300px 300px,
+            420px 420px,
+            240px 240px;
+    }
+
+    /* Gold hairline fading to transparent — the home-page section-divider motif */
+    .slr-hairline-gold {
+        background: linear-gradient(90deg, #b08a20 0%, rgba(255, 255, 255, 0.06) 55%, rgba(255, 255, 255, 0) 100%);
     }
 
     /* ─── Common shadows ─────────────────────────────────────────────────── */
@@ -440,6 +469,19 @@
     .shadow-card-warm-lg {
         box-shadow: 0px 0px 20px 0px rgba(119, 109, 109, 0.15);
     }
+}
+
+/* Soft gold tint — brand gold gradient at 15% alpha, used behind icon chips.
+   Registered via @utility (not @layer) so variant prefixes work, e.g.
+   data-[active=true]:bg-gold-tint on the member sidebar. */
+@utility bg-gold-tint {
+    background: linear-gradient(
+        89.12deg,
+        rgba(245, 215, 142, 0.15) 3.07%,
+        rgba(212, 175, 55, 0.15) 41.36%,
+        rgba(255, 224, 102, 0.15) 60.5%,
+        rgba(160, 112, 24, 0.15) 98.79%
+    );
 }
 
 /* Pointer cursor for every interactive element. Intentionally UNLAYERED so it

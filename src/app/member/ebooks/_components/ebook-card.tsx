@@ -41,8 +41,9 @@ export function EbookCard({ ebook }: { ebook: EbookListItem }) {
 
             <div className='flex flex-1 flex-col gap-3 p-4 md:p-5'>
                 <div className='space-y-1'>
-                    <h3 className='font-bebas-neue text-xl tracking-wide text-white uppercase md:text-2xl'>{title}</h3>
-                    {subtitle && <p className='text-slr-muted line-clamp-2 text-sm'>{subtitle}</p>}
+                    {/* Fixed clamps (title 1 line, subtitle 2 lines, reserved) keep every card the same height. */}
+                    <h3 className='line-clamp-1 text-base font-semibold text-white md:text-lg'>{title}</h3>
+                    <p className='text-slr-muted line-clamp-2 min-h-[2lh] text-sm'>{subtitle}</p>
                 </div>
 
                 <div className='text-slr-dim flex flex-wrap items-center gap-x-3 gap-y-1 text-xs'>
@@ -59,7 +60,7 @@ export function EbookCard({ ebook }: { ebook: EbookListItem }) {
                 <div className='mt-auto pt-2'>
                     {is_locked ? (
                         <Link
-                            href='/member/profile'
+                            href='/member/membership'
                             className='inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-[#FFD147] bg-[#FFD1471A] text-sm font-bold text-[#FFDC75] uppercase transition-opacity hover:opacity-90'>
                             <Lock className='size-4' /> Upgrade to read
                         </Link>

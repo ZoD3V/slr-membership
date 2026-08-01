@@ -67,7 +67,7 @@ export default async function DiscountsPage() {
                     )}
                 </>
             ) : (
-                <div className='bg-card-dark-navy border-slr-navy-border flex flex-col items-center rounded-2xl border px-6 py-14 text-center'>
+                <div className='flex flex-col items-center px-6 py-14 text-center'>
                     <span className='bg-gold-tint mb-4 flex size-12 items-center justify-center rounded-xl border border-[#D4AF3759]'>
                         <Lock className='text-slr-gold-label size-6' />
                     </span>
@@ -78,7 +78,7 @@ export default async function DiscountsPage() {
                         Upgrade to SLR RED or BLUE to unlock partner discounts, promo codes and the BENY savings add-on.
                     </p>
                     <Link
-                        href='/member/profile'
+                        href='/member/membership'
                         className='mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-xl px-6 text-sm font-bold uppercase'
                         style={goldButtonStyle}>
                         Upgrade now <ArrowRight className='size-4' />

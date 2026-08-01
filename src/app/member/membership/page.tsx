@@ -74,19 +74,18 @@ export default async function MembershipPage() {
                 subTier={subTier}
                 priceCents={priceCents}
                 billingStatus={billing?.billing_status ?? membership?.billingStatus ?? null}
-                nextRenewal={billing?.next_renewal_at ?? null}
-            />
-
-            <ManageTier
-                isVisitor={isVisitor}
-                currentSubTier={subTier}
-                nextRenewalIso={billing?.next_renewal_at ?? null}
-                scheduledChange={membership?.pending_upgrade ?? null}
-                billingStatus={billing?.billing_status ?? membership?.billingStatus ?? null}
-            />
+                nextRenewal={billing?.next_renewal_at ?? null}>
+                <ManageTier
+                    isVisitor={isVisitor}
+                    currentSubTier={subTier}
+                    nextRenewalIso={billing?.next_renewal_at ?? null}
+                    scheduledChange={membership?.pending_upgrade ?? null}
+                    billingStatus={billing?.billing_status ?? membership?.billingStatus ?? null}
+                />
+            </TierCard>
 
             {/* Payment method */}
-            <section className='bg-slr-navy-card border-slr-navy-border rounded-2xl border p-5 md:p-6'>
+            <section className='bg-card-dark-navy border-slr-navy-border rounded-2xl border p-5 md:p-6'>
                 <div className='flex flex-wrap items-center justify-between gap-3'>
                     <div className='flex items-center gap-2'>
                         <CreditCard className='text-slr-gold-label size-5' />
@@ -103,7 +102,7 @@ export default async function MembershipPage() {
             {isVisitor ? null : <BenySection status={benyStatus} />}
 
             {/* Payment history */}
-            <section className='bg-slr-navy-card border-slr-navy-border rounded-2xl border p-5 md:p-6'>
+            <section className='bg-card-dark-navy border-slr-navy-border rounded-2xl border p-5 md:p-6'>
                 <div className='mb-4 flex items-center gap-2'>
                     <ReceiptText className='text-slr-gold-label size-5' />
                     <h2 className='font-bebas-neue text-xl tracking-wide text-white uppercase'>Payment History</h2>

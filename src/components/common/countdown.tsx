@@ -19,12 +19,12 @@ function DrawingNow({ className }: { className?: string }) {
 function Box({ value, label, mounted }: { value: number; label: string; mounted: boolean }) {
     return (
         <div className='flex flex-col items-center gap-1'>
-            <span className='border-slr-navy-border flex h-12 w-full items-center justify-center rounded-lg border bg-black/30 md:h-14'>
-                <span className='font-bebas-neue text-xl leading-none text-white tabular-nums sm:text-2xl md:text-3xl'>
+            <span className='border-slr-gold-edge-faint flex h-12 w-full items-center justify-center rounded-lg border bg-black/40 shadow-[inset_0_1px_0_rgba(255,220,117,0.12)] md:h-14'>
+                <span className='text-gradient-gold font-bebas-neue text-2xl leading-none tabular-nums md:text-3xl'>
                     {mounted ? String(value).padStart(2, '0') : '--'}
                 </span>
             </span>
-            <span className='text-slr-dim text-xs tracking-widest uppercase'>{label}</span>
+            <span className='text-slr-dim text-[10px] tracking-widest uppercase sm:text-xs'>{label}</span>
         </div>
     );
 }

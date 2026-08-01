@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { TierBadge } from '@/components/common/tier-badge';
@@ -36,8 +37,21 @@ export function MemberHeader({ user, member, notifications, token }: MemberHeade
     const firstName = member.name.split(' ')[0];
 
     return (
-        <header className='border-slr-navy-border/60 bg-slr-navy-deep/80 sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b px-4 backdrop-blur-md md:px-6'>
+        <header className='bg-background/80 sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 px-4 backdrop-blur-md md:px-6'>
+            {/* Gold hairline bottom edge — the home-page divider motif */}
+            <span aria-hidden className='slr-hairline-gold absolute inset-x-0 bottom-0 h-px opacity-70' />
             <SidebarTrigger className='-ml-1' />
+
+            {/* Mobile-only logo — on md+ the sidebar already carries it */}
+            <Link href='/member' prefetch className='md:hidden'>
+                <Image
+                    src='/images/slr-rewards-logo.webp'
+                    alt='SLR Rewards'
+                    width={250}
+                    height={250}
+                    className='h-6 w-auto object-contain'
+                />
+            </Link>
 
             <div className='ml-auto flex items-center gap-1.5 sm:gap-2'>
                 <NotificationsPanel initial={memberNotifications} token={token} />
@@ -46,10 +60,10 @@ export function MemberHeader({ user, member, notifications, token }: MemberHeade
                     <DropdownMenuTrigger asChild>
                         <button
                             type='button'
-                            className='border-sidebar-border bg-sidebar-accent/10 hover:bg-sidebar-accent/20 flex items-center gap-2 rounded-lg border py-1 pr-2 pl-1 transition-colors'>
+                            className='hover:border-slr-gold-edge-soft hover:bg-slr-gold-wash flex min-h-11 items-center gap-2 rounded-lg border border-white/10 bg-white/3 py-1 pr-2 pl-1 transition-colors'>
                             <Avatar className='size-7'>
                                 <AvatarImage src={user?.image ?? ''} alt={member.name} />
-                                <AvatarFallback className='bg-slr-navy-card text-sidebar-foreground text-xs font-semibold'>
+                                <AvatarFallback className='bg-card-dark-navy text-sidebar-foreground text-xs font-semibold'>
                                     {getInitials(member.name)}
                                 </AvatarFallback>
                             </Avatar>

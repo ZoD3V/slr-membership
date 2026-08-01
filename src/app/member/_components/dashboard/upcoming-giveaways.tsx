@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { TierGroupBadge } from '@/components/common/tier-badge';
+import { TIER_VISUALS } from '@/constant/tiers';
 import { formatDrawDateTime } from '@/lib/member';
 import { cn } from '@/lib/utils';
 import type { UpcomingGiveaway } from '@/types/member';
@@ -9,8 +10,13 @@ import { SectionTitle } from './section-title';
 import { ArrowRight, CalendarClock, Lock, Trophy } from 'lucide-react';
 
 function GiveawayCard({ giveaway }: { giveaway: UpcomingGiveaway }) {
+    // Tier-coloured diagonal gradient + alpha border — same palette as the home tier cards.
+    const visual = TIER_VISUALS[giveaway.tier_group];
+
     return (
-        <article className='bg-card-dark-navy border-slr-navy-border flex flex-col gap-3 rounded-xl border p-4'>
+        <article
+            className='shadow-card-warm flex flex-col gap-3 rounded-2xl border p-4 sm:p-5'
+            style={{ background: visual.badgeBg, borderColor: visual.badgeBorder }}>
             <div className='flex items-center justify-between gap-2'>
                 <TierGroupBadge group={giveaway.tier_group} />
                 {giveaway.locked && (
@@ -35,7 +41,7 @@ function GiveawayCard({ giveaway }: { giveaway: UpcomingGiveaway }) {
                 </span>
                 {giveaway.locked ? (
                     <Link
-                        href='/member/profile'
+                        href='/member/membership'
                         className='text-slr-gold-label inline-flex items-center gap-1 text-xs font-semibold uppercase transition-opacity hover:opacity-80'>
                         Upgrade <ArrowRight className='size-3' />
                     </Link>
@@ -55,7 +61,7 @@ export function UpcomingGiveaways({ giveaways }: { giveaways: UpcomingGiveaway[]
     return (
         <section>
             <SectionTitle viewAllHref='/member/giveaways'>Upcoming Giveaways</SectionTitle>
-            <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
+            <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
                 {giveaways.map((giveaway) => (
                     <GiveawayCard key={giveaway.id} giveaway={giveaway} />
                 ))}

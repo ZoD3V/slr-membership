@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { TierGroupBadge } from '@/components/common/tier-badge';
@@ -25,9 +26,25 @@ export function PrizeTierCard({ tier, isYours }: { tier: PrizeTierBreakdown; isY
                 </span>
             )}
 
-            <TierGroupBadge group={tier.tier_group} />
-            <h3 className='font-bebas-neue mt-3 text-2xl tracking-wide text-white uppercase'>{tier.tier_label}</h3>
-            <p className='text-slr-dim text-xs'>{tier.price_label}</p>
+            <div className='flex items-start justify-between gap-2'>
+                <div>
+                    <TierGroupBadge group={tier.tier_group} />
+                    <h3 className='font-bebas-neue mt-3 text-2xl tracking-wide text-white uppercase'>
+                        {tier.tier_label}
+                    </h3>
+                    <p className='text-slr-dim text-xs'>{tier.price_label}</p>
+                </div>
+                {/* Member-card artwork — same asset as the public tier hero cards */}
+                {visual.cardArt && (
+                    <Image
+                        src={visual.cardArt}
+                        alt=''
+                        width={160}
+                        height={130}
+                        className='w-18 shrink-0 object-contain drop-shadow-[0_6px_16px_rgba(0,0,0,0.6)]'
+                    />
+                )}
+            </div>
 
             <div className='mt-4 space-y-3 border-t border-white/10 pt-4'>
                 <div>

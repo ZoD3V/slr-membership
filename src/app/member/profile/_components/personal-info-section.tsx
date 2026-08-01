@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { MIN_AGE_YEARS, isAdultDob, latestAdultDob } from '@/lib/dob';
 import { formatShortDate } from '@/lib/member';
+import { goldButtonStyle } from '@/lib/styles';
 import { cn } from '@/lib/utils';
 import type { MemberProfile } from '@/types/member';
 
@@ -75,7 +76,7 @@ export function PersonalInfoSection({ profile }: PersonalInfoSectionProps) {
     };
 
     return (
-        <section className='bg-slr-navy-card border-slr-navy-border rounded-2xl border p-5 md:p-6'>
+        <section className='bg-card-dark-navy border-slr-navy-border rounded-2xl border p-5 md:p-6'>
             <div className='mb-4 flex items-center justify-between'>
                 <h2 className='font-bebas-neue text-xl tracking-wide text-white uppercase md:text-2xl'>
                     Personal Info
@@ -170,7 +171,11 @@ export function PersonalInfoSection({ profile }: PersonalInfoSectionProps) {
                     <Button variant='outline' onClick={() => setEditing(false)} disabled={pending}>
                         Cancel
                     </Button>
-                    <Button onClick={save} disabled={pending}>
+                    <Button
+                        className='rounded-xl font-bold uppercase'
+                        style={goldButtonStyle}
+                        onClick={save}
+                        disabled={pending}>
                         {pending ? 'Saving…' : 'Save changes'}
                     </Button>
                 </div>

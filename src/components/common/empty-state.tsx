@@ -22,7 +22,7 @@ type EmptyStateProps = {
 const EmptyState: FC<EmptyStateProps> = ({ icon: Icon, title, description, action, className }) => (
     <div
         className={cn(
-            'border-slr-navy-border bg-slr-navy-card mx-auto flex max-w-md flex-col items-center rounded-2xl border px-6 py-12 text-center',
+            'border-slr-navy-border bg-card-dark-navy mx-auto flex max-w-md flex-col items-center rounded-2xl border px-6 py-12 text-center',
             className
         )}>
         {Icon && (

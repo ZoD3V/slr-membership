@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from 'react';
 
+import Image from 'next/image';
+
 import { SafeHoursNotice } from '@/components/common/safe-hours-notice';
 import { SUB_TIERS, TIER_VISUALS } from '@/constant/tiers';
 import { useSafeHours } from '@/hooks/use-safe-hours';
@@ -90,7 +92,20 @@ export function UpgradePlanPicker() {
                                                 ? { background: visual.badgeBg, borderColor: visual.badgeBorder }
                                                 : undefined
                                         }>
-                                        <span className='text-sm font-semibold text-white'>{meta.marketingName}</span>
+                                        <span className='flex w-full items-center justify-between gap-2'>
+                                            <span className='text-sm font-semibold text-white'>
+                                                {meta.marketingName}
+                                            </span>
+                                            {meta.badgeIcon && (
+                                                <Image
+                                                    src={meta.badgeIcon}
+                                                    alt=''
+                                                    width={56}
+                                                    height={56}
+                                                    className='size-8 shrink-0 object-contain'
+                                                />
+                                            )}
+                                        </span>
                                         <span className='font-bebas-neue text-2xl leading-none tracking-wide text-white'>
                                             {formatAud(meta.price_cents)}
                                         </span>

@@ -58,7 +58,7 @@ export function GiveawayCard({ giveaway }: { giveaway: Giveaway }) {
             <div className='mt-auto border-t border-white/10 pt-3'>
                 {giveaway.locked ? (
                     <Link
-                        href='/member/profile'
+                        href='/member/membership'
                         className='text-slr-gold-label inline-flex items-center gap-1 text-xs font-semibold uppercase transition-opacity hover:opacity-80'>
                         Upgrade to enter <ArrowRight className='size-3.5' />
                     </Link>

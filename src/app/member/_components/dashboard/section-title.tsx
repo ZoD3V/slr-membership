@@ -11,12 +11,13 @@ interface SectionTitleProps {
 
 export function SectionTitle({ children, viewAllHref }: SectionTitleProps) {
     return (
-        <div className='mb-3 flex items-center justify-between gap-2'>
-            <h2 className='font-bebas-neue text-xl tracking-wide text-white uppercase md:text-2xl'>{children}</h2>
+        <div className='mb-4 flex items-center gap-3'>
+            <h2 className='font-bebas-neue text-xl tracking-wider text-white uppercase md:text-2xl'>{children}</h2>
+            <span aria-hidden className='slr-hairline-gold h-px min-w-8 flex-1' />
             {viewAllHref && (
                 <Link
                     href={viewAllHref}
-                    className='text-slr-gold-label inline-flex items-center gap-1 text-xs font-semibold tracking-wide uppercase transition-opacity hover:opacity-80'>
+                    className='text-slr-gold-label inline-flex shrink-0 items-center gap-1 text-xs font-semibold tracking-widest uppercase transition-opacity hover:opacity-80'>
                     View all <ArrowRight className='size-3.5' />
                 </Link>
             )}

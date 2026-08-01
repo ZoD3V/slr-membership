@@ -31,7 +31,7 @@ export default async function ProfilePage() {
         <div className='mx-auto w-full max-w-4xl flex-1 space-y-6 px-4 py-6 md:px-6 md:py-8'>
             {/* Profile header */}
             <header className='flex flex-col items-center gap-3 text-center'>
-                <div className='bg-slr-navy-card border-slr-navy-border flex size-20 shrink-0 items-center justify-center rounded-full border text-2xl font-semibold text-white'>
+                <div className='bg-card-dark-navy border-slr-navy-border flex size-20 shrink-0 items-center justify-center rounded-full border text-2xl font-semibold text-white'>
                     {initials(profile.name)}
                 </div>
                 <div>
