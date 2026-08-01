@@ -49,12 +49,20 @@ const CompletePaymentClient = ({
         setBusy(code);
         const res = await startMembershipCheckout(code);
         if (!res.ok) {
+            if (process.env.NODE_ENV === 'development') {
+                console.error('[Complete Payment Checkout Error]', {
+                    endpoint: 'POST /api/v1/membership/checkout',
+                    payload: { sub_tier: code },
+                    error: res
+                });
+            }
             toast.error(res.message);
             setBusy(null);
 
             return;
         }
-        window.location.href = res.url;
+        window.open(res.url, '_blank', 'noopener,noreferrer'); // open hosted Stripe checkout in new tab
+        setBusy(null);
     };
 
     if (picking) {

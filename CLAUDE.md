@@ -99,6 +99,7 @@ src/
 - Path alias: `@/*` → `src/*`.
 - Route groups: `(home)`, `(auth)`, `(routes)` — parentheses = no URL segment.
 - Co-located components: page-specific UI lives under `_components/` or `components/` next to the route, not in global `src/components/`.
+- **Redirects & External links:** Any redirect or link that navigates to an external payment/portal (like Stripe Checkout, Stripe Billing Portal, etc.) MUST open in a new tab/window (`_blank` with `rel="noopener noreferrer"`).
 - shadcn primitives in `src/components/ui/`; only put genuinely cross-cutting custom components in `src/components/common/`.
 - Server Components by default. Add `'use client'` only when needed (forms, hooks, interactivity).
 

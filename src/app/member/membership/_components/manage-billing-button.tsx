@@ -16,7 +16,7 @@ export function ManageBillingButton() {
         startTransition(async () => {
             const res = await openBillingPortal();
             if (res.ok) {
-                window.location.href = res.url; // hosted Stripe portal
+                window.open(res.url, '_blank', 'noopener,noreferrer'); // open hosted Stripe portal in new tab
             } else {
                 toast.error(res.message);
             }

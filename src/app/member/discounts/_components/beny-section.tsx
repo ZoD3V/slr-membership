@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { BENY_CATEGORIES } from '@/data/discounts';
 import { type BenyStatusValue, isBenyCancelled } from '@/lib/api/resources/beny';
 import { goldButtonStyle, inputClassName } from '@/lib/styles';
 import { cn } from '@/lib/utils';
+import type { MemberProfile } from '@/types/member';
 
 import { cancelBenyAction, subscribeBenyAction } from '../beny-actions';
 import { Check, Clock, Fuel, Heart, Loader2Icon, type LucideIcon, ShoppingBag, Sparkles } from 'lucide-react';
@@ -19,22 +21,53 @@ const CATEGORY_ICON: Record<string, LucideIcon> = {
     'Health & Wellbeing': Heart
 };
 
-export function BenySection({ status: initialStatus }: { status: BenyStatusValue }) {
+export function BenySection({
+    status: initialStatus,
+    userProfile
+}: {
+    status: BenyStatusValue;
+    userProfile?: MemberProfile | null;
+}) {
     const [status, setStatus] = useState<BenyStatusValue>(initialStatus);
     const [showForm, setShowForm] = useState(false);
-    const [form, setForm] = useState({ name: '', email: '', phone: '' });
+    const [form, setForm] = useState({
+        name: userProfile?.name ?? '',
+        email: userProfile?.email ?? '',
+        phone: userProfile?.phone ?? ''
+    });
     const [isPending, startTransition] = useTransition();
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
+
+    useEffect(() => {
+        if (userProfile) {
+            setForm({
+                name: userProfile.name ?? '',
+                email: userProfile.email ?? '',
+                phone: userProfile.phone ?? ''
+            });
+        }
+    }, [userProfile]);
 
     const canSubscribe = status === 'inactive' || isBenyCancelled(status);
 
-    const submit = (e: React.FormEvent) => {
+    const handleSubmitAttempt = (e: React.FormEvent) => {
         e.preventDefault();
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmSubscribe = () => {
+        setConfirmOpen(false);
         startTransition(async () => {
             const res = await subscribeBenyAction(form);
             if (res.ok) {
                 setStatus(res.status);
                 setShowForm(false);
-                setForm({ name: '', email: '', phone: '' });
+                setForm({
+                    name: userProfile?.name ?? '',
+                    email: userProfile?.email ?? '',
+                    phone: userProfile?.phone ?? ''
+                });
                 toast.success('BENY requested — pending admin activation.');
             } else {
                 toast.error(res.code ? `${res.message} (${res.code})` : res.message);
@@ -42,13 +75,21 @@ export function BenySection({ status: initialStatus }: { status: BenyStatusValue
         });
     };
 
-    const cancel = () => {
+    const handleConfirmCancel = () => {
+        setConfirmCancelOpen(false);
         startTransition(async () => {
             const res = await cancelBenyAction();
             if (res.ok) {
                 setStatus(res.status);
                 toast.success(res.message);
             } else {
+                // Log full error details to console in dev/local environments
+                if (process.env.NODE_ENV === 'development') {
+                    console.error('[Cancel BENY Error]', {
+                        endpoint: 'DELETE /api/v1/beny/subscribe',
+                        error: res
+                    });
+                }
                 toast.error(res.code ? `${res.message} (${res.code})` : res.message);
             }
         });
@@ -76,13 +117,19 @@ export function BenySection({ status: initialStatus }: { status: BenyStatusValue
             <div className='mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4'>
                 {BENY_CATEGORIES.map((c) => {
                     const Icon = CATEGORY_ICON[c] ?? Sparkles;
+                    const isActive = status === 'active';
 
                     return (
                         <div
                             key={c}
-                            className='border-slr-navy-border flex items-center gap-2 rounded-lg border bg-black/20 px-3 py-2'>
+                            className={cn(
+                                'flex items-center gap-2 rounded-lg border px-3 py-2 transition-all duration-300',
+                                isActive
+                                    ? 'border-[#FFD147] bg-[#FFD1471A] text-[#FFDC75] shadow-[0_0_12px_rgba(254,209,71,0.15)] font-semibold'
+                                    : 'border-slr-navy-border bg-black/20 text-white/90'
+                            )}>
                             <Icon className='text-slr-gold-label size-4 shrink-0' />
-                            <span className='text-xs text-white/90'>{c}</span>
+                            <span className='text-xs'>{c}</span>
                         </div>
                     );
                 })}
@@ -106,7 +153,7 @@ export function BenySection({ status: initialStatus }: { status: BenyStatusValue
                         )}
                         <button
                             type='button'
-                            onClick={cancel}
+                            onClick={() => setConfirmCancelOpen(true)}
                             disabled={isPending}
                             className='inline-flex shrink-0 items-center gap-2 rounded-lg border border-white/15 px-4 py-1.5 text-sm font-semibold text-white/80 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-60'>
                             {isPending ? <Loader2Icon className='size-4 animate-spin' /> : null}
@@ -117,10 +164,7 @@ export function BenySection({ status: initialStatus }: { status: BenyStatusValue
 
                 {canSubscribe &&
                     (showForm ? (
-                        <form onSubmit={submit} className='space-y-3'>
-                            {/* ⚠️ BACKEND BLOCK — remove once Stripe is wired: this copy promises a
-                                checkout redirect, but POST /beny/subscribe currently creates the pending
-                                record without charging (no Stripe session). See beny-actions.ts. */}
+                        <form onSubmit={handleSubmitAttempt} className='space-y-3'>
                             <p className='text-slr-muted text-sm'>
                                 Enter your details to add BENY. You&apos;ll be redirected to secure checkout for the
                                 $4/month subscription.
@@ -186,6 +230,29 @@ export function BenySection({ status: initialStatus }: { status: BenyStatusValue
                         </div>
                     ))}
             </div>
+
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title='Add BENY Add-on?'
+                confirmText={isPending ? 'Adding...' : 'Yes, add addon'}
+                cancelBtnText='Keep membership only'
+                isLoading={isPending}
+                handleConfirm={handleConfirmSubscribe}
+                desc='This will add the helper BENY savings addon. Confirming this will charge an extra $4.00 AUD per month recursively on Stripe.'
+            />
+
+            <ConfirmDialog
+                open={confirmCancelOpen}
+                onOpenChange={setConfirmCancelOpen}
+                title='Cancel BENY Add-on?'
+                destructive
+                confirmText={isPending ? 'Cancelling...' : 'Yes, cancel addon'}
+                cancelBtnText='Keep BENY addon'
+                isLoading={isPending}
+                handleConfirm={handleConfirmCancel}
+                desc='Are you sure you want to cancel your BENY savings add-on? Your $4.00 AUD monthly charge will stop at the end of the paid period.'
+            />
         </section>
     );
 }

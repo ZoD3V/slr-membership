@@ -23,8 +23,14 @@ export function GraceBanner({ expiresAt }: GraceBannerProps) {
         startTransition(async () => {
             const res = await payGraceInvoiceAction();
             if (res.ok) {
-                window.location.href = res.url; // hosted Stripe payment
+                window.open(res.url, '_blank', 'noopener,noreferrer'); // open hosted Stripe payment in new tab
             } else {
+                if (process.env.NODE_ENV === 'development') {
+                    console.error('[Grace Payment Error]', {
+                        endpoint: 'POST /api/v1/billing/pay-manual',
+                        error: res
+                    });
+                }
                 toast.error(res.message);
             }
         });

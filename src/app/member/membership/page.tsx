@@ -4,6 +4,7 @@ import { BenySection } from '@/app/member/discounts/_components/beny-section';
 import EmptyState from '@/components/common/empty-state';
 import { SUB_TIERS } from '@/constant/tiers';
 import { getCurrentMember } from '@/data/member-dashboard';
+import { getMemberProfile } from '@/data/profile';
 import { handleApiAuthError } from '@/lib/api/guard';
 import { type BenyStatusValue, getBenyStatus } from '@/lib/api/resources/beny';
 import {
@@ -28,6 +29,7 @@ const INVOICE_TYPE: Record<string, string> = { initial: 'Initial', renewal: 'Ren
 
 export default async function MembershipPage() {
     const member = await getCurrentMember();
+    const profile = await getMemberProfile();
     const token = await getAccessToken();
 
     let billing: BillingStatus | null = null;
@@ -99,7 +101,7 @@ export default async function MembershipPage() {
             </section>
 
             {/* BENY */}
-            {isVisitor ? null : <BenySection status={benyStatus} />}
+            {isVisitor ? null : <BenySection status={benyStatus} userProfile={profile} />}
 
             {/* Payment history */}
             <section className='bg-card-dark-navy border-slr-navy-border rounded-2xl border p-5 md:p-6'>

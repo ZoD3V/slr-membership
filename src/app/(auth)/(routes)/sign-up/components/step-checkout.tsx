@@ -53,8 +53,23 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
         setRedirecting(true);
         try {
             const { url } = await createMembershipCheckout(token, { sub_tier: subTier.toLowerCase() });
-            window.location.href = url;
+            if (process.env.NODE_ENV === 'development') {
+                console.log('[SignUp Checkout Created]', {
+                    endpoint: 'POST /api/v1/membership/checkout',
+                    payload: { sub_tier: subTier.toLowerCase() },
+                    url
+                });
+            }
+            window.open(url, '_blank', 'noopener,noreferrer'); // open Stripe checkout in new tab
+            setRedirecting(false);
         } catch (err) {
+            if (process.env.NODE_ENV === 'development') {
+                console.error('[SignUp Checkout Error]', {
+                    endpoint: 'POST /api/v1/membership/checkout',
+                    payload: { sub_tier: subTier.toLowerCase() },
+                    error: err instanceof ApiError ? { status: err.status, message: err.message, payload: err.payload } : String(err)
+                });
+            }
             // The window can open between render and submit, so the server's 403 is
             // what actually decides — translate it instead of showing the raw message.
             if (isSafeHoursError(err)) toast.error(SAFE_HOURS_MESSAGE);

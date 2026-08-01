@@ -27,6 +27,14 @@
 | **16** | Buka `/sign-up`, daftarkan email yang sama lagi. | API me-return status `409 ACCOUNT_PENDING_PAYMENT` atau `ACCOUNT_EXISTS`. Form menangkap error ini, memunculkan toast, dan me-redirect ke sign-in dengan email terpopulasi. | Menghindari duplikasi akun atau account takeover. | ⬜ |
 | **17** | Di `/member/membership`, klik **Change plan**, pilih plan **Blue B7 ($52)**. Klik **Schedule Change**. | Memanggil `POST /memberships/upgrade` dengan payload `{target_sub_tier: "b7"}`. | Banner jadwal perubahan paket muncul persisten: "Scheduled → Blue B7 on [renewal_date]". | ⬜ |
 | **18** | Klik **Cancel scheduled change** pada banner. | Memanggil `DELETE /memberships/upgrade`. Banner hilang, plan tetap di tier saat ini. | Perubahan jadwal berhasil dibatalkan, tidak ada error. | ⬜ |
+| **19** | Navigasi ke menu **Giveaways** (`/member/giveaways`). | Menampilkan daftar undian per tier (RED/BLUE/VISITOR). Tab filter dapat dipindah-pindah. | Visual layout grid undian sesuai status, tag penanda draw aktif. | ⬜ |
+| **20** | Klik salah satu kartu undian aktif. | Masuk ke halaman detail undian (`/member/giveaways/[id]`). | Menampilkan detail hadiah, tanggal drawing, dan riwayat pemenang (winner history) di bagian bawah. | ⬜ |
+| **21** | Sebagai Super Admin, buka dashboard admin (`/dashboard/draw-exports`). | Halaman TPAL Exports terbuka dengan tombol **Generate CSV** dan tabel history. | Akses lancar, data terisi dengan benar. | ⬜ |
+| **22** | Klik tombol **Generate** di halaman TPAL Exports. | Mengirim parameter `POST /admin/csv/generate`. Menghasilkan 3 file CSV per tier (Visitor, RED, BLUE) di history list. | File CSV sukses ter-generate dengan hitungan baris yang benar. | ⬜ |
+| **23** | Klik tombol **Download** pada baris CSV hasil generate. | Men-download file CSV. CSV memuat kolom: `id, email, full_name, state, phone, total_token`. | Kolom dan struktur file CSV sesuai dengan compliance format TPAL untuk randomdraws.com.au. | ⬜ |
+| **24** | Buka halaman Winners Admin (`/dashboard/winners`). | Halaman Winners terbuka menampilkan tabel daftar pemenang giveaway sebelumnya. | Winner history admin tersinkronisasi dan tampil lengkap. | ⬜ |
+| **25** | Buka halaman BENY Admin (`/dashboard/beny`). | Menampilkan daftar antrean aktivasi akun BENY (`status: pending_activation`) dari member pendaftar tadi. | ID pendaftar baru BENY tampil di baris teratas antrean admin. | ⬜ |
+| **26** | Klik tombol **Activate** pada row member tersebut. | Mengirim `POST /admin/beny/[id]/activate`. Status member di-update menjadi `active`. | Member menerima akses BENY dan status ter-update live ke dashboard member. | ⬜ |
 
 ---
 
