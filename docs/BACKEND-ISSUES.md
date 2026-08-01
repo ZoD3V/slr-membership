@@ -115,6 +115,24 @@ GET /memberships/me     → { "subTierId":"r4", "billingStatus":"INACTIVE" }
 2. Pastikan Checkout Session line items mereferensikan Price **AUD** yang benar per `tier`/`sub_tier`.
 3. Pastikan `payments.currency` (client note B1) menyimpan `aud`.
 
+### A6. 🔴 Webhook: stripe_subscription_id Mismatch / Null setelah Pembayaran Sukses (Temuan E2E 2026-07-29)
+
+**Detail Masalah:** Meskipun status pembayaran member dialihkan ke `active` di DB, endpoint `GET /api/v1/billing/status` mengembalikan `"stripe_subscription_id": null`. Akibatnya, API `POST /api/v1/subscriptions/me/cancel` melempar error: `"No active subscription found associated with your user account to cancel."`
+
+**Dampak:** Anggota berpaket berbayar yang baru saja sukses melakukan pembayaran di Stripe tidak dapat membatalkan membership mereka dari halaman dashboard/membership.
+
+**Penyelesaian:** Handler webhook `checkout.session.completed` atau `invoice.payment_succeeded` di backend wajib memperbarui kolom `stripe_subscription_id` dengan ID langganan Stripe yang nyata (misal: `sub_1Tx...`).
+
+### A7. 🔴 Stripe Idempotency Key: Konflik Idempotensi saat Berpindah/Ganti Paket (Temuan E2E 2026-07-29)
+
+**Detail Masalah:** Jika user melakukan registrasi plan berbayar, lalu menekan tombol kembali (back) dari Stripe Checkout dan memilih plan lain (misal dari Red Premium ke Blue), request checkout BENY (`POST /api/v1/beny/subscribe`) selanjutnya menghasilkan error 400 Bad Request dari Stripe:
+`"Keys for idempotent requests can only be used with the same parameters... Try using a key other than 'cust-<user_id>'"`
+Ini karena backend menggunakan format Idempotency Key statis berbasiskan ID User (`cust-<user_id>`) atau payload lama yang sudah beralih parameter.
+
+**Dampak:** User yang sempat mengganti paket saat checkout pertama diblokir selamanya untuk membeli addon BENY $4/bulan karena Stripe menolak request pembuatan customer/checkout session yang idempotensinya tabrakan.
+
+**Penyelesaian:** Backend harus men-generate Idempotency Key secara dinamis (menggunakan UUID baru untuk setiap request sesi checkout) daripada me-reuse `user_id` yang statis sewaktu berkomunikasi ke Stripe API.
+
 ## B. 🟠 WAJIB DIKERJAKAN DULU DI BACKEND (tidak ada UI, prioritas awal) 📄
 
 ### B1. Metadata Stripe — tidak bisa di-backfill, pasang di awal sprint

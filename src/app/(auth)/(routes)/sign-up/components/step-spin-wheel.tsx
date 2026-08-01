@@ -9,7 +9,7 @@ import { ApiError, apiErrorMessage } from '@/lib/api/types';
 import { goldButtonStyle } from '@/lib/styles';
 
 import { SpinPrize } from './types';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { ArrowLeft, Sparkles, Loader2Icon } from 'lucide-react';
 import { toast } from 'sonner';
 
 type StepSpinWheelProps = {
@@ -23,6 +23,7 @@ type StepSpinWheelProps = {
 const StepSpinWheel = ({ winDiscount, token, onNext, onBack }: StepSpinWheelProps) => {
     const [offer, setOffer] = useState(winDiscount);
     const [result, setResult] = useState<SpinOutcome | null>(null);
+    const [loadingCheck, setLoadingCheck] = useState(true);
 
     const skip = useCallback(() => onNext({ label: 'No prize', discountAmount: 0 }), [onNext]);
 
@@ -30,7 +31,11 @@ const StepSpinWheel = ({ winDiscount, token, onNext, onBack }: StepSpinWheelProp
     // already been used — reload, or a plan change after spinning — skip straight
     // to checkout rather than offering a spin that would be rejected.
     useEffect(() => {
-        if (!token) return;
+        if (!token) {
+            setLoadingCheck(false);
+            
+return;
+        }
         let cancelled = false;
 
         const check = async () => {
@@ -47,6 +52,10 @@ const StepSpinWheel = ({ winDiscount, token, onNext, onBack }: StepSpinWheelProp
                 // 403 = sub-tier isn't spin-eligible; any other failure must not
                 // block the signup either.
                 if (!cancelled) skip();
+            } finally {
+                if (!cancelled) {
+                    setLoadingCheck(false);
+                }
             }
         };
         void check();
@@ -55,6 +64,15 @@ const StepSpinWheel = ({ winDiscount, token, onNext, onBack }: StepSpinWheelProp
             cancelled = true;
         };
     }, [token, skip]);
+
+    if (loadingCheck) {
+        return (
+            <div className='flex flex-col items-center justify-center gap-4 py-20 text-center'>
+                <Loader2Icon className='h-8 w-8 animate-spin text-[#FFDC75]' />
+                <p className='text-slr-muted text-sm'>Checking spin eligibility...</p>
+            </div>
+        );
+    }
 
     const runSpin = async (): Promise<SpinOutcome | null> => {
         if (!token) return null;
