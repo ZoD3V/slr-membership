@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
 import Image from 'next/image';
 
@@ -39,6 +39,8 @@ import { ChevronLeft, ChevronRight, MoreHorizontal, Pencil, Search, Trash2 } fro
 export interface Column {
     key: string;
     label: string;
+    /** Custom cell renderer. Takes precedence over the built-in key handling below. */
+    render?: (row: any) => ReactNode;
 }
 
 export type ServerFilters = {
@@ -74,6 +76,10 @@ export interface DataTableProps {
     onPageChange?: (page: number) => void;
     onSearchChange?: (value: string) => void;
     isLoading?: boolean;
+    /** Keep the pager visible even on a single page, so the total is always readable. */
+    alwaysShowPagination?: boolean;
+    /** Replaces the generic "No data found" row with context for this table. */
+    emptyMessage?: ReactNode;
 
     filters?: ServerFilters;
 
@@ -257,6 +263,10 @@ const TableRowComponent = ({
     return (
         <TableRow>
             {columns.map((column, index) => {
+                if (column.render) {
+                    return <TableCell key={column.key}>{column.render(item)}</TableCell>;
+                }
+
                 if (column.key === 'logo') {
                     return (
                         <TableCell key={column.key}>
@@ -403,6 +413,8 @@ export function DataTable({
     onPageChange,
     onSearchChange,
     isLoading,
+    alwaysShowPagination = false,
+    emptyMessage,
     onFiltersChange,
     filters,
     sortOptions,
@@ -507,7 +519,7 @@ export function DataTable({
                     <div className='relative'>
                         <Search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform' />
                         <Input
-                            placeholder={`Cari ${searchKey}...`}
+                            placeholder={`Search ${searchKey}...`}
                             value={search}
                             onChange={(e) => handleInternalSearchChange(e.target.value)}
                             className='pl-10'
@@ -697,7 +709,7 @@ export function DataTable({
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={columns.length} className='text-muted-foreground py-8 text-center'>
-                                    Tidak ada data ditemukan
+                                    {emptyMessage ?? 'No data found'}
                                 </TableCell>
                             </TableRow>
                         )}
@@ -717,7 +729,7 @@ export function DataTable({
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={columns.length} className='text-muted-foreground py-8 text-center'>
-                                    Tidak ada data ditemukan
+                                    No data found
                                 </TableCell>
                             </TableRow>
                         )}
@@ -726,7 +738,7 @@ export function DataTable({
             </div>
 
             {/* Pagination */}
-            {totalItems > itemsPerPage && (
+            {(alwaysShowPagination || totalItems > itemsPerPage) && (
                 <TablePagination
                     currentPage={currentPage}
                     totalPages={totalPages}

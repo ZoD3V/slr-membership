@@ -9,12 +9,25 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { handleApiAuthError } from '@/lib/api/guard';
 import { type AdminMemberDetail, getAdminMemberDetail } from '@/lib/api/resources/admin';
 import { getAccessToken } from '@/lib/api/server';
+import { formatAdminTierName, subTierFromGroupAndName } from '@/lib/member';
+import type { TierGroup } from '@/types/member';
 
 import { MemberAdminActions } from './_components/member-admin-actions';
 import { ArrowLeft, CircleAlert } from 'lucide-react';
 
 const dash = (v: string | null | undefined) => (v && v.trim() ? v : '-');
 const day = (v: string | null | undefined) => (v ? v.slice(0, 10) : '-');
+
+/**
+ * The detail response splits the tier across two fields — `tier_code` is the
+ * group ('red') and `tier` the marketing name ('Plus') — so together they pin
+ * the exact sub-tier. Falls back to the raw name if the pair doesn't resolve.
+ */
+const tierName = (group: string | null | undefined, marketingName: string | null | undefined) => {
+    const code = group ? subTierFromGroupAndName(group.toLowerCase() as TierGroup, marketingName) : null;
+
+    return code ? formatAdminTierName(code) : dash(marketingName);
+};
 
 const Field: FC<{ label: string; value: ReactNode }> = ({ label, value }) => (
     <div className='grid gap-0.5'>
@@ -90,7 +103,8 @@ export default async function MemberDetailPage({ params }: { params: Promise<{ u
                 </InfoCard>
 
                 <InfoCard title='Membership'>
-                    <Field label='Tier' value={dash(membership?.tier)} />
+                    <Field label='Tier' value={tierName(membership?.tier_code, membership?.tier)} />
+                    {/* Raw backend code, kept verbatim for support lookups. */}
                     <Field label='Tier code' value={dash(membership?.tier_code)} />
                     <Field label='Billing status' value={dash(membership?.billing_status)} />
                     <Field label='Renews' value={day(membership?.renew_at)} />
@@ -140,6 +154,7 @@ export default async function MemberDetailPage({ params }: { params: Promise<{ u
                                 <TableBody>
                                     {cycles.map((c) => (
                                         <TableRow key={c.cycle_id}>
+                                            {/* Cycle rows carry no tier group (API sends ''), so show the raw value. */}
                                             <TableCell>{dash(c.tier)}</TableCell>
                                             <TableCell>{day(c.start_at)}</TableCell>
                                             <TableCell>{day(c.end_at)}</TableCell>

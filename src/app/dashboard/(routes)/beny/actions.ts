@@ -82,17 +82,14 @@ export async function activateBenyAction(id: string): Promise<ActionResult<BenyA
     }
 }
 
-export async function deactivateBenyAction(
-    id: string,
-    reason?: string
-): Promise<ActionResult<{ success: boolean }>> {
+export async function deactivateBenyAction(id: string, reason?: string): Promise<ActionResult<{ success: boolean }>> {
     const token = await getAccessToken();
     if (!token) return { ok: false, message: 'Not authenticated.' };
 
     try {
         const res = await deactivateBeny(id, token, reason);
-        
-return {
+
+        return {
             ok: true,
             data: { success: res.success ?? true },
             message: 'BENY subscription deactivated successfully.'

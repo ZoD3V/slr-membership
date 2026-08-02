@@ -1,9 +1,16 @@
+import Link from 'next/link';
+
+import { DashboardPageShell } from '@/app/dashboard/_components/page-shell';
+import type { ListError } from '@/components/common/list-error-card';
+import { Button } from '@/components/ui/button';
+import Heading from '@/components/ui/heading';
 import { handleApiAuthError } from '@/lib/api/guard';
+import { toListError } from '@/lib/api/list-error';
 import { getEbooks } from '@/lib/api/resources/ebooks';
 import { getAccessToken } from '@/lib/api/server';
-import { ApiError } from '@/lib/api/types';
 
-import { type EbookRow, EbooksClient, type ListError } from './ebooks-client';
+import { type EbookRow, EbooksClient } from './ebooks-client';
+import { Plus } from 'lucide-react';
 
 export default async function EbooksPage() {
     const token = await getAccessToken();
@@ -27,18 +34,22 @@ export default async function EbooksPage() {
         }));
     } catch (error) {
         handleApiAuthError(error); // 401 → force logout; other errors fall through
-        if (error instanceof ApiError) {
-            const payload = error.payload as { code?: string; requestId?: string } | undefined;
-            listError = {
-                status: error.status,
-                message: error.message,
-                code: payload?.code ?? null,
-                requestId: payload?.requestId ?? null
-            };
-        } else {
-            listError = { status: 0, message: String(error), code: null, requestId: null };
-        }
+        listError = toListError(error);
     }
 
-    return <EbooksClient initialRows={rows} listError={listError} />;
+    return (
+        <DashboardPageShell>
+            <div className='flex items-center justify-between'>
+                <Heading title='Ebooks' description='Create, edit and remove ebooks' />
+                <Button asChild>
+                    <Link href='/dashboard/ebooks/new'>
+                        <Plus className='mr-2 h-4 w-4' />
+                        New Ebook
+                    </Link>
+                </Button>
+            </div>
+
+            <EbooksClient initialRows={rows} listError={listError} />
+        </DashboardPageShell>
+    );
 }

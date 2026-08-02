@@ -21,7 +21,10 @@ function AlertDialogPortal({ ...props }: React.ComponentProps<typeof AlertDialog
 function useThemeClass() {
     const [themeClass, setThemeClass] = React.useState('');
     React.useEffect(() => {
-        const el = document.querySelector('.slr-member') ?? document.querySelector('.slr-admin') ?? document.querySelector('.dashboard-theme');
+        const el =
+            document.querySelector('.slr-member') ??
+            document.querySelector('.slr-admin') ??
+            document.querySelector('.dashboard-theme');
         if (el)
             setThemeClass(
                 el.className
@@ -49,8 +52,8 @@ function AlertDialogOverlay({ className, ...props }: React.ComponentProps<typeof
 
 function AlertDialogContent({ className, ...props }: React.ComponentProps<typeof AlertDialogPrimitive.Content>) {
     const themeClass = useThemeClass();
-    
-return (
+
+    return (
         <AlertDialogPortal>
             <AlertDialogOverlay />
             <AlertDialogPrimitive.Content

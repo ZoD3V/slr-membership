@@ -5,7 +5,7 @@ import { useEffect, useState, useTransition } from 'react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { BENY_CATEGORIES } from '@/data/discounts';
-import { type BenyStatusValue, isBenyCancelled } from '@/lib/api/resources/beny';
+import { type BenyStatusValue, isBenyCancelled, isBenyWindingDown } from '@/lib/api/resources/beny';
 import { goldButtonStyle, inputClassName } from '@/lib/styles';
 import { cn } from '@/lib/utils';
 import type { MemberProfile } from '@/types/member';
@@ -125,7 +125,7 @@ export function BenySection({
                             className={cn(
                                 'flex items-center gap-2 rounded-lg border px-3 py-2 transition-all duration-300',
                                 isActive
-                                    ? 'border-[#FFD147] bg-[#FFD1471A] text-[#FFDC75] shadow-[0_0_12px_rgba(254,209,71,0.15)] font-semibold'
+                                    ? 'border-[#FFD147] bg-[#FFD1471A] font-semibold text-[#FFDC75] shadow-[0_0_12px_rgba(254,209,71,0.15)]'
                                     : 'border-slr-navy-border bg-black/20 text-white/90'
                             )}>
                             <Icon className='text-slr-gold-label size-4 shrink-0' />
@@ -160,6 +160,16 @@ export function BenySection({
                             Cancel BENY
                         </button>
                     </div>
+                ) : null}
+
+                {/* Cancelled but still inside the paid period — access is live, so
+                    this must not read like the subscription is already gone. */}
+                {isBenyWindingDown(status) ? (
+                    <span className='inline-flex items-start gap-2 text-sm text-white/90'>
+                        <Clock className='text-slr-gold-label mt-0.5 size-4 shrink-0' />
+                        BENY cancelled — your access stays active until the end of the period you&apos;ve already paid
+                        for. You won&apos;t be charged again.
+                    </span>
                 ) : null}
 
                 {canSubscribe &&

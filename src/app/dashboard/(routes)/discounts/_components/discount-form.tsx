@@ -171,19 +171,34 @@ export function DiscountForm({ initialData }: DiscountFormProps) {
                             />
                         </div>
 
-                        <FormField
-                            control={form.control}
-                            name='category'
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Category</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder='Dining, Travel, …' {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        <div className='grid grid-cols-1 items-start gap-6 md:grid-cols-2'>
+                            <FormField
+                                control={form.control}
+                                name='category'
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Category</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder='Dining, Travel, …' {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name='code'
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Code</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder='SLR-XXXX' {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
 
                         <FormField
                             control={form.control}
@@ -233,36 +248,22 @@ export function DiscountForm({ initialData }: DiscountFormProps) {
                             />
                             <FormField
                                 control={form.control}
-                                name='code'
+                                name='logoUrl'
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Code</FormLabel>
+                                        <FormLabel>Logo</FormLabel>
                                         <FormControl>
-                                            <Input placeholder='SLR-XXXX' {...field} />
+                                            <ImageUploadField
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                onUpload={uploadDiscountAsset}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
                         </div>
-
-                        <FormField
-                            control={form.control}
-                            name='logoUrl'
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Logo</FormLabel>
-                                    <FormControl>
-                                        <ImageUploadField
-                                            value={field.value}
-                                            onChange={field.onChange}
-                                            onUpload={uploadDiscountAsset}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
 
                         <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
                             <FormField

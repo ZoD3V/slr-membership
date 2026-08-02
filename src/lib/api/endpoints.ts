@@ -35,7 +35,13 @@ export const API = {
         benyList: '/api/v1/admin/beny',
         benyDeactivate: (id: string) => `/api/v1/admin/beny/${id}/deactivate`,
         csvGenerate: '/api/v1/admin/csv/generate',
-        csvHistory: '/api/v1/admin/csv/history'
+        csvHistory: '/api/v1/admin/csv/history',
+        // Verified live 2026-08-02. Update is PUT (PATCH → 404). Winners are a
+        // top-level collection, NOT nested under a giveaway.
+        giveaways: '/api/v1/admin/giveaways',
+        giveawayDetail: (id: string) => `/api/v1/admin/giveaways/${id}`,
+        winners: '/api/v1/admin/winners',
+        winnerDetail: (id: string) => `/api/v1/admin/winners/${id}`
     },
     discounts: {
         list: '/api/v1/discounts/',

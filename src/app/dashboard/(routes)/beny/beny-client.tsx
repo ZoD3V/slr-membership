@@ -1,44 +1,20 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 
-import EmptyState from '@/components/common/empty-state';
+import { useRouter } from 'next/navigation';
+
+import { type ListError, ListErrorCard } from '@/components/common/list-error-card';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import Heading from '@/components/ui/heading';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DataTable } from '@/components/data-table';
 
+import { benyColumnsFor } from './_components/columns';
+import { type BenyTab, DEFAULT_BENY_TAB, TABS, isTabSupported } from './_components/tabs';
 import { activateBenyAction, deactivateBenyAction, getBenySubscriptionsAction } from './actions';
-import { ChevronLeft, ChevronRight, Loader2, TriangleAlert, UserCheck, UserMinus } from 'lucide-react';
+import { Construction, UserCheck, UserMinus } from 'lucide-react';
 import { toast } from 'sonner';
 
-function getPaginationRange(currentPage: number, totalPages: number) {
-    const range: (number | '...')[] = [];
-
-    if (totalPages <= 5) {
-        for (let i = 1; i <= totalPages; i++) range.push(i);
-        
-return range;
-    }
-
-    let start = Math.max(1, currentPage - 2);
-    let end = Math.min(totalPages, currentPage + 2);
-
-    if (currentPage <= 3) {
-        start = 1;
-        end = 5;
-    } else if (currentPage >= totalPages - 2) {
-        start = totalPages - 4;
-        end = totalPages;
-    }
-
-    for (let i = start; i <= end; i++) {
-        range.push(i);
-    }
-
-    return range;
-}
+const ITEMS_PER_PAGE = 10;
 
 export type BenyRow = {
     id: string;
@@ -49,62 +25,43 @@ export type BenyRow = {
     requestedAt: string;
     activatedAt?: string | null;
     accessEndsAt?: string | null;
+    /** Raw ISO alongside the display string — the paid period must actually be
+     *  over before access can be revoked, and that needs a real date to compare. */
+    accessEndsAtIso?: string | null;
     deactivatedAt?: string | null;
     deactivationReason?: string | null;
 };
 
-export type ListError = {
-    status: number;
-    message: string;
-    code: string | null;
-    requestId: string | null;
+// Mirrors the three triggers that move a subscription into pending_deactivation
+// (PRD §2.3), plus a free-text escape hatch.
+const REASON_OPTIONS = ['User Cancelled', 'Payment Failed', 'Admin Refund', 'Other'] as const;
+
+const EMPTY_TEXT: Record<BenyTab, { title: string; description: string }> = {
+    pending_activation: {
+        title: 'No pending activations',
+        description: 'All BENY subscriptions have been handled. New pending requests will appear here.'
+    },
+    active: { title: 'No active accounts', description: 'There are currently no active BENY accounts.' },
+    pending_deactivation: {
+        title: 'No pending deactivations',
+        description: 'All cancelled or unpaid BENY subscriptions have been successfully processed.'
+    },
+    cancelled: { title: 'No cancelled accounts', description: 'No BENY subscriptions have been cancelled yet.' }
 };
-
-const ListErrorCard = ({ error }: { error: ListError }) => (
-    <div className='rounded-xl border border-red-500/40 bg-red-500/5 p-4'>
-        <div className='flex items-center gap-2 text-red-400'>
-            <TriangleAlert className='h-4 w-4' />
-            <p className='text-sm font-semibold'>BENY list unavailable — report this to the backend</p>
-        </div>
-        <p className='text-muted-foreground mt-1 text-xs'>{`Retrieve failed, so BENY subscriptions can't be shown.`}</p>
-        <dl className='mt-3 grid grid-cols-1 gap-1 font-mono text-xs sm:grid-cols-2'>
-            <div className='flex gap-2'>
-                <dt className='text-muted-foreground'>status</dt>
-                <dd className='text-white select-all'>{error.status}</dd>
-            </div>
-            <div className='flex gap-2'>
-                <dt className='text-muted-foreground'>code</dt>
-                <dd className='text-white select-all'>{error.code ?? '-'}</dd>
-            </div>
-            <div className='flex gap-2 sm:col-span-2'>
-                <dt className='text-muted-foreground'>message</dt>
-                <dd className='text-white select-all'>{error.message}</dd>
-            </div>
-            <div className='flex gap-2 sm:col-span-2'>
-                <dt className='text-muted-foreground'>requestId</dt>
-                <dd className='text-white select-all'>{error.requestId ?? '-'}</dd>
-            </div>
-        </dl>
-    </div>
-);
-
-const TABS = [
-    { id: 'pending_activation', label: 'Pending Activation' },
-    { id: 'active', label: 'Active' },
-    { id: 'pending_deactivation', label: 'Pending Deactivation' },
-    { id: 'cancelled', label: 'Cancelled' }
-] as const;
 
 export function BenyClient({
     initialRows,
     initialTotal,
+    initialTab,
     listError
 }: {
     initialRows: BenyRow[];
     initialTotal: number;
+    initialTab: BenyTab;
     listError: ListError | null;
 }) {
-    const [activeTab, setActiveTab] = useState<typeof TABS[number]['id']>('pending_activation');
+    const router = useRouter();
+    const [activeTab, setActiveTab] = useState<BenyTab>(initialTab);
     const [rows, setRows] = useState<BenyRow[]>(initialRows);
     const [total, setTotal] = useState<number>(initialTotal);
     const [currentPage, setCurrentPage] = useState<number>(1);
@@ -117,36 +74,18 @@ export function BenyClient({
 
     const [isPending, startTransition] = useTransition();
 
-    const itemsPerPage = 10;
-    const totalPages = Math.ceil(total / itemsPerPage) || 1;
+    const loadData = (tab: BenyTab, page: number) => {
+        // Backend has no pending_deactivation status yet — requesting it can only 400.
+        if (!isTabSupported(tab)) {
+            setRows([]);
+            setTotal(0);
 
-    const [jumpPage, setJumpPage] = useState(currentPage.toString());
-
-    useEffect(() => {
-        setJumpPage(currentPage.toString());
-    }, [currentPage]);
-
-    const submitJump = () => {
-        const page = parseInt(jumpPage);
-        const maxPages = !apiSupported && activeTab === 'pending_activation'
-            ? Math.ceil(initialTotal / itemsPerPage)
-            : totalPages;
-
-        if (!isNaN(page) && page >= 1 && page <= maxPages) {
-            handlePageChange(page);
-        } else {
-            setJumpPage(currentPage.toString());
-        }
-    };
-
-    const loadData = (tab: typeof TABS[number]['id'], page: number) => {
-        if (!apiSupported && tab === 'pending_activation') {
-            // Local fallback handling
             return;
         }
+        if (!apiSupported && tab === DEFAULT_BENY_TAB) return; // served by the local fallback below
 
         startTransition(async () => {
-            const res = await getBenySubscriptionsAction(tab, page, itemsPerPage);
+            const res = await getBenySubscriptionsAction(tab, page, ITEMS_PER_PAGE);
             if (res.ok) {
                 const mapped = res.data.data.map((b: any) => ({
                     id: b.beny_subscription_id,
@@ -157,35 +96,41 @@ export function BenyClient({
                     requestedAt: b.created_at ? new Date(b.created_at).toLocaleString('en-AU') : '-',
                     activatedAt: b.activated_at ? new Date(b.activated_at).toLocaleString('en-AU') : null,
                     accessEndsAt: b.access_ends_at ? new Date(b.access_ends_at).toLocaleString('en-AU') : null,
+                    accessEndsAtIso: b.access_ends_at ?? null,
                     deactivatedAt: b.deactivated_at ? new Date(b.deactivated_at).toLocaleString('en-AU') : null,
                     deactivationReason: b.deactivation_reason || null
                 }));
                 setRows(mapped);
                 setTotal(res.data.total);
                 setApiSupported(true);
+            } else if (res.status === 404 || res.status === 400 || res.status === 405) {
+                // Paginated list endpoint isn't live yet — fall back to the server
+                // prefetch, which only covers the pending tab.
+                console.warn('Backend does not support paginated BENY lists endpoint, using fallback.');
+                setApiSupported(false);
+                setRows(tab === DEFAULT_BENY_TAB ? initialRows : []);
+                setTotal(tab === DEFAULT_BENY_TAB ? initialTotal : 0);
             } else {
-                // If it is 404/405 route not found, flag it to use fallback config on first tab
-                if (res.status === 404 || res.status === 400 || res.status === 405) {
-                    console.warn('Backend does not support paginated BENY lists endpoint, using fallback.');
-                    setApiSupported(false);
-                    if (tab === 'pending_activation') {
-                        setRows(initialRows);
-                        setTotal(initialTotal);
-                    } else {
-                        setRows([]);
-                        setTotal(0);
-                    }
-                } else {
-                    toast.error(res.message);
-                }
+                toast.error(res.message);
             }
         });
     };
 
-    const handleTabChange = (tab: typeof TABS[number]['id']) => {
+    // The server only prefetches the pending tab, so any other deep-linked tab
+    // has to fetch itself once on mount.
+    const didMountFetch = useRef(false);
+    useEffect(() => {
+        if (didMountFetch.current || initialTab === DEFAULT_BENY_TAB) return;
+        didMountFetch.current = true;
+        loadData(initialTab, 1);
+    }, []);
+
+    const handleTabChange = (tab: BenyTab) => {
         setActiveTab(tab);
         setCurrentPage(1);
         loadData(tab, 1);
+        // Keep the tab in the URL so it stays shareable and Back-navigable.
+        router.replace(`/dashboard/beny?status=${tab}`, { scroll: false });
     };
 
     const handlePageChange = (page: number) => {
@@ -229,256 +174,104 @@ export function BenyClient({
         });
     };
 
-    // Client-side pagination if api is not supported on backend
-    const displayedRows = !apiSupported && activeTab === 'pending_activation'
-        ? initialRows.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+    // Without the paginated endpoint the pending tab paginates the prefetch locally.
+    const usingLocalFallback = !apiSupported && activeTab === DEFAULT_BENY_TAB;
+    const displayedRows = usingLocalFallback
+        ? initialRows.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
         : rows;
+    const displayedTotal = usingLocalFallback ? initialTotal : total;
 
-    const displayedTotal = !apiSupported && activeTab === 'pending_activation'
-        ? initialTotal
-        : total;
-
-    const computedTotalPages = !apiSupported && activeTab === 'pending_activation'
-        ? Math.ceil(initialTotal / itemsPerPage)
-        : totalPages;
-
-    const getEmptyStateText = () => {
-        switch (activeTab) {
-            case 'pending_activation':
-                return {
-                    title: 'No pending activations',
-                    description: 'All BENY subscriptions have been handled. New pending requests will appear here.'
-                };
-            case 'active':
-                return {
-                    title: 'No active accounts',
-                    description: 'There are currently no active BENY accounts.'
-                };
-            case 'pending_deactivation':
-                return {
-                    title: 'No pending deactivations',
-                    description: 'All cancelled or unpaid BENY subscriptions have been successfully processed.'
-                };
-            case 'cancelled':
-                return {
-                    title: 'No cancelled accounts',
-                    description: 'No BENY subscriptions have been cancelled yet.'
-                };
+    // The trigger (member cancel / failed payment / refund) already decided the
+    // reason, so seed the dialog from the row instead of always guessing "User
+    // Cancelled" and making the admin re-pick it.
+    const openDeactivate = (row: BenyRow) => {
+        const known = REASON_OPTIONS.find((o) => o.toLowerCase() === (row.deactivationReason ?? '').toLowerCase());
+        if (known) {
+            setDeactivationReason(known);
+            setCustomReason('');
+        } else if (row.deactivationReason) {
+            setDeactivationReason('Other');
+            setCustomReason(row.deactivationReason);
         }
+        setDeactivateTarget(row);
     };
 
-    const emptyText = getEmptyStateText();
+    const columns = benyColumnsFor(activeTab, { onActivate: setActivateTarget, onDeactivate: openDeactivate });
+    const emptyText = EMPTY_TEXT[activeTab];
+    const EmptyIcon = activeTab === DEFAULT_BENY_TAB ? UserCheck : UserMinus;
 
     return (
-        <div className='mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 overflow-x-auto px-4 py-6'>
-            <Heading title='BENY Accounts' description='Review, activate, and deactivate manual BENY add-on subscriptions' />
+        <>
+            {listError ? (
+                <ListErrorCard
+                    error={listError}
+                    title='BENY list unavailable — report this to the backend'
+                    description={`Retrieve failed, so BENY subscriptions can't be shown.`}
+                />
+            ) : null}
 
-            {listError ? <ListErrorCard error={listError} /> : null}
-
-            {/* Tab navigation */}
-            <div className='mb-2 flex border-b border-slr-navy-border gap-2 overflow-x-auto'>
-                {TABS.map((t) => {
-                    const isActive = activeTab === t.id;
-                    
-return (
-                        <button
-                            key={t.id}
-                            disabled={isPending}
-                            onClick={() => handleTabChange(t.id)}
-                            className={`pb-3 px-4 text-xs sm:text-sm font-semibold border-b-2 uppercase tracking-wide transition-colors shrink-0 ${
-                                isActive
-                                    ? 'border-primary text-primary'
-                                    : 'border-transparent text-slate-400 hover:text-slate-200'
-                            }`}
-                        >
-                            {t.label}
-                        </button>
-                    );
-                })}
+            <div className='border-slr-navy-border mb-2 flex gap-2 overflow-x-auto border-b'>
+                {TABS.map((t) => (
+                    <button
+                        key={t.id}
+                        disabled={isPending}
+                        onClick={() => handleTabChange(t.id)}
+                        className={`shrink-0 border-b-2 px-4 pb-3 text-xs font-semibold tracking-wide uppercase transition-colors sm:text-sm ${
+                            activeTab === t.id
+                                ? 'border-primary text-primary'
+                                : 'border-transparent text-slate-400 hover:text-slate-200'
+                        }`}>
+                        {t.label}
+                    </button>
+                ))}
             </div>
 
-            {isPending && (
-                <div className='flex items-center justify-center py-12 text-slr-muted'>
-                    <Loader2 className='mr-2 h-6 w-6 animate-spin text-primary' />
-                    <span>Loading data...</span>
-                </div>
-            )}
+            {/* The table always renders — headers and the pager stay put at any row
+                count, and the per-tab copy lives inside the empty row rather than in
+                a second card stacked above it. */}
+            <DataTable
+                // Search would only filter the current page under server pagination,
+                // and the backend has no ?q= param yet.
+                isSearch={false}
+                searchKey='name'
+                columns={columns}
+                data={displayedRows}
+                serverSide={!usingLocalFallback}
+                currentPage={currentPage}
+                totalItems={displayedTotal}
+                itemsPerPage={ITEMS_PER_PAGE}
+                onPageChange={handlePageChange}
+                isLoading={isPending}
+                // Tabs swap the row set constantly — keeping the pager pinned
+                // means the total is always readable, even on a single page.
+                alwaysShowPagination
+                emptyMessage={
+                    isTabSupported(activeTab) ? (
+                        <span className='flex flex-col items-center gap-1'>
+                            <EmptyIcon className='mb-1 size-8 opacity-40' />
+                            <span className='text-foreground text-sm font-semibold'>{emptyText.title}</span>
+                            <span className='max-w-sm text-xs leading-relaxed'>{emptyText.description}</span>
+                        </span>
+                    ) : (
+                        <span className='flex flex-col items-center gap-1'>
+                            <Construction className='mb-1 size-8 text-amber-400/60' />
+                            <span className='text-foreground text-sm font-semibold'>Awaiting backend support</span>
+                            <span className='max-w-md text-xs leading-relaxed'>
+                                The API currently exposes only Pending Activation, Active and Cancelled. This tab
+                                becomes live once <code className='text-amber-400'>pending_deactivation</code> is added
+                                to the status enum (PRD §2.3).
+                            </span>
+                        </span>
+                    )
+                }
+            />
 
-            {!isPending && displayedRows.length === 0 && !listError && (
-                <EmptyState
-                    icon={activeTab === 'pending_activation' ? UserCheck : UserMinus}
-                    title={emptyText.title}
-                    description={emptyText.description}
-                />
-            )}
-
-            {!isPending && displayedRows.length > 0 && !listError && (
-                <div className='rounded-md border border-slr-navy-border bg-slr-navy-card'>
-                    <div className='overflow-x-auto w-full'>
-                        <Table>
-                            <TableHeader>
-                                <TableRow className='border-slr-navy-border'>
-                                    <TableHead className='text-muted-foreground font-medium'>Name</TableHead>
-                                    <TableHead className='text-muted-foreground font-medium'>Email</TableHead>
-                                    <TableHead className='text-muted-foreground font-medium'>Phone</TableHead>
-                                    
-                                    {activeTab === 'pending_activation' && (
-                                        <TableHead className='text-muted-foreground font-medium'>Requested At</TableHead>
-                                    )}
-                                    {activeTab === 'active' && (
-                                        <>
-                                            <TableHead className='text-muted-foreground font-medium'>Activated At</TableHead>
-                                            <TableHead className='text-muted-foreground font-medium'>Access Ends At</TableHead>
-                                        </>
-                                    )}
-                                    {activeTab === 'pending_deactivation' && (
-                                        <TableHead className='text-muted-foreground font-medium'>Access Ends At</TableHead>
-                                    )}
-                                    {activeTab === 'cancelled' && (
-                                        <>
-                                            <TableHead className='text-muted-foreground font-medium'>Deactivated At</TableHead>
-                                            <TableHead className='text-muted-foreground font-medium'>Reason</TableHead>
-                                        </>
-                                    )}
-                                    
-                                    {(activeTab === 'pending_activation' || activeTab === 'pending_deactivation' || activeTab === 'active') && (
-                                        <TableHead className='text-muted-foreground font-medium text-right'>Action</TableHead>
-                                    )}
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {displayedRows.map((row) => (
-                                    <TableRow key={row.id} className='border-slr-navy-border hover:bg-slr-navy/40'>
-                                        <TableCell className='font-medium text-white'>{row.name}</TableCell>
-                                        <TableCell className='text-slate-300'>{row.email}</TableCell>
-                                        <TableCell className='text-slate-300'>{row.phone}</TableCell>
-                                        
-                                        {activeTab === 'pending_activation' && (
-                                            <TableCell className='text-slate-300'>{row.requestedAt}</TableCell>
-                                        )}
-                                        {activeTab === 'active' && (
-                                            <>
-                                                <TableCell className='text-slate-300'>{row.activatedAt || '-'}</TableCell>
-                                                <TableCell className='text-slate-300'>
-                                                    {row.accessEndsAt ? (
-                                                        <span className='text-red-400 font-medium'>Deactivate on {row.accessEndsAt}</span>
-                                                    ) : (
-                                                        <span className='text-slate-400'>Ongoing</span>
-                                                    )}
-                                                </TableCell>
-                                            </>
-                                        )}
-                                        {activeTab === 'pending_deactivation' && (
-                                            <TableCell className='text-slate-300'>
-                                                <span className='text-red-400 font-medium'>{row.accessEndsAt || 'Immediately'}</span>
-                                            </TableCell>
-                                        )}
-                                        {activeTab === 'cancelled' && (
-                                            <>
-                                                <TableCell className='text-slate-300'>{row.deactivatedAt || '-'}</TableCell>
-                                                <TableCell className='text-slate-400 italic max-w-xs truncate' title={row.deactivationReason || ''}>
-                                                    {row.deactivationReason || '-'}
-                                                </TableCell>
-                                            </>
-                                        )}
-
-                                        {(activeTab === 'pending_activation' || activeTab === 'pending_deactivation' || activeTab === 'active') && (
-                                            <TableCell className='text-right'>
-                                                {activeTab === 'pending_activation' && (
-                                                    <Button
-                                                        onClick={() => setActivateTarget(row)}
-                                                        className='font-semibold'
-                                                        size='sm'
-                                                    >
-                                                        <UserCheck className='mr-2 h-4 w-4' />
-                                                        Activate
-                                                    </Button>
-                                                )}
-                                                {(activeTab === 'active' || activeTab === 'pending_deactivation') && (
-                                                    <Button
-                                                        onClick={() => setDeactivateTarget(row)}
-                                                        variant='destructive'
-                                                        className='hover:bg-red-600/80 font-medium'
-                                                        size='sm'
-                                                    >
-                                                        <UserMinus className='mr-2 h-4 w-4' />
-                                                        Deactivate
-                                                    </Button>
-                                                )}
-                                            </TableCell>
-                                        )}
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-
-                    {/* Pagination Controls */}
-                    {displayedTotal > itemsPerPage && (
-                        <div className='mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slr-navy-border p-4 bg-slr-navy-deep/20 rounded-b-md'>
-                            <div className='text-muted-foreground text-sm'>
-                                Total: <span className='text-foreground font-medium text-white'>{displayedTotal}</span> entries
-                            </div>
-
-                            <div className='flex items-center gap-4'>
-                                {/* Jump to Page Input */}
-                                <div className='flex items-center gap-2'>
-                                    <span className='text-muted-foreground text-sm'>Jump to</span>
-                                    <Input
-                                        type='number'
-                                        value={jumpPage}
-                                        onChange={(e) => setJumpPage(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && submitJump()}
-                                        onBlur={submitJump}
-                                        className='h-8 w-14 [appearance:textfield] px-2 text-center bg-slr-navy border-slr-navy-border text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
-                                    />
-                                    <span className='text-muted-foreground text-sm'>of {computedTotalPages}</span>
-                                </div>
-
-                                <div className='flex items-center gap-1'>
-                                    <Button
-                                        variant='outline'
-                                        size='sm'
-                                        className='h-8 w-8 p-0 border-slr-navy-border hover:bg-slr-navy text-white'
-                                        disabled={currentPage === 1 || isPending}
-                                        onClick={() => handlePageChange(currentPage - 1)}>
-                                        <ChevronLeft className='h-4 w-4' />
-                                    </Button>
-
-                                    {getPaginationRange(currentPage, computedTotalPages).map((p, idx) => (
-                                        <Button
-                                            key={idx}
-                                            size='sm'
-                                            className='h-8 w-8 p-0 border-slr-navy-border'
-                                            variant={p === currentPage ? 'default' : 'outline'}
-                                            disabled={p === '...' || isPending}
-                                            onClick={() => typeof p === 'number' && handlePageChange(p)}>
-                                            {p}
-                                        </Button>
-                                    ))}
-
-                                    <Button
-                                        variant='outline'
-                                        size='sm'
-                                        className='h-8 w-8 p-0 border-slr-navy-border hover:bg-slr-navy text-white'
-                                        disabled={currentPage === computedTotalPages || isPending}
-                                        onClick={() => handlePageChange(currentPage + 1)}>
-                                        <ChevronRight className='h-4 w-4' />
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* Confirm Activation dialog */}
             <ConfirmDialog
                 open={!!activateTarget}
                 onOpenChange={(open) => {
                     if (!open) setActivateTarget(null);
                 }}
-                className='slr-admin dark'
+                className='dashboard-theme dark'
                 title='Activate BENY Add-on?'
                 confirmText={isPending ? 'Activating...' : 'Yes, Activate'}
                 cancelBtnText='Cancel'
@@ -487,7 +280,6 @@ return (
                 desc={`This will mark the BENY addon for ${activateTarget?.name} as ACTIVE. Confirm after manually adding the member details into the third-party BENY dashboard.`}
             />
 
-            {/* Confirm Deactivation dialog */}
             <ConfirmDialog
                 open={!!deactivateTarget}
                 onOpenChange={(open) => {
@@ -497,28 +289,25 @@ return (
                         setCustomReason('');
                     }
                 }}
-                className='slr-admin dark'
+                className='dashboard-theme dark'
                 title='Mark as Deactivated?'
-                confirmText={isPending ? 'Deactivating...' : 'Confirm Deactivation'}
+                confirmText={isPending ? 'Recording...' : 'Yes, Mark as Deactivated'}
                 cancelBtnText='Cancel'
                 destructive
                 isLoading={isPending}
                 handleConfirm={confirmDeactivate}
-                desc={`Are you sure you want to mark the BENY addon for ${deactivateTarget?.name} as cancelled? Confirm this only after manually disabling the login/discounts on the BENY vendor dashboard.`}
-            >
+                desc={`This records that ${deactivateTarget?.name}'s BENY access has already been revoked in the BENY portal, and moves them to Cancelled. It does not revoke anything itself — do that in the BENY portal first, and only after their paid access has ended.`}>
                 <div className='mt-4 space-y-3 text-start'>
-                    <label className='block text-xs font-semibold uppercase text-slate-400'>
-                        Deactivation Reason
-                    </label>
+                    <label className='block text-xs font-semibold text-slate-400 uppercase'>Deactivation Reason</label>
                     <select
                         value={deactivationReason}
                         onChange={(e) => setDeactivationReason(e.target.value)}
-                        className='w-full rounded-lg border border-slr-navy-border bg-slr-navy-card p-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary'
-                    >
-                        <option value='User Cancelled'>User Cancelled</option>
-                        <option value='Payment Failed'>Payment Failed</option>
-                        <option value='Admin Refund'>Admin Refund</option>
-                        <option value='Other'>Other...</option>
+                        className='border-slr-navy-border bg-slr-navy-card focus:ring-primary w-full rounded-lg border p-2 text-sm text-white focus:ring-1 focus:outline-none'>
+                        {REASON_OPTIONS.map((r) => (
+                            <option key={r} value={r}>
+                                {r === 'Other' ? 'Other...' : r}
+                            </option>
+                        ))}
                     </select>
 
                     {deactivationReason === 'Other' && (
@@ -527,11 +316,11 @@ return (
                             placeholder='Specify custom reason...'
                             value={customReason}
                             onChange={(e) => setCustomReason(e.target.value)}
-                            className='w-full rounded-lg border border-slr-navy-border bg-slr-navy-card p-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary'
+                            className='border-slr-navy-border bg-slr-navy-card focus:ring-primary w-full rounded-lg border p-2 text-sm text-white focus:ring-2 focus:outline-none'
                         />
                     )}
                 </div>
             </ConfirmDialog>
-        </div>
+        </>
     );
 }

@@ -22,7 +22,10 @@ function DialogPortal({ ...props }: React.ComponentProps<typeof DialogPrimitive.
 function useThemeClass() {
     const [themeClass, setThemeClass] = React.useState('');
     React.useEffect(() => {
-        const el = document.querySelector('.slr-member') ?? document.querySelector('.slr-admin') ?? document.querySelector('.dashboard-theme');
+        const el =
+            document.querySelector('.slr-member') ??
+            document.querySelector('.slr-admin') ??
+            document.querySelector('.dashboard-theme');
         if (el)
             setThemeClass(
                 el.className
@@ -54,8 +57,8 @@ function DialogOverlay({ className, ...props }: React.ComponentProps<typeof Dial
 
 function DialogContent({ className, children, ...props }: React.ComponentProps<typeof DialogPrimitive.Content>) {
     const themeClass = useThemeClass();
-    
-return (
+
+    return (
         <DialogPortal data-slot='dialog-portal'>
             <DialogOverlay />
             <DialogPrimitive.Content

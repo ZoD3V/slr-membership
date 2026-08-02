@@ -20,7 +20,9 @@ const SPEED = 30;
 // any real logos → show them; none (empty / fetch failed) → the static partner set.
 const PartnersSection = ({ logos }: { logos?: string[] }) => {
     const partners =
-        logos && logos.length > 0 ? logos.map((src, idx) => ({ src, alt: `Partner Logo ${idx + 1}` })) : STATIC_PARTNERS;
+        logos && logos.length > 0
+            ? logos.map((src, idx) => ({ src, alt: `Partner Logo ${idx + 1}` }))
+            : STATIC_PARTNERS;
 
     const xRow1 = useMotionValue(0);
     const xRow2 = useMotionValue(0);

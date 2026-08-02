@@ -8,11 +8,13 @@ import { usePathname } from 'next/navigation';
 
 import { Button as ButtonShadcn } from '@/components/ui/button';
 import { menuItems } from '@/constant/menu-items';
+import { useInitials } from '@/hooks/use-initials';
 import { logoutAction } from '@/lib/logout-action';
 import { goldButtonStyle } from '@/lib/styles';
 import { cn } from '@/lib/utils';
 import { Button, Transition } from '@headlessui/react';
 
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -21,10 +23,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from '../ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { UserInfo } from '../ui/user-info';
 import Container from './container';
-import { useInitials } from '@/hooks/use-initials';
 import { Menu, X } from 'lucide-react';
 
 type NavbarProps = {

@@ -13,7 +13,7 @@ export default function NotFound() {
         <main className='slr-stars-bg bg-slr-navy-deep relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 py-24 text-center'>
             <SectionEyebrow label='Error 404' color='#E2B42B' lineColor='#B08A20' />
 
-            <p className='font-bebas-neue mt-6 text-[110px] leading-none tracking-wider text-transparent uppercase sm:text-[150px] md:text-[200px] bg-[linear-gradient(89.12deg,#F5D78E_3.07%,#D4AF37_41.36%,#FFE066_60.5%,#A07018_98.79%)] bg-clip-text'>
+            <p className='font-bebas-neue mt-6 bg-[linear-gradient(89.12deg,#F5D78E_3.07%,#D4AF37_41.36%,#FFE066_60.5%,#A07018_98.79%)] bg-clip-text text-[110px] leading-none tracking-wider text-transparent uppercase sm:text-[150px] md:text-[200px]'>
                 404
             </p>
 

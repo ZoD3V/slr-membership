@@ -42,10 +42,18 @@ export async function cancelBenyAction(): Promise<BenyActionResult> {
     if (!token) return { ok: false, message: 'Not authenticated.' };
 
     try {
-        // The cancel response carries no beny_status — a 2xx means it's cancelled.
+        // The cancel response carries no beny_status. Cancelling does NOT end
+        // access — it moves the subscription to pending_deactivation and the
+        // member keeps BENY until the paid period ends and an admin revokes it
+        // in the BENY portal (PRD §2.3). Reporting 'cancelled' here would tell
+        // members their access is gone while they can still use it.
         await cancelBeny(token);
 
-        return { ok: true, status: 'cancelled', message: 'BENY canceled.' };
+        return {
+            ok: true,
+            status: 'pending_deactivation',
+            message: 'BENY cancelled — access continues until the end of your paid period.'
+        };
     } catch (error) {
         return toBenyError(error);
     }

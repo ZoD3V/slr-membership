@@ -4,8 +4,8 @@ import type { Metadata } from 'next';
 import { Bebas_Neue, Montserrat } from 'next/font/google';
 
 import '@/app/globals.css';
-import { Toaster } from '@/components/ui/sonner';
 import { VersionWatcher } from '@/components/common/version-watcher';
+import { Toaster } from '@/components/ui/sonner';
 
 const montserrat = Montserrat({
     subsets: ['latin'],

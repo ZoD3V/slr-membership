@@ -92,6 +92,31 @@ export function formatDrawPool(group: TierGroup, state: string): string {
     return `SLR ${TIER_VISUALS[group].poolLabel} · ${state}`;
 }
 
+/**
+ * Resolve the exact sub-tier from a group plus the marketing name the admin list
+ * returns. The admin member list sends only `tier: 'Plus'` with no group, but
+ * marketing names are unique WITHIN a group, so ('red', 'Plus') → R4 exactly.
+ */
+export function subTierFromGroupAndName(
+    group: TierGroup,
+    marketingName: string | null | undefined
+): SubTierCode | null {
+    if (!marketingName) return null;
+    const wanted = marketingName.trim().toLowerCase();
+
+    const match = Object.values(SUB_TIERS).find((m) => m.group === group && m.marketingName.toLowerCase() === wanted);
+
+    return match?.code ?? null;
+}
+
+/** Admin-facing, unambiguous tier name — "Red Plus (R4)", "Blue Premium (B7)", "Visitor". */
+export function formatAdminTierName(code: SubTierCode): string {
+    const meta = SUB_TIERS[code];
+    if (meta.group === 'visitor') return 'Visitor';
+
+    return `${TIER_VISUALS[meta.group].poolLabel} ${meta.marketingName} (${meta.label})`;
+}
+
 /** Customer-facing tier name — "SLR Red · Plus", "SLR Blue · Elite", "Visitor". Never shows the code. */
 export function formatTierName(code: SubTierCode): string {
     const meta = SUB_TIERS[code];

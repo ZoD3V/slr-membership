@@ -193,3 +193,110 @@ export const getGiveaways = cache((token: string) =>
 export const getGiveaway = cache((id: string, token: string) =>
     apiFetch<ApiGiveawayDetail>(API.giveaways.detail(id), { token, cache: 'no-store' })
 );
+
+// ─── Admin CRUD ───────────────────────────────────────────────────────────────
+// Verified against the live API 2026-08-02. Two things differ from the member
+// endpoints above and are easy to get wrong:
+//   1. Responses wrap rows in `data.items` + `data.pagination` (not a bare array).
+//   2. `tier`/`type` are UPPERCASE here ('RED'/'WEEKLY'); the member endpoints
+//      return lowercase. Sending lowercase to admin writes → 400.
+
+/** `data` envelope used by every paginated admin list. */
+export interface Paginated<T> {
+    items: T[];
+    pagination: { page: number; per_page: number; total: number; total_pages: number };
+}
+
+export type AdminGiveawayTier = 'VISITOR' | 'RED' | 'BLUE';
+export type AdminGiveawayType = 'WEEKLY' | 'MONTHLY';
+
+/** Server-derived lifecycle — do not recompute it from the dates. */
+export type AdminGiveawayStatus = 'OPEN' | 'CLOSED' | 'DRAWN' | string;
+
+export interface AdminGiveaway {
+    giveaway_id: string;
+    name: string;
+    tier: AdminGiveawayTier;
+    type: AdminGiveawayType;
+    prize: string | null;
+    status: AdminGiveawayStatus;
+    opens_at: string | null;
+    closes_at: string | null;
+    draws_at: string | null;
+    created_at: string | null;
+    winner_count: number;
+    entry_count: number;
+}
+
+/** All seven fields are required — the API rejects a partial body. */
+export interface AdminGiveawayPayload {
+    name: string;
+    tier: AdminGiveawayTier;
+    type: AdminGiveawayType;
+    prize: string;
+    opens_at: string;
+    closes_at: string;
+    draws_at: string;
+}
+
+export interface AdminWinner {
+    winner_id: string;
+    giveaway_id?: string;
+    user_id: string;
+    full_name?: string | null;
+    state?: string | null;
+    prize: string;
+    recorded_at?: string | null;
+    giveaway?: GiveawayWinnerGiveaway;
+}
+
+/** Name/state come from the member record — only these three are accepted. */
+export interface AdminWinnerPayload {
+    giveaway_id: string;
+    user_id: string;
+    prize: string;
+}
+
+interface ListQuery {
+    page?: number;
+    perPage?: number;
+    giveawayId?: string;
+}
+
+function listQs(query: ListQuery = {}): string {
+    const params = new URLSearchParams();
+    if (query.page) params.set('page', String(query.page));
+    if (query.perPage) params.set('per_page', String(query.perPage));
+    if (query.giveawayId) params.set('giveaway_id', query.giveawayId);
+    const qs = params.toString();
+
+    return qs ? `?${qs}` : '';
+}
+
+export const getAdminGiveaways = (token: string, query: ListQuery = {}) =>
+    apiFetch<Paginated<AdminGiveaway>>(`${API.admin.giveaways}${listQs(query)}`, { token, cache: 'no-store' });
+
+export const getAdminGiveaway = (id: string, token: string) =>
+    apiFetch<AdminGiveaway>(API.admin.giveawayDetail(id), { token, cache: 'no-store' });
+
+export const createGiveaway = (token: string, payload: AdminGiveawayPayload) =>
+    apiFetch<AdminGiveaway>(API.admin.giveaways, { method: 'POST', token, body: payload });
+
+// PUT, not PATCH — PATCH answers 404.
+export const updateGiveaway = (token: string, id: string, payload: AdminGiveawayPayload) =>
+    apiFetch<AdminGiveaway>(API.admin.giveawayDetail(id), { method: 'PUT', token, body: payload });
+
+export const deleteGiveaway = (token: string, id: string) =>
+    apiFetch<null>(API.admin.giveawayDetail(id), { method: 'DELETE', token });
+
+export const getAdminWinners = (token: string, query: ListQuery = {}) =>
+    apiFetch<Paginated<AdminWinner>>(`${API.admin.winners}${listQs(query)}`, { token, cache: 'no-store' });
+
+export const createWinner = (token: string, payload: AdminWinnerPayload) =>
+    apiFetch<AdminWinner>(API.admin.winners, { method: 'POST', token, body: payload });
+
+export const updateWinner = (token: string, id: string, payload: AdminWinnerPayload) =>
+    apiFetch<AdminWinner>(API.admin.winnerDetail(id), { method: 'PUT', token, body: payload });
+
+export const deleteWinner = (token: string, id: string) =>
+    apiFetch<null>(API.admin.winnerDetail(id), { method: 'DELETE', token });

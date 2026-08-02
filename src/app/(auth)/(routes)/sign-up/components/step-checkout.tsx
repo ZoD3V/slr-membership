@@ -67,7 +67,10 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
                 console.error('[SignUp Checkout Error]', {
                     endpoint: 'POST /api/v1/membership/checkout',
                     payload: { sub_tier: subTier.toLowerCase() },
-                    error: err instanceof ApiError ? { status: err.status, message: err.message, payload: err.payload } : String(err)
+                    error:
+                        err instanceof ApiError
+                            ? { status: err.status, message: err.message, payload: err.payload }
+                            : String(err)
                 });
             }
             // The window can open between render and submit, so the server's 403 is

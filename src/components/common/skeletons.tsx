@@ -63,18 +63,18 @@ export function AdminDashboardSkeleton() {
     );
 }
 
-/** Admin list: heading → toolbar → bordered table with rows. */
+/**
+ * Admin list: heading → search → bordered table with rows.
+ * Wrapper must track DashboardPageShell (full width, gap-4) or the page jumps on hydration.
+ */
 export function TableSkeleton() {
     return (
-        <div className={PAGE}>
+        <div className='flex h-full w-full flex-1 flex-col gap-4 px-4 py-6 md:px-6'>
             <div className='flex items-center justify-between'>
                 <PageHeading />
                 <Skeleton className={`${SK} h-10 w-32 rounded-xl`} />
             </div>
-            <div className='flex flex-wrap gap-3'>
-                <Skeleton className={`${SK} h-10 w-64 rounded-lg`} />
-                <Skeleton className={`${SK} h-10 w-40 rounded-lg`} />
-            </div>
+            <Skeleton className={`${SK} h-10 w-full rounded-lg`} />
             <div className='border-slr-navy-border overflow-hidden rounded-xl border'>
                 <Skeleton className={`${SK} h-12 w-full rounded-none`} />
                 {Array.from({ length: 8 }).map((_, i) => (

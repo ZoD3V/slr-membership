@@ -272,19 +272,33 @@ export function EbookForm({ initialData }: EbookFormProps) {
                             />
                         )}
 
+                        <FormField
+                            control={form.control}
+                            name='coverUrl'
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Cover image</FormLabel>
+                                    <FormControl>
+                                        <ImageUploadField
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            onUpload={uploadEbookAsset}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
                         <div className='grid grid-cols-1 items-start gap-6 md:grid-cols-2'>
                             <FormField
                                 control={form.control}
-                                name='coverUrl'
+                                name='category'
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Cover image</FormLabel>
+                                        <FormLabel>Category</FormLabel>
                                         <FormControl>
-                                            <ImageUploadField
-                                                value={field.value}
-                                                onChange={field.onChange}
-                                                onUpload={uploadEbookAsset}
-                                            />
+                                            <Input placeholder='Finance' {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -305,20 +319,7 @@ export function EbookForm({ initialData }: EbookFormProps) {
                             />
                         </div>
 
-                        <div className='grid grid-cols-1 items-start gap-6 md:grid-cols-3'>
-                            <FormField
-                                control={form.control}
-                                name='category'
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Category</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder='Finance' {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                        <div className='grid grid-cols-1 items-start gap-6 md:grid-cols-2'>
                             <FormField
                                 control={form.control}
                                 name='readingTimeMinutes'

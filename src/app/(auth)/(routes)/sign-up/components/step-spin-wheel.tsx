@@ -9,7 +9,7 @@ import { ApiError, apiErrorMessage } from '@/lib/api/types';
 import { goldButtonStyle } from '@/lib/styles';
 
 import { SpinPrize } from './types';
-import { ArrowLeft, Sparkles, Loader2Icon } from 'lucide-react';
+import { ArrowLeft, Loader2Icon, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 type StepSpinWheelProps = {
@@ -33,8 +33,8 @@ const StepSpinWheel = ({ winDiscount, token, onNext, onBack }: StepSpinWheelProp
     useEffect(() => {
         if (!token) {
             setLoadingCheck(false);
-            
-return;
+
+            return;
         }
         let cancelled = false;
 

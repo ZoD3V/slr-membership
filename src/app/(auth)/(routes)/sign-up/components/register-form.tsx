@@ -17,8 +17,8 @@ import StepTier from './step-tier';
 import Stepper from './stepper';
 import { SignUpFormData, SpinPrize, isSpinEligible, spinDiscountFor } from './types';
 import { Loader2Icon } from 'lucide-react';
-import { toast } from 'sonner';
 import { signIn } from 'next-auth/react';
+import { toast } from 'sonner';
 
 const glassStyle: React.CSSProperties = {
     background: 'linear-gradient(117.58deg, rgba(215, 237, 237, 0.16) -47.79%, rgba(204, 235, 235, 0) 100%)',

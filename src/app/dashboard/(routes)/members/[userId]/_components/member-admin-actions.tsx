@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AU_STATES, AU_STATE_CODES, type AuStateCode } from '@/constant/au-states';
 import type { AdminMemberStatusValue } from '@/lib/api/resources/admin';
 import type { MemberSubTierId } from '@/lib/api/resources/memberships';
+import { formatAdminTierName, subTierCodeOf } from '@/lib/member';
 
 import { changeMemberStateAction, changeMemberTierAction, updateMemberStatusAction } from '../../actions';
 import { Loader2Icon } from 'lucide-react';
@@ -22,17 +23,14 @@ const STATUS_OPTIONS: { value: AdminMemberStatusValue; label: string }[] = [
     { value: 'DEACTIVATED', label: 'Deactivated' }
 ];
 
-// Full sub-tier set accepted by POST /memberships/change-tier.
-const SUB_TIER_OPTIONS: { value: MemberSubTierId; label: string }[] = [
-    { value: 'visitor', label: 'Visitor' },
-    { value: 'r1', label: 'RED · Standard (R1)' },
-    { value: 'r4', label: 'RED · Plus (R4)' },
-    { value: 'r7', label: 'RED · Premium (R7)' },
-    { value: 'b1', label: 'BLUE · Standard (B1)' },
-    { value: 'b4', label: 'BLUE · Plus (B4)' },
-    { value: 'b7', label: 'BLUE · Premium (B7)' },
-    { value: 'b10', label: 'BLUE · Elite (B10)' }
-];
+// Full sub-tier set accepted by POST /memberships/change-tier. Labels come from
+// formatAdminTierName so the select matches the members table and detail fields.
+const SUB_TIER_IDS: MemberSubTierId[] = ['visitor', 'r1', 'r4', 'r7', 'b1', 'b4', 'b7', 'b10'];
+
+const SUB_TIER_OPTIONS: { value: MemberSubTierId; label: string }[] = SUB_TIER_IDS.map((value) => ({
+    value,
+    label: formatAdminTierName(subTierCodeOf(value))
+}));
 
 const toStatusValue = (status: string): AdminMemberStatusValue => {
     const upper = status.toUpperCase();
@@ -159,7 +157,7 @@ export function MemberAdminActions({
                     </div>
                 </div>
 
-                <div className='grid gap-2'>
+                <div className='grid gap-2 sm:col-span-2'>
                     <Label htmlFor='member-state'>Draw-pool state</Label>
                     <div className='flex gap-2'>
                         <Select value={state} onValueChange={(v) => setState(v as AuStateCode)}>

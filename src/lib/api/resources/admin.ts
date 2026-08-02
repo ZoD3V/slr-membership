@@ -144,10 +144,54 @@ export const getAdminDashboardMetrics = cache((token: string) => {
     return apiFetch<AdminDashboardMetrics>(API.admin.dashboard, { token, cache: 'no-store' });
 });
 
-export const getAdminMembers = cache((token: string) => {
-    // Note: Backend currently returns 400 for any parameters, so no filters are passed.
-    return apiFetch<AdminMemberListItem[]>(API.admin.members, { token, cache: 'no-store' });
+export interface AdminMemberQuery {
+    /** Parent tier group. The list row carries only a marketing name ('Plus'),
+     *  so filtering per group is how the caller recovers which group a row is in. */
+    tier?: 'visitor' | 'red' | 'blue';
+    page?: number;
+    perPage?: number;
+    search?: string;
+}
+
+// Verified live 2026-08-02: `tier`, `search`, `page` and `per_page` all work
+// (an older comment here claimed every parameter 400'd — no longer true).
+export const getAdminMembers = cache((token: string, query: AdminMemberQuery = {}) => {
+    const params = new URLSearchParams();
+    if (query.tier) params.set('tier', query.tier);
+    if (query.page) params.set('page', String(query.page));
+    if (query.perPage) params.set('per_page', String(query.perPage));
+    if (query.search) params.set('search', query.search);
+
+    const qs = params.toString();
+
+    return apiFetch<AdminMemberListItem[]>(`${API.admin.members}${qs ? `?${qs}` : ''}`, {
+        token,
+        cache: 'no-store'
+    });
 });
+
+/** Server-enforced ceiling: per_page above this returns 400 VALIDATION_ERROR. */
+const MAX_PER_PAGE = 100;
+
+/**
+ * Every member in one tier group, following pagination.
+ * `apiFetch` unwraps `data` and drops `meta`, so the loop stops on the first
+ * short page rather than reading `total_pages`.
+ */
+export async function getAdminMembersByTier(
+    token: string,
+    tier: NonNullable<AdminMemberQuery['tier']>
+): Promise<AdminMemberListItem[]> {
+    const all: AdminMemberListItem[] = [];
+
+    for (let page = 1; ; page++) {
+        const batch = await getAdminMembers(token, { tier, page, perPage: MAX_PER_PAGE });
+        all.push(...batch);
+        if (batch.length < MAX_PER_PAGE) break;
+    }
+
+    return all;
+}
 
 export const getAdminMemberDetail = cache((userId: string, token: string) => {
     return apiFetch<AdminMemberDetail>(API.admin.memberDetail(userId), { token, cache: 'no-store' });
@@ -171,10 +215,10 @@ export const getBenyPending = cache((token: string) => {
 
 export const getBenySubscriptions = cache((status: string, token: string, page = 1, limit = 10) => {
     // Falls back/adapts format if backend returns a list of items or paginated format
-    return apiFetch<any>(
-        `${API.admin.benyList}?status=${status}&page=${page}&limit=${limit}`,
-        { token, cache: 'no-store' }
-    );
+    return apiFetch<any>(`${API.admin.benyList}?status=${status}&page=${page}&limit=${limit}`, {
+        token,
+        cache: 'no-store'
+    });
 });
 
 export const activateBeny = (id: string, token: string) => {
@@ -182,14 +226,11 @@ export const activateBeny = (id: string, token: string) => {
 };
 
 export const deactivateBeny = (id: string, token: string, reason?: string) => {
-    return apiFetch<{ success?: boolean; status?: string }>(
-        API.admin.benyDeactivate(id),
-        {
-            method: 'POST',
-            token,
-            body: reason ? { reason } : undefined
-        }
-    );
+    return apiFetch<{ success?: boolean; status?: string }>(API.admin.benyDeactivate(id), {
+        method: 'POST',
+        token,
+        body: reason ? { reason } : undefined
+    });
 };
 
 // ── TPAL draw exports ─────────────────────────────────────────────────────────

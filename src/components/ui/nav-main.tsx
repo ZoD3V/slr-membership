@@ -15,6 +15,7 @@ import {
     BookOpen,
     ClipboardList,
     FileSpreadsheet,
+    Gift,
     LayoutGrid,
     type LucideIcon,
     Ticket,
@@ -34,6 +35,7 @@ type NavItem = {
 const ITEMS: NavItem[] = [
     { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
     { title: 'Members', href: '/dashboard/members', icon: ClipboardList },
+    { title: 'Giveaways', href: '/dashboard/giveaways', icon: Gift },
     { title: 'Winners', href: '/dashboard/winners', icon: Trophy },
     { title: 'TPAL Exports', href: '/dashboard/draw-exports', icon: FileSpreadsheet },
     { title: 'Discounts', href: '/dashboard/discounts', icon: Ticket },

@@ -2,21 +2,7 @@ import type { FC } from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { SubTierCount } from '@/lib/api/resources/memberships';
-
-// Sub-tier id → readable label. Token counts per CLAUDE.md tier table.
-const SUB_TIER_LABEL: Record<string, string> = {
-    visitor: 'Visitor',
-    r1: 'RED · 1 tok',
-    r4: 'RED · 4 tok',
-    r7: 'RED · 7 tok',
-    b1: 'BLUE · 1 tok',
-    b4: 'BLUE · 4 tok',
-    b7: 'BLUE · 7 tok',
-    b10: 'BLUE · 10 tok'
-};
-
-const labelFor = (subTierId: string): string =>
-    SUB_TIER_LABEL[subTierId] ?? (subTierId === '-' ? '-' : subTierId.toUpperCase());
+import { formatAdminTierName, subTierCodeOf } from '@/lib/member';
 
 const chipAccent = (subTierId: string): string => {
     if (subTierId.startsWith('r')) return 'border-slr-red-tier/40 text-slr-red-tier';
@@ -40,7 +26,7 @@ export const SubTierStats: FC<{ counts: SubTierCount[]; total: number }> = ({ co
                         <span
                             key={c.subTierId}
                             className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${chipAccent(c.subTierId)}`}>
-                            <span className='uppercase'>{labelFor(c.subTierId)}</span>
+                            <span>{formatAdminTierName(subTierCodeOf(c.subTierId))}</span>
                             <span className='font-semibold tabular-nums'>{c.count.toLocaleString()}</span>
                         </span>
                     ))}

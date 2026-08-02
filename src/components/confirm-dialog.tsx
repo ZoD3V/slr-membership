@@ -8,8 +8,8 @@ import {
     AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { goldButtonStyle } from '@/lib/styles';
+import { cn } from '@/lib/utils';
 
 type ConfirmDialogProps = {
     open: boolean;
@@ -46,7 +46,8 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
 
     return (
         <AlertDialog {...actions}>
-            <AlertDialogContent className={cn(defaultTheme, 'dark border-slr-navy-border bg-slr-navy-deep text-white', className)}>
+            <AlertDialogContent
+                className={cn(defaultTheme, 'dark border-slr-navy-border bg-slr-navy-deep text-white', className)}>
                 <AlertDialogHeader className='text-start'>
                     <AlertDialogTitle className='font-bebas-neue text-2xl tracking-wider text-white uppercase'>
                         {title}
@@ -59,7 +60,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
                 <AlertDialogFooter className='mt-2 flex-wrap gap-2'>
                     <AlertDialogCancel
                         disabled={isLoading}
-                        className='h-11 rounded-xl border border-white/15 bg-white/5 text-white/90 hover:bg-white/10 hover:text-white uppercase transition-colors'>
+                        className='h-11 rounded-xl border border-white/15 bg-white/5 text-white/90 uppercase transition-colors hover:bg-white/10 hover:text-white'>
                         {cancelBtnText ?? 'Cancel'}
                     </AlertDialogCancel>
                     <Button
@@ -70,7 +71,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
                         style={destructive || isAdmin ? undefined : goldButtonStyle}
                         className={cn(
                             'h-11 rounded-xl font-bold uppercase transition-opacity hover:opacity-90',
-                            destructive ? 'text-white' : (isAdmin ? '' : 'text-[#1a1408]')
+                            destructive ? 'text-white' : isAdmin ? '' : 'text-[#1a1408]'
                         )}
                         disabled={disabled || isLoading}>
                         {confirmText ?? 'Continue'}
