@@ -22,7 +22,6 @@ export default async function BenyPage({ searchParams }: { searchParams: Promise
     const token = await getAccessToken();
 
     let rows: BenyRow[] = [];
-    let totalCount = 0;
     let listError: ListError | null = null;
 
     if (token) {
@@ -46,15 +45,14 @@ export default async function BenyPage({ searchParams }: { searchParams: Promise
                     deactivatedAt: formatDate(b.deactivated_at),
                     deactivationReason: b.deactivation_reason || null
                 }));
-                totalCount = rows.length;
             } else {
                 // Fetch from the stable getBenyPending endpoint to support legacy backend on initial load
                 const pending = await getBenyPending(token);
                 const pendingList = Array.isArray(pending)
                     ? pending
-                    : (pending && (pending as any).items
-                        ? (pending as any).items
-                        : []);
+                    : pending && (pending as any).items
+                      ? (pending as any).items
+                      : [];
                 rows = pendingList.map((b: any) => ({
                     id: b.beny_subscription_id,
                     name: b.name || '-',
@@ -68,7 +66,6 @@ export default async function BenyPage({ searchParams }: { searchParams: Promise
                     deactivatedAt: null,
                     deactivationReason: null
                 }));
-                totalCount = rows.length;
             }
         } catch (error) {
             handleApiAuthError(error); // 401 only → force logout; others fall through
@@ -83,7 +80,7 @@ export default async function BenyPage({ searchParams }: { searchParams: Promise
                 description='Review, activate, and deactivate manual BENY add-on subscriptions'
             />
 
-            <BenyClient initialRows={rows} initialTotal={totalCount} initialTab={initialTab} listError={listError} />
+            <BenyClient initialRows={rows} initialTab={initialTab} listError={listError} />
         </DashboardPageShell>
     );
 }

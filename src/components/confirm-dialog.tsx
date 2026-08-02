@@ -42,25 +42,39 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
     } = props;
 
     const isAdmin = className?.includes('slr-admin') || className?.includes('dashboard-theme');
-    const defaultTheme = isAdmin ? 'slr-admin' : 'slr-member';
+
+    // The admin dashboard is shadcn-slate with Montserrat; the member/public areas
+    // are SLR brand (navy surface, Bebas Neue display, gold CTA). Styling the admin
+    // branch off theme tokens is what keeps a dashboard dialog from inheriting the
+    // member look — hardcoded `bg-slr-*` / `font-bebas-neue` would override it.
+    const theme = isAdmin
+        ? {
+              content: 'dashboard-theme dark border-border bg-background text-foreground',
+              title: 'text-lg font-semibold',
+              desc: 'text-muted-foreground text-sm',
+              cancel: '',
+              confirm: ''
+          }
+        : {
+              content: 'slr-member dark border-slr-navy-border bg-slr-navy-deep text-white',
+              title: 'font-bebas-neue text-2xl tracking-wider text-white uppercase',
+              desc: 'text-slr-muted text-sm',
+              cancel: 'h-11 rounded-xl border border-white/15 bg-white/5 text-white/90 uppercase transition-colors hover:bg-white/10 hover:text-white',
+              confirm: 'h-11 rounded-xl font-bold uppercase transition-opacity hover:opacity-90'
+          };
 
     return (
         <AlertDialog {...actions}>
-            <AlertDialogContent
-                className={cn(defaultTheme, 'dark border-slr-navy-border bg-slr-navy-deep text-white', className)}>
+            <AlertDialogContent className={cn(theme.content, className)}>
                 <AlertDialogHeader className='text-start'>
-                    <AlertDialogTitle className='font-bebas-neue text-2xl tracking-wider text-white uppercase'>
-                        {title}
-                    </AlertDialogTitle>
-                    <AlertDialogDescription className='text-slr-muted text-sm' asChild>
+                    <AlertDialogTitle className={theme.title}>{title}</AlertDialogTitle>
+                    <AlertDialogDescription className={theme.desc} asChild>
                         <div>{desc}</div>
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 {children}
                 <AlertDialogFooter className='mt-2 flex-wrap gap-2'>
-                    <AlertDialogCancel
-                        disabled={isLoading}
-                        className='h-11 rounded-xl border border-white/15 bg-white/5 text-white/90 uppercase transition-colors hover:bg-white/10 hover:text-white'>
+                    <AlertDialogCancel disabled={isLoading} className={theme.cancel}>
                         {cancelBtnText ?? 'Cancel'}
                     </AlertDialogCancel>
                     <Button
@@ -69,10 +83,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
                         onClick={handleConfirm}
                         variant={destructive ? 'destructive' : 'default'}
                         style={destructive || isAdmin ? undefined : goldButtonStyle}
-                        className={cn(
-                            'h-11 rounded-xl font-bold uppercase transition-opacity hover:opacity-90',
-                            destructive ? 'text-white' : isAdmin ? '' : 'text-[#1a1408]'
-                        )}
+                        className={cn(theme.confirm, destructive ? 'text-white' : isAdmin ? '' : 'text-[#1a1408]')}
                         disabled={disabled || isLoading}>
                         {confirmText ?? 'Continue'}
                     </Button>

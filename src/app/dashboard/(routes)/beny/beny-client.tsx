@@ -16,6 +16,11 @@ import { toast } from 'sonner';
 
 const ITEMS_PER_PAGE = 10;
 
+// The whole tab is fetched in one call so DataTable can search and paginate over
+// the full set — GET /admin/beny has no `search` param, and per-page rows would
+// mean the search box only ever matched the 10 rows already on screen.
+const FETCH_LIMIT = 200;
+
 export type BenyRow = {
     id: string;
     name: string;
@@ -49,20 +54,16 @@ const EMPTY_TEXT: Record<BenyTab, { title: string; description: string }> = {
 
 export function BenyClient({
     initialRows,
-    initialTotal,
     initialTab,
     listError
 }: {
     initialRows: BenyRow[];
-    initialTotal: number;
     initialTab: BenyTab;
     listError: ListError | null;
 }) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<BenyTab>(initialTab);
     const [rows, setRows] = useState<BenyRow[]>(initialRows);
-    const [total, setTotal] = useState<number>(initialTotal);
-    const [currentPage, setCurrentPage] = useState<number>(1);
     const [apiSupported, setApiSupported] = useState<boolean>(true);
 
     const [activateTarget, setActivateTarget] = useState<BenyRow | null>(null);
@@ -70,18 +71,17 @@ export function BenyClient({
 
     const [isPending, startTransition] = useTransition();
 
-    const loadData = (tab: BenyTab, page: number) => {
+    const loadData = (tab: BenyTab) => {
         // Backend has no pending_deactivation status yet — requesting it can only 400.
         if (!isTabSupported(tab)) {
             setRows([]);
-            setTotal(0);
 
             return;
         }
         if (!apiSupported && tab === DEFAULT_BENY_TAB) return; // served by the local fallback below
 
         startTransition(async () => {
-            const res = await getBenySubscriptionsAction(tab, page, ITEMS_PER_PAGE);
+            const res = await getBenySubscriptionsAction(tab, 1, FETCH_LIMIT);
             if (res.ok) {
                 const mapped = res.data.data.map((b: any) => ({
                     id: b.beny_subscription_id,
@@ -97,7 +97,6 @@ export function BenyClient({
                     deactivationReason: b.deactivation_reason || null
                 }));
                 setRows(mapped);
-                setTotal(res.data.total);
                 setApiSupported(true);
             } else if (res.status === 404 || res.status === 400 || res.status === 405) {
                 // Paginated list endpoint isn't live yet — fall back to the server
@@ -105,7 +104,6 @@ export function BenyClient({
                 console.warn('Backend does not support paginated BENY lists endpoint, using fallback.');
                 setApiSupported(false);
                 setRows(tab === DEFAULT_BENY_TAB ? initialRows : []);
-                setTotal(tab === DEFAULT_BENY_TAB ? initialTotal : 0);
             } else {
                 toast.error(res.message);
             }
@@ -118,20 +116,14 @@ export function BenyClient({
     useEffect(() => {
         if (didMountFetch.current || initialTab === DEFAULT_BENY_TAB) return;
         didMountFetch.current = true;
-        loadData(initialTab, 1);
+        loadData(initialTab);
     }, []);
 
     const handleTabChange = (tab: BenyTab) => {
         setActiveTab(tab);
-        setCurrentPage(1);
-        loadData(tab, 1);
+        loadData(tab);
         // Keep the tab in the URL so it stays shareable and Back-navigable.
         router.replace(`/dashboard/beny?status=${tab}`, { scroll: false });
-    };
-
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page);
-        loadData(activeTab, page);
     };
 
     const confirmActivate = () => {
@@ -141,7 +133,6 @@ export function BenyClient({
             const res = await activateBenyAction(id);
             if (res.ok) {
                 setRows((prev) => prev.filter((r) => r.id !== id));
-                setTotal((prev) => Math.max(0, prev - 1));
                 toast.success(res.message);
             } else {
                 toast.error(res.code ? `${res.message} (${res.code})` : res.message);
@@ -158,7 +149,6 @@ export function BenyClient({
             const res = await deactivateBenyAction(id);
             if (res.ok) {
                 setRows((prev) => prev.filter((r) => r.id !== id));
-                setTotal((prev) => Math.max(0, prev - 1));
                 toast.success(res.message);
             } else {
                 toast.error(res.code ? `${res.message} (${res.code})` : res.message);
@@ -166,13 +156,6 @@ export function BenyClient({
             setDeactivateTarget(null);
         });
     };
-
-    // Without the paginated endpoint the pending tab paginates the prefetch locally.
-    const usingLocalFallback = !apiSupported && activeTab === DEFAULT_BENY_TAB;
-    const displayedRows = usingLocalFallback
-        ? initialRows.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-        : rows;
-    const displayedTotal = usingLocalFallback ? initialTotal : total;
 
     const openDeactivate = (row: BenyRow) => {
         setDeactivateTarget(row);
@@ -215,12 +198,11 @@ export function BenyClient({
                 isSearch={true}
                 searchKey='name'
                 columns={columns}
-                data={displayedRows}
-                serverSide={!usingLocalFallback}
-                currentPage={currentPage}
-                totalItems={displayedTotal}
+                data={rows}
+                // Client-side on purpose: the whole tab is already in `rows`, and
+                // `serverSide` would disable DataTable's own filtering while there
+                // is no ?search= param to delegate to.
                 itemsPerPage={ITEMS_PER_PAGE}
-                onPageChange={handlePageChange}
                 isLoading={isPending}
                 // Tabs swap the row set constantly — keeping the pager pinned
                 // means the total is always readable, even on a single page.
