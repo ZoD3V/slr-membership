@@ -20,7 +20,7 @@ Legend: ✅ = dites live 2026-07-24 · 📄 = dari kontrak/handoff sebelumnya
 
 ### A1. Registrasi tier berbayar tidak bisa sampai Stripe Checkout — ✅ RESOLVED 2026-07-26
 
-> ✅ **RESOLVED 2026-07-26 (verified live).** `POST /auth/register` (paid) kini mengembalikan `access_token` + `refresh_token` langsung (`requires_otp:false, requires_payment:true`), **dan** `POST /auth/login` juga 200 + token. Register→checkout tidak lagi terblokir. Wiring checkout di register-wizard (`step-checkout.tsx`) jadi slice FE terpisah berikutnya. Laporan asli di bawah.
+> ✅ **RESOLVED. (Re-verified live 2026-08-02 via powinew327@gmail.com).** `POST /auth/register` (paid) kini mengembalikan `access_token` + `refresh_token` langsung (`requires_otp:false, requires_payment:true`), **dan** `POST /auth/login` juga 200 + token. Register→checkout tidak lagi terblokir dan login berjalan normal tanpa paksaan OTP. Laporan asli di bawah.
 
 Blocker utama sprint (*register RED/BLUE harus jalan penuh sampai transaksi*).
 

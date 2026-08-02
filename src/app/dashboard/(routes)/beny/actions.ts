@@ -55,8 +55,10 @@ export async function getBenySubscriptionsAction(
             data = res;
             total = res.length;
         } else if (res && typeof res === 'object') {
-            data = res.data || res.subscriptions || [];
-            total = typeof res.total === 'number' ? res.total : data.length;
+            data = res.items || res.data || res.subscriptions || [];
+            total = typeof res.pagination?.total === 'number' 
+                ? res.pagination.total 
+                : (typeof res.total === 'number' ? res.total : data.length);
         }
 
         return {

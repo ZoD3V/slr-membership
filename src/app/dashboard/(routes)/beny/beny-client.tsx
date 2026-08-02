@@ -246,23 +246,11 @@ export function BenyClient({
                 // means the total is always readable, even on a single page.
                 alwaysShowPagination
                 emptyMessage={
-                    isTabSupported(activeTab) ? (
-                        <span className='flex flex-col items-center gap-1'>
-                            <EmptyIcon className='mb-1 size-8 opacity-40' />
-                            <span className='text-foreground text-sm font-semibold'>{emptyText.title}</span>
-                            <span className='max-w-sm text-xs leading-relaxed'>{emptyText.description}</span>
-                        </span>
-                    ) : (
-                        <span className='flex flex-col items-center gap-1'>
-                            <Construction className='mb-1 size-8 text-amber-400/60' />
-                            <span className='text-foreground text-sm font-semibold'>Awaiting backend support</span>
-                            <span className='max-w-md text-xs leading-relaxed'>
-                                The API currently exposes only Pending Activation, Active and Cancelled. This tab
-                                becomes live once <code className='text-amber-400'>pending_deactivation</code> is added
-                                to the status enum (PRD §2.3).
-                            </span>
-                        </span>
-                    )
+                    <span className='flex flex-col items-center gap-1'>
+                        <EmptyIcon className='mb-1 size-8 opacity-40' />
+                        <span className='text-foreground text-sm font-semibold'>{emptyText.title}</span>
+                        <span className='max-w-sm text-xs leading-relaxed'>{emptyText.description}</span>
+                    </span>
                 }
             />
 

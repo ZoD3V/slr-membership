@@ -67,18 +67,7 @@ export function benyColumnsFor(tab: BenyTab, { onActivate, onDeactivate }: Handl
 
     if (tab === 'cancelled') {
         base.push(
-            { key: 'deactivatedAt', label: 'Deactivated At', render: (row) => row.deactivatedAt || '-' },
-            {
-                key: 'deactivationReason',
-                label: 'Reason',
-                render: (row) => (
-                    <span
-                        className='block max-w-xs truncate text-slate-400 italic'
-                        title={row.deactivationReason || ''}>
-                        {row.deactivationReason || '-'}
-                    </span>
-                )
-            }
+            { key: 'deactivatedAt', label: 'Deactivated At', render: (row) => row.deactivatedAt || '-' }
         );
     }
 

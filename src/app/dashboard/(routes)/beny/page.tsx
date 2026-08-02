@@ -29,7 +29,12 @@ export default async function BenyPage({ searchParams }: { searchParams: Promise
         try {
             // Fetch from the stable getBenyPending endpoint to support legacy backend on initial load
             const pending = await getBenyPending(token);
-            rows = pending.map((b) => ({
+            const pendingList = Array.isArray(pending)
+                ? pending
+                : (pending && (pending as any).items
+                    ? (pending as any).items
+                    : []);
+            rows = pendingList.map((b: any) => ({
                 id: b.beny_subscription_id,
                 name: b.name || '-',
                 email: b.email || '-',
