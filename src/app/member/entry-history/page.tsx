@@ -27,8 +27,13 @@ export default async function EntryHistoryPage() {
     }
 
     const entries: EntryCycle[] = [];
-    if (data?.current_cycle) entries.push(data.current_cycle);
-    if (data?.history?.length) entries.push(...data.history);
+    if (data?.current_cycle && (data.current_cycle.tier || '').toLowerCase() !== 'beny') {
+        entries.push(data.current_cycle);
+    }
+    if (data?.history?.length) {
+        const filteredHistory = data.history.filter((e) => (e.tier || '').toLowerCase() !== 'beny');
+        entries.push(...filteredHistory);
+    }
 
     return (
         <div className='mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 md:px-6 md:py-8'>

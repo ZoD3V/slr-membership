@@ -66,7 +66,8 @@ export default async function MemberDashboardPage() {
         tierGroupOf(member.sub_tier) === 'visitor' ? [] : await getPublicDiscounts().catch(() => [] as Discount[]);
 
     const membership = membershipR?.status === 'fulfilled' ? membershipR.value : null;
-    const cycle = entriesR?.status === 'fulfilled' ? entriesR.value.current_cycle : null;
+    const rawCycle = entriesR?.status === 'fulfilled' ? entriesR.value.current_cycle : null;
+    const cycle = rawCycle && (rawCycle.tier || '').toLowerCase() !== 'beny' ? rawCycle : null;
     const giveaways = giveawaysR?.status === 'fulfilled' ? giveawaysR.value : [];
     // A rejected read is not an empty read: keep them apart so a dead endpoint
     // never renders as "you have no draws / no membership".
