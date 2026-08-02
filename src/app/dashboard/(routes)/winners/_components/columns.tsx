@@ -27,6 +27,21 @@ export const winnersColumns: Column[] = [
             </span>
         )
     },
+    {
+        key: 'opens',
+        label: 'Opens At',
+        render: (row) => <span className='text-slr-dim text-xs'>{row.opens || '-'}</span>
+    },
+    {
+        key: 'closes',
+        label: 'End At',
+        render: (row) => <span className='text-slr-dim text-xs'>{row.closes || '-'}</span>
+    },
+    {
+        key: 'draws',
+        label: 'Draws At',
+        render: (row) => <span className='text-slr-dim text-xs'>{row.draws || '-'}</span>
+    },
     { key: 'recorded_at', label: 'Recorded' },
     { key: 'action', label: 'Action' }
 ];

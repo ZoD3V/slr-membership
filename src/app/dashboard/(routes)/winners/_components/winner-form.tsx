@@ -89,7 +89,6 @@ export function WinnerForm({
                   name: initialData.memberName,
                   email: '-',
                   state: initialData.memberState || '-',
-                  tier: '-',
                   status: '-'
               }
             : null

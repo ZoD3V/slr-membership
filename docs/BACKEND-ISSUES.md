@@ -256,6 +256,30 @@ Tidak ada `beny` / `addons` / `line_items`. Sementara itu `POST /beny/subscribe`
 
 Opsi 1 lebih dekat ke PRD (satu transaksi saat sign-up). Opsi 2 menutup jalur dashboard yang sekarang juga belum menagih. Mohon konfirmasi mana yang dipakai, plus konfirmasi Price BENY sudah dibuat dalam **AUD**.
 
+### D7. `GET /admin/members` tak punya `entry_status`/`draw_pass` → picker Record Winner terpaksa N+1
+
+**Dicek pada OpenAPI live 2026-08-03.** Admin "Record Winner" punya picker **Assign Member** yang harus menyembunyikan member dengan `draw_pass = 0` (sudah menang / pass habis → keluar dari pool cycle ini). Sumber datanya tidak ada di endpoint list:
+
+```jsonc
+// GET /api/v1/admin/members → data[] (additionalProperties: false)
+{ "user_id", "full_name", "email", "state", "phone", "dob",
+  "status", "tier", "billing_status", "created_at" }
+// tidak ada draw_pass, tidak ada entry_status, dan tidak ada query param untuk keduanya
+```
+
+`draw_pass` **hanya** ada di `GET /api/v1/admin/members/{userId}` → `cycles[].draw_pass`.
+
+**Dampak:** FE terpaksa menembak `GET /admin/members/{userId}` **satu kali per member** (dibatasi 8 request paralel) setiap kali picker dibuka/di-search. Untuk pool besar ini lambat dan membebani API.
+
+**Catatan:** `billing_status` di list **bukan** pengganti — ia soal pembayaran, sedangkan `draw_pass = 0` juga terjadi saat member **sudah menang** di cycle berjalan. Justru kasus itulah yang wajib disembunyikan agar satu member tidak tercatat menang dua kali dalam satu cycle.
+
+**Ask — pilih satu:**
+
+1. Tambahkan `entry_status` (`active` | `inactive`) ke tiap baris `GET /admin/members` — sesuai aturan PRD/CLAUDE.md §1 bahwa `draw_pass` internal dan API mengekspos `entry_status`; atau
+2. Tambahkan query param `?entry_status=active` supaya filter dikerjakan server-side.
+
+Opsi 2 paling hemat untuk picker. Dengan salah satu dari keduanya, N+1 di atas hilang jadi 1 request.
+
 ## Ringkasan — apa memblokir apa
 
 | Deliverable Sprint 3 | Blocker |

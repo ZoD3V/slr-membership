@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { type ListError, ListErrorCard } from '@/components/common/list-error-card';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable } from '@/components/data-table';
+import { formatDateTime } from '@/lib/member';
 
 import { benyColumnsFor } from './_components/columns';
 import { type BenyTab, DEFAULT_BENY_TAB, TABS, isTabSupported } from './_components/tabs';
@@ -89,11 +90,11 @@ export function BenyClient({
                     email: b.email || '-',
                     phone: b.phone || '-',
                     status: b.status || '-',
-                    requestedAt: b.created_at ? new Date(b.created_at).toLocaleString('en-AU') : '-',
-                    activatedAt: b.activated_at ? new Date(b.activated_at).toLocaleString('en-AU') : null,
-                    accessEndsAt: b.access_ends_at ? new Date(b.access_ends_at).toLocaleString('en-AU') : null,
+                    requestedAt: formatDateTime(b.created_at),
+                    activatedAt: b.activated_at ? formatDateTime(b.activated_at) : null,
+                    accessEndsAt: b.access_ends_at ? formatDateTime(b.access_ends_at) : null,
                     accessEndsAtIso: b.access_ends_at ?? null,
-                    deactivatedAt: b.deactivated_at ? new Date(b.deactivated_at).toLocaleString('en-AU') : null,
+                    deactivatedAt: b.deactivated_at ? formatDateTime(b.deactivated_at) : null,
                     deactivationReason: b.deactivation_reason || null
                 }));
                 setRows(mapped);

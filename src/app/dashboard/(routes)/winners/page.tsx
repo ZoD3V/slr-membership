@@ -10,6 +10,7 @@ import { getAdminWinners } from '@/lib/api/resources/giveaways';
 import { getAccessToken } from '@/lib/api/server';
 import { formatShortDate } from '@/lib/member';
 
+import { loadGiveawaySchedules } from './_components/load';
 import { type WinnerRow, WinnersClient } from './winners-client';
 import { Plus } from 'lucide-react';
 
@@ -30,17 +31,30 @@ export default async function WinnersPage({
 
     try {
         if (token) {
-            const res = await getAdminWinners(token, { page, perPage: PER_PAGE, giveawayId: giveaway });
+            // Independent calls — the winners payload carries no schedule, so the
+            // dates are joined in from the giveaways list by `giveaway_id`.
+            const [res, schedules] = await Promise.all([
+                getAdminWinners(token, { page, perPage: PER_PAGE, giveawayId: giveaway }),
+                loadGiveawaySchedules()
+            ]);
+
             total = res.pagination.total;
-            rows = res.items.map((w) => ({
-                id: w.winner_id,
-                prize: w.prize || '-',
-                giveaway: w.giveaway?.name || '-',
-                tier: w.giveaway?.tier || '-',
-                winner: w.full_name || '-',
-                state: w.state || '-',
-                recorded_at: formatShortDate(w.recorded_at)
-            }));
+            rows = res.items.map((w) => {
+                const schedule = w.giveaway?.giveaway_id ? schedules.get(w.giveaway.giveaway_id) : undefined;
+
+                return {
+                    id: w.winner_id,
+                    prize: w.prize || '-',
+                    giveaway: w.giveaway?.name || '-',
+                    tier: w.giveaway?.tier || '-',
+                    winner: w.full_name || '-',
+                    state: w.state || '-',
+                    opens: schedule?.opens ?? '-',
+                    closes: schedule?.closes ?? '-',
+                    draws: schedule?.draws ?? '-',
+                    recorded_at: formatShortDate(w.recorded_at)
+                };
+            });
         }
     } catch (error) {
         handleApiAuthError(error);

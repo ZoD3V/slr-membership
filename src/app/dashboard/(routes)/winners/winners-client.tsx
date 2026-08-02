@@ -18,6 +18,9 @@ export type WinnerRow = {
     tier: string;
     winner: string;
     state: string;
+    opens: string;
+    closes: string;
+    draws: string;
     recorded_at: string;
 };
 
@@ -77,6 +80,7 @@ export function WinnersClient({
                 searchKey='winner'
                 columns={winnersColumns}
                 data={rows}
+                nowrap
                 serverSide
                 currentPage={page}
                 totalItems={total}

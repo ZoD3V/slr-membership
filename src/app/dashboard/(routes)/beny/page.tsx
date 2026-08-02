@@ -5,16 +5,10 @@ import { handleApiAuthError } from '@/lib/api/guard';
 import { toListError } from '@/lib/api/list-error';
 import { getBenyPending } from '@/lib/api/resources/admin';
 import { getAccessToken } from '@/lib/api/server';
+import { formatDateTime as formatDate } from '@/lib/member';
 
 import { toBenyTab } from './_components/tabs';
 import { BenyClient, type BenyRow } from './beny-client';
-
-function formatDate(value: string | null | undefined): string {
-    if (!value) return '-';
-    const d = new Date(value);
-
-    return Number.isNaN(d.getTime()) ? value : d.toLocaleString('en-AU');
-}
 
 export default async function BenyPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
     const { status } = await searchParams;

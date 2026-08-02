@@ -73,6 +73,7 @@ export function GiveawaysClient({
                 searchKey='name'
                 columns={giveawaysColumns}
                 data={rows}
+                nowrap
                 serverSide
                 currentPage={page}
                 totalItems={total}

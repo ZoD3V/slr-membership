@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 
 import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -74,6 +75,12 @@ export interface DataTableProps {
     alwaysShowPagination?: boolean;
     /** Replaces the generic "No data found" row with context for this table. */
     emptyMessage?: ReactNode;
+    /**
+     * Keeps every cell on one line. Wide tables then overflow the container and
+     * scroll sideways (Table already wraps itself in `overflow-auto`) instead of
+     * wrapping long values onto a second row.
+     */
+    nowrap?: boolean;
 
     filters?: ServerFilters;
 
@@ -395,6 +402,7 @@ export function DataTable({
     isLoading,
     alwaysShowPagination = false,
     emptyMessage,
+    nowrap = false,
     onFiltersChange,
     filters,
     sortOptions,
@@ -641,7 +649,7 @@ export function DataTable({
             )}
 
             {/* Table */}
-            <div className='rounded-md border'>
+            <div className={cn('rounded-md border', nowrap && '[&_td]:whitespace-nowrap [&_th]:whitespace-nowrap')}>
                 <Table>
                     <TableHeaderComponent columns={columns} />
 

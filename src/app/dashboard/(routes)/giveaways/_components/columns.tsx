@@ -44,9 +44,21 @@ export const giveawaysColumns: Column[] = [
         )
     },
     { key: 'prize', label: 'Prize' },
-    { key: 'opens', label: 'Start', render: (row) => <span className='text-slr-dim text-xs'>{row.opens || '-'}</span> },
-    { key: 'closes', label: 'End', render: (row) => <span className='text-slr-dim text-xs'>{row.closes || '-'}</span> },
-    { key: 'draws', label: 'Draw', render: (row) => <span className='text-slr-dim text-xs'>{row.draws || '-'}</span> },
+    {
+        key: 'opens',
+        label: 'Opens At',
+        render: (row) => <span className='text-slr-dim text-xs'>{row.opens || '-'}</span>
+    },
+    {
+        key: 'closes',
+        label: 'End At',
+        render: (row) => <span className='text-slr-dim text-xs'>{row.closes || '-'}</span>
+    },
+    {
+        key: 'draws',
+        label: 'Draws At',
+        render: (row) => <span className='text-slr-dim text-xs'>{row.draws || '-'}</span>
+    },
     { key: 'entries', label: 'Entries', render: (row) => <span className='tabular-nums'>{row.entries ?? 0}</span> },
     { key: 'winners', label: 'Winners', render: (row) => <span className='tabular-nums'>{row.winners ?? 0}</span> },
     { key: 'action', label: 'Action' }

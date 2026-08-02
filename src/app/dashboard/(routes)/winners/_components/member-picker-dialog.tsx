@@ -79,8 +79,6 @@ export function MemberPickerDialog({
         () => [
             { key: 'name', label: 'Name', render: (row) => <span className='font-medium text-white'>{row.name}</span> },
             { key: 'email', label: 'Email' },
-            { key: 'tier', label: 'Tier' },
-            { key: 'state', label: 'State' },
             {
                 key: 'status',
                 label: 'Status',
@@ -156,7 +154,8 @@ export function MemberPickerDialog({
                         isLoading={isLoading}
                         itemsPerPage={8}
                         emptyMessage={
-                            error ?? 'No members match this draw pool. Widen the state filter or clear the search.'
+                            error ??
+                            'No eligible members in this draw pool. Members who have already won or used all their entries this cycle are not listed.'
                         }
                     />
                 </div>

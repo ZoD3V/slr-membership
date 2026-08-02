@@ -1,7 +1,7 @@
 import { SUB_TIERS, TIER_VISUALS } from '@/constant/tiers';
 import type { BillingStatus, SubTierCode, TierGroup } from '@/types/member';
 
-import { addDays, format } from 'date-fns';
+import { addDays } from 'date-fns';
 
 // ── API → UI mappers (memberships/me + entries) ──────────────────────────────
 
@@ -125,20 +125,71 @@ export function formatTierName(code: SubTierCode): string {
     return `SLR ${TIER_VISUALS[meta.group].poolLabel} · ${meta.marketingName}`;
 }
 
-/** Short date, e.g. "28 Jul 2026". Returns '-' for missing/invalid input (never throws). */
-export function formatShortDate(iso: string | null | undefined): string {
-    if (!iso) return '-';
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return '-';
+/**
+ * Every timestamp here is an Australian business event — 28-day billing cycles,
+ * draw times, renewals — so dates render in Australian Eastern Time no matter
+ * where the viewer sits. The IANA zone (not a fixed +10:00) is what makes the
+ * AEST/AEDT switch automatic. Formatting server-side and client-side against the
+ * same explicit zone also keeps SSR and hydration in agreement.
+ */
+const AEST_TIME_ZONE = 'Australia/Sydney';
 
-    return format(d, 'd MMM yyyy');
+/** Parsed date, or `null` for missing/invalid input — the shared guard for the formatters below. */
+function toDate(iso: string | null | undefined): Date | null {
+    if (!iso) return null;
+    const d = new Date(iso);
+
+    return Number.isNaN(d.getTime()) ? null : d;
 }
 
-/** Draw date + time, e.g. "Fri, 3 Jul · 8:00 PM". Returns '-' for missing/invalid input. */
-export function formatDrawDateTime(iso: string | null | undefined): string {
-    if (!iso) return '-';
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return '-';
+/**
+ * Date pieces for `date` rendered in AEST, keyed by part type.
+ * Locale is pinned to en-US only to keep the part VALUES stable ('Aug', 'PM');
+ * callers assemble the order themselves, so the locale never reaches the output.
+ */
+function aestParts(date: Date, options: Intl.DateTimeFormatOptions): Record<string, string> {
+    const parts = new Intl.DateTimeFormat('en-US', { ...options, timeZone: AEST_TIME_ZONE }).formatToParts(date);
 
-    return format(d, 'EEE, d MMM · h:mm a');
+    return Object.fromEntries(parts.map((p) => [p.type, p.value]));
+}
+
+/** Short date in AEST, e.g. "28 Jul 2026". Returns '-' for missing/invalid input (never throws). */
+export function formatShortDate(iso: string | null | undefined): string {
+    const d = toDate(iso);
+    if (!d) return '-';
+    const p = aestParts(d, { day: 'numeric', month: 'short', year: 'numeric' });
+
+    return `${p.day} ${p.month} ${p.year}`;
+}
+
+/** Full date + time in AEST, e.g. "7 Aug 2026 08:00 PM". Returns '-' for missing/invalid input. */
+export function formatDateTime(iso: string | null | undefined): string {
+    const d = toDate(iso);
+    if (!d) return '-';
+    const p = aestParts(d, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+
+    return `${p.day} ${p.month} ${p.year} ${p.hour}:${p.minute} ${p.dayPeriod}`;
+}
+
+/** Draw date + time in AEST, e.g. "Fri, 3 Jul · 8:00 PM". Returns '-' for missing/invalid input. */
+export function formatDrawDateTime(iso: string | null | undefined): string {
+    const d = toDate(iso);
+    if (!d) return '-';
+    const p = aestParts(d, {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
+
+    return `${p.weekday}, ${p.day} ${p.month} · ${p.hour}:${p.minute} ${p.dayPeriod}`;
 }

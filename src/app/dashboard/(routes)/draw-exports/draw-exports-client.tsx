@@ -6,16 +6,10 @@ import DashboardEmptyState from '@/app/dashboard/_components/dashboard-empty-sta
 import { TierFilter, type TierFilterValue } from '@/app/dashboard/_components/tier-filter';
 import { DataTable } from '@/components/data-table';
 import type { DrawCsvHistoryItem } from '@/lib/api/resources/admin';
+import { formatDateTime as formatDate } from '@/lib/member';
 
 import { drawExportsColumns } from './_components/columns';
 import { FileSpreadsheet } from 'lucide-react';
-
-function formatDate(value: string): string {
-    if (!value) return '-';
-    const d = new Date(value);
-
-    return Number.isNaN(d.getTime()) ? value : d.toLocaleString('en-AU');
-}
 
 interface DrawExportsClientProps {
     initialHistory: DrawCsvHistoryItem[];

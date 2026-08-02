@@ -9,14 +9,20 @@ import type { EntryCycle } from './entries';
 
 // ─── DTOs (mirrored from the live GET /giveaways/winners response) ────────────
 
+/**
+ * The giveaway STUB embedded in both winners endpoints. Verified against the live
+ * OpenAPI 2026-08-03: `additionalProperties: false` on `GET /admin/winners` and
+ * `GET /giveaways/winners`, carrying only these fields — **no `opens_at` /
+ * `closes_at` / `draws_at`**. Anything needing the schedule must join it in from
+ * `GET /admin/giveaways` by `giveaway_id`.
+ */
 export interface GiveawayWinnerGiveaway {
     giveaway_id: string;
     name: string;
     tier: string;
     type: string;
-    opens_at?: string;
-    closes_at?: string;
-    draws_at?: string;
+    /** Present on the admin stub only; the member endpoint omits it. */
+    prize?: string;
 }
 
 export interface GiveawayWinner {
