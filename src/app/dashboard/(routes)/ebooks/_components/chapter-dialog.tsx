@@ -58,7 +58,8 @@ export function ChapterDialog({ isOpen, onClose, ebookId, chapter, onSuccess }: 
 
     useEffect(() => {
         if (isOpen) {
-            setShowAdvanced(false); // Reset collapse state
+            // Collapse the optional-fields section every time the dialog opens.
+            setShowAdvanced(false);
             if (chapter) {
                 form.reset({
                     chapterNumber: chapter.chapter_number,

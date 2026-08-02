@@ -31,10 +31,12 @@ export interface BillingInvoice {
 
 // ─── Resource functions ──────────────────────────────────────────────────────
 
+/** Current billing state (active / grace / inactive) + next renewal date. */
 export const getBillingStatus = cache((token: string) =>
     apiFetch<BillingStatus>(API.billing.status, { token, cache: 'no-store' })
 );
 
+/** Paginated invoice / payment history. */
 export const getBillingInvoices = cache((token: string, page = 1, perPage = 10) =>
     apiFetch<BillingInvoice[]>(`${API.billing.invoices}?page=${page}&per_page=${perPage}`, {
         token,

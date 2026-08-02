@@ -14,8 +14,6 @@ import { logoutAction } from '@/lib/logout-action';
 
 import { UserInfo } from './ui/user-info';
 
-// contoh
-
 type Props = {
     user: {
         name?: string | null;

@@ -140,6 +140,7 @@ export interface BenyActivateResult {
 
 // ── Resource functions ──────────────────────────────────────────────────────
 
+/** Admin ops dashboard metrics (totals, MRR, tier/state breakdown, alerts). */
 export const getAdminDashboardMetrics = cache((token: string) => {
     return apiFetch<AdminDashboardMetrics>(API.admin.dashboard, { token, cache: 'no-store' });
 });
@@ -193,14 +194,17 @@ export async function getAdminMembersByTier(
     return all;
 }
 
+/** Admin: one member's full detail (profile / membership / subscription / cycles / wins). */
 export const getAdminMemberDetail = cache((userId: string, token: string) => {
     return apiFetch<AdminMemberDetail>(API.admin.memberDetail(userId), { token, cache: 'no-store' });
 });
 
+/** Admin: delete a member account. */
 export const deleteAdminMember = (userId: string, token: string) => {
     return apiFetch<null>(API.admin.deleteMember(userId), { method: 'DELETE', token });
 };
 
+/** Admin: set a member's status (ACTIVE / SUSPENDED / DEACTIVATED). */
 export const updateAdminMemberStatus = (userId: string, status: AdminMemberStatusValue, token: string) => {
     return apiFetch<AdminMemberStatusUpdate>(API.admin.updateMemberStatus(userId), {
         method: 'PUT',
@@ -209,22 +213,25 @@ export const updateAdminMemberStatus = (userId: string, status: AdminMemberStatu
     });
 };
 
+/** Admin: BENY subscriptions waiting for manual activation. */
 export const getBenyPending = cache((token: string) => {
     return apiFetch<BenyPendingItem[]>(API.admin.benyPending, { token, cache: 'no-store' });
 });
 
+/** Admin: BENY subscriptions filtered by status, paginated. */
 export const getBenySubscriptions = cache((status: string, token: string, page = 1, limit = 10) => {
-    // Falls back/adapts format if backend returns a list of items or paginated format
     return apiFetch<any>(`${API.admin.benyList}?status=${status}&page=${page}&limit=${limit}`, {
         token,
         cache: 'no-store'
     });
 });
 
+/** Admin: approve a pending BENY subscription (member gains access). */
 export const activateBeny = (id: string, token: string) => {
     return apiFetch<BenyActivateResult>(API.admin.benyActivate(id), { method: 'POST', token });
 };
 
+/** Admin: mark a BENY subscription deactivated (optional reason, e.g. refunded). */
 export const deactivateBeny = (id: string, token: string, reason?: string) => {
     return apiFetch<{ success?: boolean; status?: string }>(API.admin.benyDeactivate(id), {
         method: 'POST',
@@ -259,10 +266,12 @@ export interface DrawCsvHistoryItem extends DrawCsvFile {
     generated_at: string;
 }
 
+/** Admin: audit history of generated TPAL CSVs (newest first). */
 export const getDrawCsvHistory = cache((token: string) => {
     return apiFetch<DrawCsvHistoryItem[]>(API.admin.csvHistory, { token, cache: 'no-store' });
 });
 
+/** Admin: generate the 3 tiered TPAL CSVs for the current draw. */
 export const generateDrawCsv = (token: string) => {
     return apiFetch<DrawCsvGenerateResult>(API.admin.csvGenerate, { method: 'POST', token });
 };

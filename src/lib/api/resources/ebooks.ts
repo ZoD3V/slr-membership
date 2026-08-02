@@ -101,6 +101,7 @@ export interface ChapterAdmin {
 
 // ─── Resource functions ──────────────────────────────────────────────────────
 
+/** All published ebooks with per-member lock state (`is_locked`). */
 export const getEbooks = cache((token: string) =>
     apiFetch<EbookListItem[]>(API.ebooks.list, { token, cache: 'no-store' })
 );
@@ -110,13 +111,15 @@ export const getEbook = cache((id: string, token: string) =>
     apiFetch<EbookDetail>(API.ebooks.detail(id), { token, cache: 'no-store' })
 );
 
+/** Admin: create an ebook. */
 export const createEbook = (token: string, body: EbookPayload) =>
     apiFetch<EbookAdmin>(API.ebooks.create, { method: 'POST', token, body });
 
-// PATCH resets unsent numeric fields — always send the full payload.
+/** Admin: update an ebook. PATCH resets unsent numeric fields — always send the full payload. */
 export const updateEbook = (token: string, id: string, body: EbookPayload) =>
     apiFetch<EbookAdmin>(API.ebooks.update(id), { method: 'PATCH', token, body });
 
+/** Admin: delete an ebook. */
 export const deleteEbook = (token: string, id: string) =>
     apiFetch<null>(API.ebooks.remove(id), { method: 'DELETE', token });
 
@@ -132,14 +135,18 @@ export interface PresignedUrlResponse {
     object_key: string;
 }
 
+/** Presign an object-storage URL for an ebook cover / chapter image upload. */
 export const getEbookPresignedUrl = (token: string, body: PresignedUrlPayload) =>
     apiFetch<PresignedUrlResponse>(API.ebooks.presignedUrl, { method: 'POST', token, body });
 
+/** Admin: create a chapter for an ebook. */
 export const createChapter = (token: string, ebookId: string, body: ChapterPayload) =>
     apiFetch<ChapterAdmin>(API.ebooks.createChapter(ebookId), { method: 'POST', token, body });
 
+/** Admin: update one chapter. */
 export const updateChapter = (token: string, ebookId: string, chapterId: string, body: ChapterPayload) =>
     apiFetch<ChapterAdmin>(API.ebooks.updateChapter(ebookId, chapterId), { method: 'PATCH', token, body });
 
+/** Admin: delete one chapter. */
 export const deleteChapter = (token: string, ebookId: string, chapterId: string) =>
     apiFetch<null>(API.ebooks.deleteChapter(ebookId, chapterId), { method: 'DELETE', token });

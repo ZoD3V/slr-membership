@@ -94,6 +94,7 @@ export interface PresignedUrlResponse {
     object_key: string;
 }
 
+/** Presign an object-storage URL for a discount logo/thumbnail upload. */
 export const getDiscountPresignedUrl = (
     token: string,
     body: { filename: string; contentType: string; fileSize: number }

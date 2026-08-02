@@ -4,12 +4,13 @@ import { MIN_AGE_YEARS, isAdultDob } from '@/lib/dob';
 
 import { email, literal, object, string, union, enum as zEnum } from 'zod';
 
+/** Login validation. `SLRAdmin` is a dev-only bypass while the auth API is under development. */
 export const SignInSchema = object({
-    // `SLRAdmin` is a dev-only bypass login while the auth API is under development.
     email: union([email('Invalid Email'), literal('SLRadmin')]),
     password: string().min(MIN_PASSWORD_LENGTH, `Password must be at least ${MIN_PASSWORD_LENGTH} characters`)
 });
 
+/** Sign-up validation: name, email, strong password, AU state, phone, 18+ DOB. */
 export const SignUpSchema = object({
     name: string().min(1, 'Name is required'),
     email: email('Invalid Email'),

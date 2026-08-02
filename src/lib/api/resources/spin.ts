@@ -29,6 +29,8 @@ export interface SpinResult {
 // The won discount is applied by the backend at checkout, so nothing needs to
 // be forwarded to `createMembershipCheckout`.
 
+/** Whether a spin is currently offered (and at which moment). */
 export const getSpinStatus = (token: string) => apiFetch<SpinStatus>(API.spin.status, { token, cache: 'no-store' });
 
+/** Spin the wheel once. The backend decides win/lose (1/4 odds) and records it. */
 export const executeSpin = (token: string) => apiFetch<SpinResult>(API.spin.execute, { method: 'POST', token });

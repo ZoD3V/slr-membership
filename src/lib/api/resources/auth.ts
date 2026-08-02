@@ -107,9 +107,11 @@ export const register = (payload: RegisterPayload) =>
 export const verifyOtp = (userId: string, otpCode: string) =>
     apiFetch<LoginResult>(API.auth.verifyOtp, { method: 'POST', body: { user_id: userId, otp_code: otpCode } });
 
+/** Ask the backend to email a new OTP code (rate-limited server-side). */
 export const resendOtp = (userId: string) =>
     apiFetch<null>(API.auth.resendOtp, { method: 'POST', body: { user_id: userId } });
 
+/** Request a password-reset email for the given address. */
 export async function requestPasswordReset(email: string) {
     return apiFetch<null>(API.auth.forgotPassword, {
         method: 'POST',
@@ -117,6 +119,7 @@ export async function requestPasswordReset(email: string) {
     });
 }
 
+/** Change the authenticated member's password (validated server-side). */
 export async function changePassword(
     token: string,
     body: { current_password: string; new_password: string; confirm_password: string }
@@ -124,6 +127,7 @@ export async function changePassword(
     return apiFetch<null>(API.auth.changePassword, { method: 'POST', token, body });
 }
 
+/** Confirm a password reset with the token from the emailed link. */
 export async function resetPassword(resetToken: string, newPassword: string) {
     return apiFetch<null>(API.auth.resetPassword, {
         method: 'POST',

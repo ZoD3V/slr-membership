@@ -21,6 +21,10 @@ export interface EntryHistoryResponse {
     history: EntryCycle[];
 }
 
+/**
+ * Entry history grouped by billing cycle (current + past). `current_cycle` is
+ * the live draw-cycle surface — entry_status + total_token + renewal window.
+ */
 export const getEntryHistory = cache((token: string) => {
     return apiFetch<EntryHistoryResponse>(API.entries.history, { token, cache: 'no-store' });
 });

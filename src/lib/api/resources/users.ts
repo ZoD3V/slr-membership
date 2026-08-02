@@ -15,6 +15,7 @@ export interface AdminUserRecord {
     state?: string | null;
 }
 
+/** Admin: update a member's record (used for the draw-pool `state` half). */
 export const updateUser = (userId: string, body: UserUpdatePayload, token: string) =>
     apiFetch<AdminUserRecord>(API.users.update(userId), { method: 'PATCH', body, token });
 
@@ -34,5 +35,6 @@ export interface MyProfileRecord {
     dob: string | null;
 }
 
+/** Member self-service: update name / phone / dob (`dob` takes a date-only string). */
 export const updateMyProfile = (body: MyProfileUpdatePayload, token: string) =>
     apiFetch<MyProfileRecord>(API.users.me, { method: 'PATCH', body, token });

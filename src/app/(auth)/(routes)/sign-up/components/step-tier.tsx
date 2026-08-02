@@ -175,8 +175,8 @@ const StepTier = ({ data, onNext, onBack }: StepTierProps) => {
                 {/* BENY add-on used to be a checkbox here. POST /membership/checkout
                     accepts only a sub-tier, so ticking it charged nothing while the
                     review screen still added $4 to "Due today". It is sold from the
-                    member dashboard instead (PRD: "checkout awal ATAU halaman BENY
-                    terpisah") until checkout can carry the line item. */}
+                    member dashboard instead (PRD: "early checkout OR a separate BENY
+                    page") until checkout can carry the line item. */}
                 <div className='rounded-xl border border-white/10 bg-white/2 p-4'>
                     <div className='flex flex-wrap items-baseline gap-2'>
                         <span className='font-bebas-neue text-lg tracking-wider text-white uppercase'>BENY add-on</span>

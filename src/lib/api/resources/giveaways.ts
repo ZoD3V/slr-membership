@@ -273,30 +273,38 @@ function listQs(query: ListQuery = {}): string {
     return qs ? `?${qs}` : '';
 }
 
+/** Admin: list giveaways (paginated, UPPERCASE tier/type). */
 export const getAdminGiveaways = (token: string, query: ListQuery = {}) =>
     apiFetch<Paginated<AdminGiveaway>>(`${API.admin.giveaways}${listQs(query)}`, { token, cache: 'no-store' });
 
+/** Admin: one giveaway's full record. */
 export const getAdminGiveaway = (id: string, token: string) =>
     apiFetch<AdminGiveaway>(API.admin.giveawayDetail(id), { token, cache: 'no-store' });
 
+/** Admin: create a giveaway. */
 export const createGiveaway = (token: string, payload: AdminGiveawayPayload) =>
     apiFetch<AdminGiveaway>(API.admin.giveaways, { method: 'POST', token, body: payload });
 
-// PUT, not PATCH — PATCH answers 404.
+/** Admin: update a giveaway. PUT, not PATCH — PATCH answers 404. */
 export const updateGiveaway = (token: string, id: string, payload: AdminGiveawayPayload) =>
     apiFetch<AdminGiveaway>(API.admin.giveawayDetail(id), { method: 'PUT', token, body: payload });
 
+/** Admin: delete a giveaway. */
 export const deleteGiveaway = (token: string, id: string) =>
     apiFetch<null>(API.admin.giveawayDetail(id), { method: 'DELETE', token });
 
+/** Admin: list recorded winners (paginated). */
 export const getAdminWinners = (token: string, query: ListQuery = {}) =>
     apiFetch<Paginated<AdminWinner>>(`${API.admin.winners}${listQs(query)}`, { token, cache: 'no-store' });
 
+/** Admin: record a winner for a giveaway. */
 export const createWinner = (token: string, payload: AdminWinnerPayload) =>
     apiFetch<AdminWinner>(API.admin.winners, { method: 'POST', token, body: payload });
 
+/** Admin: edit a recorded winner. PUT, not PATCH — PATCH answers 404. */
 export const updateWinner = (token: string, id: string, payload: AdminWinnerPayload) =>
     apiFetch<AdminWinner>(API.admin.winnerDetail(id), { method: 'PUT', token, body: payload });
 
+/** Admin: delete a winner record. */
 export const deleteWinner = (token: string, id: string) =>
     apiFetch<null>(API.admin.winnerDetail(id), { method: 'DELETE', token });

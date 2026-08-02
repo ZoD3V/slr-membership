@@ -3,6 +3,7 @@ import { useObjectURLPreviews } from '@/lib/get-preview-images';
 
 import { Plus, X } from 'lucide-react';
 import { Control, FieldValues, Path, useController } from 'react-hook-form';
+import { toast } from 'sonner';
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_MB = 512;
@@ -32,11 +33,13 @@ export function ImagesField<TFieldValues extends FieldValues>({
         const file = files[0];
 
         if (!ACCEPTED_TYPES.includes(file.type)) {
-            //show toast
+            toast.error('Unsupported file type. Use JPG, PNG or WebP.');
+
             return;
         }
         if (file.size > MAX_MB * 1024 * 1024) {
-            //show toast
+            toast.error(`File is too large. Maximum ${MAX_MB}MB.`);
+
             return;
         }
 
@@ -75,11 +78,7 @@ export function ImagesField<TFieldValues extends FieldValues>({
 
                     <div className='h-20 w-20'>
                         <label className='flex h-full w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 transition-colors hover:border-gray-400'>
-                            <input
-                                type='file'
-                                accept={ACCEPTED_TYPES.join(',')}
-                                // ❌ HAPUS multiple
-                                className='hidden'
+                            <input type='file' accept={ACCEPTED_TYPES.join(',')} className='hidden'
                                 disabled={disabled}
                                 onChange={(e) => {
                                     const files = Array.from(e.target.files || []);

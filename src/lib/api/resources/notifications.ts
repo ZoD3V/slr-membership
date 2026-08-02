@@ -15,10 +15,12 @@ export interface NotificationDto {
     metadata?: Record<string, any>;
 }
 
+/** In-app notifications for the current member (bell panel). */
 export const getNotifications = cache((token: string) => {
     return apiFetch<NotificationDto[]>(API.notifications.list, { token, cache: 'no-store' });
 });
 
+/** Mark a single notification as read. */
 export async function markNotificationRead(id: string, token: string) {
     return apiFetch<null>(API.notifications.read(id), {
         method: 'PUT',

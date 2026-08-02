@@ -24,17 +24,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
-// import { months } from '@/data/months';
-// import { Month } from '@/types/month';
-
-// import { DateRangePicker } from './range-date-picker';
 import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { ChevronLeft, ChevronRight, MoreHorizontal, Pencil, Search, Trash2 } from 'lucide-react';
 
-// ==========================================
 // Types
-// ==========================================
 
 export interface Column {
     key: string;
@@ -99,18 +93,18 @@ export interface DataTableProps {
 function getPaginationRange(currentPage: number, totalPages: number) {
     const range: (number | '...')[] = [];
 
-    // Jika total halaman 5 atau kurang, tampilkan semua
+    // Show every page when the total is small enough to fit.
     if (totalPages <= 5) {
         for (let i = 1; i <= totalPages; i++) range.push(i);
 
         return range;
     }
 
-    // Logika menampilkan 5 angka di sekitar current page
+    // Keep a window of 5 pages centred on the current one.
     let start = Math.max(1, currentPage - 2);
     let end = Math.min(totalPages, currentPage + 2);
 
-    // Penyesuaian jika di awal atau di akhir range
+    // Clamp the window when the current page sits near either end.
     if (currentPage <= 3) {
         start = 1;
         end = 5;
@@ -126,9 +120,7 @@ function getPaginationRange(currentPage: number, totalPages: number) {
     return range;
 }
 
-// ==========================================
-// Pagination Component
-// ==========================================
+// Pagination component
 
 const TablePagination = ({
     currentPage,
@@ -144,7 +136,7 @@ const TablePagination = ({
     const pages = getPaginationRange(currentPage, totalPages);
     const [jumpPage, setJumpPage] = useState(currentPage.toString());
 
-    // Sinkronisasi input saat currentPage berubah dari luar (tombol prev/next)
+    // Keep the jump input in sync when currentPage changes externally (prev/next buttons).
     useEffect(() => {
         setJumpPage(currentPage.toString());
     }, [currentPage]);
@@ -158,7 +150,7 @@ const TablePagination = ({
         if (!isNaN(page) && page >= 1 && page <= totalPages) {
             onPageChange(page);
         } else {
-            setJumpPage(currentPage.toString()); // Reset jika input tidak valid
+            setJumpPage(currentPage.toString()); // Reset to the current page on invalid input
         }
     };
 
@@ -218,9 +210,7 @@ const TablePagination = ({
     );
 };
 
-// ==========================================
-// Table Header
-// ==========================================
+// Table header
 
 const TableHeaderComponent = ({ columns }: { columns: Column[] }) => {
     return (
@@ -238,9 +228,7 @@ const TableHeaderComponent = ({ columns }: { columns: Column[] }) => {
     );
 };
 
-// ==========================================
-// Table Row Renderer
-// ==========================================
+// Table row renderer
 
 const TableRowComponent = ({
     item,
@@ -310,12 +298,6 @@ const TableRowComponent = ({
                         </TableCell>
                     );
                 }
-
-                // if (column.key === 'month') {
-                //     const shortLabelMonth = months.filter((m: Month) => m.value == item.month)[0].shortLabel;
-
-                //     return <TableCell key={column.key}>{shortLabelMonth}</TableCell>;
-                // }
 
                 if (column.key === 'action') {
                     return (
@@ -393,9 +375,7 @@ const TableRowComponent = ({
     );
 };
 
-// ==========================================
-// MAIN DATATABLE COMPONENT
-// ==========================================
+// Main data table component
 
 export function DataTable({
     columns,
@@ -428,9 +408,7 @@ export function DataTable({
 
     const itemsPerPage = externalLimit ?? 10;
 
-    // =============================
-    // SEARCH FILTER
-    // =============================
+    // Search filter
     const filteredData = useMemo(() => {
         if (serverSide) return data;
 
@@ -441,9 +419,7 @@ export function DataTable({
 
     const totalItems = serverSide ? (externalTotal ?? data.length) : filteredData.length;
 
-    // =============================
-    // PAGINATION
-    // =============================
+    // Pagination
     const totalPages = Math.ceil(totalItems / itemsPerPage) === 0 ? 1 : Math.ceil(totalItems / itemsPerPage);
 
     const paginatedData = useMemo(() => {
@@ -533,7 +509,7 @@ export function DataTable({
                     <div className='flex w-full flex-col items-start gap-2 xl:flex-row xl:items-center'>
                         <span>Filter</span>
                         <div className='grid w-full shrink-0 grid-cols-2 flex-col items-start gap-2 xl:flex xl:w-fit xl:flex-row xl:items-center'>
-                            {/* Komoditas */}
+                            {/* Commodity filter */}
                             {commodityOptions && (
                                 <Select
                                     value={filters?.commodity_id ?? 'all'}
@@ -590,23 +566,7 @@ export function DataTable({
                                 </Select>
                             )}
 
-                            {/* {useDatePicker && (
-                                <DateRangePicker
-                                    startDate={filters?.start_date}
-                                    endDate={filters?.end_date}
-                                    onRangeChange={(start, end) => {
-                                        onFiltersChange?.({
-                                            ...filters,
-                                            start_date: start,
-                                            end_date: end,
-                                            page: 1
-                                        });
-                                    }}
-                                    className='w-full'
-                                />
-                            )} */}
-
-                            {/* year */}
+                            {/* Year filter */}
                             {!useDatePicker && (
                                 <Select
                                     value={filters?.year ? String(filters.year) : 'all'}
@@ -631,7 +591,7 @@ export function DataTable({
                                 </Select>
                             )}
 
-                            {/* month */}
+                            {/* Month filter */}
                             {!useDatePicker && (
                                 <Select
                                     value={filters?.month ? String(filters.month) : 'all'}
@@ -715,25 +675,6 @@ export function DataTable({
                         )}
                     </TableBody>
 
-                    {/* <TableBody>
-                        {paginatedData.length > 0 ? (
-                            paginatedData.map((item, i) => (
-                                <TableRowComponent
-                                    key={item.id || i}
-                                    item={item}
-                                    columns={columns}
-                                    onEdit={onEdit}
-                                    onDelete={onDelete}
-                                />
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} className='text-muted-foreground py-8 text-center'>
-                                    No data found
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody> */}
                 </Table>
             </div>
 
