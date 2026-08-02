@@ -20,6 +20,7 @@ export type GiveawayRow = {
     prize: string;
     entries: number;
     winners: number;
+    opens: string;
     closes: string;
     draws: string;
 };
