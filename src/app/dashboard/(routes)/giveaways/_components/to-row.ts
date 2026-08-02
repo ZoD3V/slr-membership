@@ -14,6 +14,7 @@ export function toGiveawayRow(g: AdminGiveaway): GiveawayRow {
         prize: g.prize || '-',
         entries: g.entry_count ?? 0,
         winners: g.winner_count ?? 0,
+        opens: formatShortDate(g.opens_at),
         closes: formatShortDate(g.closes_at),
         draws: formatShortDate(g.draws_at)
     };

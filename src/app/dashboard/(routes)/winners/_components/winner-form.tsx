@@ -11,11 +11,15 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import Heading from '@/components/ui/heading';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { AdminWinnerPayload } from '@/lib/api/resources/giveaways';
+import { TIER_VISUALS } from '@/constant/tiers';
+import type { AdminGiveawayTier, AdminWinnerPayload } from '@/lib/api/resources/giveaways';
+import { tierGroupFromApi } from '@/lib/api/resources/giveaways';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { createWinnerAction, updateWinnerAction } from '../../giveaways/actions';
-import { ArrowLeft, Loader2Icon } from 'lucide-react';
+import type { WinnerMemberOption } from '../actions';
+import { MemberPickerDialog } from './member-picker-dialog';
+import { ArrowLeft, Loader2Icon, UserSearch } from 'lucide-react';
 import { type Resolver, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
@@ -24,7 +28,7 @@ import * as z from 'zod';
 // member record behind user_id, so collecting them here would be ignored.
 const formSchema = z.object({
     giveawayId: z.string().min(1, 'Giveaway is required'),
-    userId: z.string().min(1, 'Member ID is required'),
+    userId: z.string().min(1, 'Member is required'),
     prize: z.string().min(1, 'Prize is required')
 });
 
@@ -35,11 +39,19 @@ export interface WinnerFormInitialData {
     giveawayId: string;
     userId: string;
     prize: string;
+    /** Name/state of the already-recorded winner, so the edit form isn't a bare UUID. */
+    memberName?: string;
+    memberState?: string;
 }
 
 export interface GiveawayOption {
     id: string;
     label: string;
+    tier: AdminGiveawayTier;
+    /** Pre-formatted dates — the picker mirrors the giveaways table's Start/End/Draw. */
+    opens: string;
+    closes: string;
+    draws: string;
 }
 
 export function WinnerForm({
@@ -69,6 +81,19 @@ export function WinnerForm({
     // API Contract §13: recording a winner sets draw_pass = 0, which drops the member
     // from the rest of the cycle's giveaways — admin must confirm before it happens.
     const [pendingValues, setPendingValues] = useState<FormValues | null>(null);
+    const [pickerOpen, setPickerOpen] = useState(false);
+    const [member, setMember] = useState<WinnerMemberOption | null>(
+        initialData?.memberName
+            ? {
+                  id: initialData.userId,
+                  name: initialData.memberName,
+                  email: '-',
+                  state: initialData.memberState || '-',
+                  tier: '-',
+                  status: '-'
+              }
+            : null
+    );
 
     const submit = (values: FormValues) => {
         startTransition(async () => {
@@ -97,7 +122,18 @@ export function WinnerForm({
     // Editing an existing row does not re-trigger the draw_pass side effect.
     const onSubmit = (values: FormValues) => (initialData ? submit(values) : setPendingValues(values));
 
-    const giveawayLabel = (id: string) => giveaways.find((g) => g.id === id)?.label ?? id;
+    const giveawayById = (id: string) => giveaways.find((g) => g.id === id);
+    const giveawayLabel = (id: string) => {
+        const g = giveawayById(id);
+
+        return g ? `${g.label} (${g.tier})` : id;
+    };
+
+    // The picker is scoped to the giveaway's draw pool, so a giveaway must be
+    // chosen before members can be listed at all.
+    const selectedGiveawayId = form.watch('giveawayId');
+    const selectedGiveaway = giveawayById(selectedGiveawayId);
+    const selectedGroup = selectedGiveaway ? tierGroupFromApi(selectedGiveaway.tier) : null;
 
     return (
         <div className='mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6'>
@@ -119,16 +155,37 @@ export function WinnerForm({
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Giveaway</FormLabel>
-                                    <Select value={field.value} onValueChange={field.onChange}>
+                                    <Select
+                                        value={field.value}
+                                        onValueChange={(next) => {
+                                            // A different giveaway means a different draw pool —
+                                            // the member picked from the old one no longer applies.
+                                            if (next !== field.value) {
+                                                setMember(null);
+                                                form.setValue('userId', '');
+                                            }
+                                            field.onChange(next);
+                                        }}>
                                         <FormControl>
                                             <SelectTrigger>
-                                                <SelectValue placeholder='Select the giveaway that was drawn' />
+                                                <SelectValue placeholder='Select the giveaway that was drawn'>
+                                                    {selectedGiveaway
+                                                        ? `${selectedGiveaway.label} (${selectedGiveaway.tier}) · draw ${selectedGiveaway.draws}`
+                                                        : null}
+                                                </SelectValue>
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent className='dashboard-theme dark'>
                                             {giveaways.map((g) => (
                                                 <SelectItem key={g.id} value={g.id}>
-                                                    {g.label}
+                                                    <span className='flex flex-col gap-0.5 py-0.5'>
+                                                        <span className='font-medium text-white'>
+                                                            {g.label} ({g.tier})
+                                                        </span>
+                                                        <span className='text-slr-dim text-xs'>
+                                                            Start {g.opens} · End {g.closes} · Draw {g.draws}
+                                                        </span>
+                                                    </span>
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -144,13 +201,34 @@ export function WinnerForm({
                                 name='userId'
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Member ID</FormLabel>
+                                        <FormLabel>Member</FormLabel>
                                         <FormControl>
-                                            <Input placeholder='019f…' {...field} />
+                                            <input type='hidden' {...field} />
                                         </FormControl>
+                                        <div className='flex flex-col gap-2'>
+                                            <div className='border-input flex min-h-11 items-center rounded-md border px-3 py-2 text-sm'>
+                                                {member ? (
+                                                    <span className='flex flex-col'>
+                                                        <span className='font-medium text-white'>{member.name}</span>
+                                                        <span className='text-slr-dim text-xs'>{member.state}</span>
+                                                    </span>
+                                                ) : (
+                                                    <span className='text-muted-foreground'>No member assigned</span>
+                                                )}
+                                            </div>
+                                            <Button
+                                                type='button'
+                                                variant='outline'
+                                                disabled={!selectedGroup}
+                                                onClick={() => setPickerOpen(true)}>
+                                                <UserSearch className='mr-2 h-4 w-4' />
+                                                {member ? 'Change Member' : 'Assign Member'}
+                                            </Button>
+                                        </div>
                                         <FormDescription>
-                                            Copy this from the member’s admin detail page URL. Their name and state are
-                                            filled in automatically.
+                                            {selectedGiveaway
+                                                ? 'Members are scoped to this giveaway’s draw pool — filter by state or search by name/email.'
+                                                : 'Select a giveaway first — the member list is scoped to its draw pool.'}
                                         </FormDescription>
                                         <FormMessage />
                                     </FormItem>
@@ -187,6 +265,19 @@ export function WinnerForm({
                 </Form>
             </div>
 
+            {selectedGroup ? (
+                <MemberPickerDialog
+                    open={pickerOpen}
+                    onOpenChange={setPickerOpen}
+                    tier={selectedGroup}
+                    poolLabel={`SLR ${TIER_VISUALS[selectedGroup].poolLabel}`}
+                    onSelect={(picked) => {
+                        setMember(picked);
+                        form.setValue('userId', picked.id, { shouldValidate: true });
+                    }}
+                />
+            ) : null}
+
             <ConfirmDialog
                 open={pendingValues !== null}
                 onOpenChange={(open) => {
@@ -200,11 +291,11 @@ export function WinnerForm({
                     <span className='flex flex-col gap-2'>
                         <span>
                             Recording a winner removes them from the remaining giveaways in this cycle. Check the member
-                            ID before continuing.
+                            before continuing.
                         </span>
                         <span className='text-white/80'>
-                            {giveawayLabel(pendingValues?.giveawayId ?? '')} · {pendingValues?.prize} · member{' '}
-                            {pendingValues?.userId}
+                            {giveawayLabel(pendingValues?.giveawayId ?? '')} · {pendingValues?.prize} ·{' '}
+                            {member?.name ?? pendingValues?.userId}
                         </span>
                     </span>
                 }

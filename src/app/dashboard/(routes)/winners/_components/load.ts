@@ -1,6 +1,7 @@
 import { handleApiAuthError } from '@/lib/api/guard';
 import { getAdminGiveaways } from '@/lib/api/resources/giveaways';
 import { getAccessToken } from '@/lib/api/server';
+import { formatShortDate } from '@/lib/member';
 
 import type { GiveawayOption } from './winner-form';
 
@@ -13,7 +14,14 @@ export async function loadGiveawayOptions(): Promise<GiveawayOption[]> {
         // High per_page: the picker needs every giveaway, not just page one.
         const res = await getAdminGiveaways(token, { page: 1, perPage: 100 });
 
-        return res.items.map((g) => ({ id: g.giveaway_id, label: `${g.name} (${g.tier})` }));
+        return res.items.map((g) => ({
+            id: g.giveaway_id,
+            label: g.name || '-',
+            tier: g.tier,
+            opens: formatShortDate(g.opens_at),
+            closes: formatShortDate(g.closes_at),
+            draws: formatShortDate(g.draws_at)
+        }));
     } catch (error) {
         handleApiAuthError(error);
 

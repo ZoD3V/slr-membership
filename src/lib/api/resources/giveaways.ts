@@ -14,6 +14,9 @@ export interface GiveawayWinnerGiveaway {
     name: string;
     tier: string;
     type: string;
+    opens_at?: string;
+    closes_at?: string;
+    draws_at?: string;
 }
 
 export interface GiveawayWinner {

@@ -212,9 +212,7 @@ export function BenyClient({
                 count, and the per-tab copy lives inside the empty row rather than in
                 a second card stacked above it. */}
             <DataTable
-                // Search would only filter the current page under server pagination,
-                // and the backend has no ?q= param yet.
-                isSearch={false}
+                isSearch={true}
                 searchKey='name'
                 columns={columns}
                 data={displayedRows}

@@ -33,7 +33,9 @@ export default async function EditWinnerPage({ params }: { params: Promise<{ id:
                 winnerId: winner.winner_id,
                 giveawayId: winner.giveaway_id ?? winner.giveaway?.giveaway_id ?? '',
                 userId: winner.user_id ?? '',
-                prize: winner.prize ?? ''
+                prize: winner.prize ?? '',
+                memberName: winner.full_name ?? undefined,
+                memberState: winner.state ?? undefined
             }}
         />
     );

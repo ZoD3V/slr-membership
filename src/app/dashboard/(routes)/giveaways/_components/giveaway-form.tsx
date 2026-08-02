@@ -32,15 +32,35 @@ const TYPE_OPTIONS: { value: AdminGiveawayType; label: string }[] = [
 ];
 
 // All three dates are required server-side; a partial body is rejected.
-const formSchema = z.object({
-    name: z.string().min(1, 'Name is required'),
-    tier: z.enum(['VISITOR', 'RED', 'BLUE']),
-    type: z.enum(['WEEKLY', 'MONTHLY']),
-    prize: z.string().min(1, 'Prize is required'),
-    opensAt: z.string().min(1, 'Opening time is required'),
-    closesAt: z.string().min(1, 'Closing time is required'),
-    drawsAt: z.string().min(1, 'Draw time is required')
-});
+const formSchema = z
+    .object({
+        name: z.string().min(1, 'Name is required'),
+        tier: z.enum(['VISITOR', 'RED', 'BLUE']),
+        type: z.enum(['WEEKLY', 'MONTHLY']),
+        prize: z.string().min(1, 'Prize is required'),
+        opensAt: z.string().min(1, 'Opening time is required'),
+        closesAt: z.string().min(1, 'Closing time is required'),
+        drawsAt: z.string().min(1, 'Draw time is required')
+    })
+    .refine(
+        (data) => {
+            if (!data.opensAt || !data.closesAt) return true; // Let required validation handle empty fields
+            const opens = new Date(data.opensAt);
+            const closes = new Date(data.closesAt);
+            const diffDays = Math.ceil((closes.getTime() - opens.getTime()) / (1000 * 60 * 60 * 24));
+
+            if (data.type === 'WEEKLY') {
+                return diffDays === 7;
+            } else if (data.type === 'MONTHLY') {
+                return diffDays === 28;
+            }
+            return true;
+        },
+        {
+            message: 'Closes At must be 7 days after Opens At for Weekly, or 28 days for Monthly',
+            path: ['closesAt']
+        }
+    );
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -184,7 +204,7 @@ export function GiveawayForm({ initialData }: { initialData?: GiveawayFormInitia
                                                     <SelectValue placeholder='Select tier' />
                                                 </SelectTrigger>
                                             </FormControl>
-                                            <SelectContent>
+                                            <SelectContent className='dashboard-theme dark'>
                                                 {TIER_OPTIONS.map((opt) => (
                                                     <SelectItem key={opt.value} value={opt.value}>
                                                         {opt.label}
@@ -208,7 +228,7 @@ export function GiveawayForm({ initialData }: { initialData?: GiveawayFormInitia
                                                     <SelectValue placeholder='Select type' />
                                                 </SelectTrigger>
                                             </FormControl>
-                                            <SelectContent>
+                                            <SelectContent className='dashboard-theme dark'>
                                                 {TYPE_OPTIONS.map((opt) => (
                                                     <SelectItem key={opt.value} value={opt.value}>
                                                         {opt.label}
