@@ -178,16 +178,16 @@ export function GiveawayForm({ initialData }: { initialData?: GiveawayFormInitia
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Tier</FormLabel>
-                                        <Select value={field.value} onValueChange={field.onChange}>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!!initialData}>
                                             <FormControl>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder='Select a tier' />
+                                                    <SelectValue placeholder='Select tier' />
                                                 </SelectTrigger>
                                             </FormControl>
-                                            <SelectContent className='dashboard-theme dark'>
-                                                {TIER_OPTIONS.map((o) => (
-                                                    <SelectItem key={o.value} value={o.value}>
-                                                        {o.label}
+                                            <SelectContent>
+                                                {TIER_OPTIONS.map((opt) => (
+                                                    <SelectItem key={opt.value} value={opt.value}>
+                                                        {opt.label}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
@@ -202,16 +202,16 @@ export function GiveawayForm({ initialData }: { initialData?: GiveawayFormInitia
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Type</FormLabel>
-                                        <Select value={field.value} onValueChange={field.onChange}>
+                                        <Select value={field.value} onValueChange={field.onChange} disabled={!!initialData}>
                                             <FormControl>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder='Select a type' />
+                                                    <SelectValue placeholder='Select type' />
                                                 </SelectTrigger>
                                             </FormControl>
-                                            <SelectContent className='dashboard-theme dark'>
-                                                {TYPE_OPTIONS.map((o) => (
-                                                    <SelectItem key={o.value} value={o.value}>
-                                                        {o.label}
+                                            <SelectContent>
+                                                {TYPE_OPTIONS.map((opt) => (
+                                                    <SelectItem key={opt.value} value={opt.value}>
+                                                        {opt.label}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
@@ -230,7 +230,7 @@ export function GiveawayForm({ initialData }: { initialData?: GiveawayFormInitia
                                     <FormItem>
                                         <FormLabel>Opens at</FormLabel>
                                         <FormControl>
-                                            <Input type='datetime-local' {...field} />
+                                            <Input type='datetime-local' {...field} disabled={!!initialData} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -243,7 +243,7 @@ export function GiveawayForm({ initialData }: { initialData?: GiveawayFormInitia
                                     <FormItem>
                                         <FormLabel>Closes at</FormLabel>
                                         <FormControl>
-                                            <Input type='datetime-local' {...field} />
+                                            <Input type='datetime-local' {...field} disabled={!!initialData} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -254,9 +254,9 @@ export function GiveawayForm({ initialData }: { initialData?: GiveawayFormInitia
                                 name='drawsAt'
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Draws at</FormLabel>
+                                        <FormLabel>Draw at</FormLabel>
                                         <FormControl>
-                                            <Input type='datetime-local' {...field} />
+                                            <Input type='datetime-local' {...field} disabled={!!initialData} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
