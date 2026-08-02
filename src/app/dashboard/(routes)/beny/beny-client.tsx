@@ -34,8 +34,6 @@ export type BenyRow = {
 
 // Mirrors the three triggers that move a subscription into pending_deactivation
 // (PRD §2.3), plus a free-text escape hatch.
-const REASON_OPTIONS = ['User Cancelled', 'Payment Failed', 'Admin Refund', 'Other'] as const;
-
 const EMPTY_TEXT: Record<BenyTab, { title: string; description: string }> = {
     pending_activation: {
         title: 'No pending activations',
@@ -69,8 +67,6 @@ export function BenyClient({
 
     const [activateTarget, setActivateTarget] = useState<BenyRow | null>(null);
     const [deactivateTarget, setDeactivateTarget] = useState<BenyRow | null>(null);
-    const [deactivationReason, setDeactivationReason] = useState<string>('User Cancelled');
-    const [customReason, setCustomReason] = useState<string>('');
 
     const [isPending, startTransition] = useTransition();
 
@@ -157,10 +153,9 @@ export function BenyClient({
     const confirmDeactivate = () => {
         if (!deactivateTarget) return;
         const { id } = deactivateTarget;
-        const finalReason = deactivationReason === 'Other' ? customReason : deactivationReason;
 
         startTransition(async () => {
-            const res = await deactivateBenyAction(id, finalReason);
+            const res = await deactivateBenyAction(id);
             if (res.ok) {
                 setRows((prev) => prev.filter((r) => r.id !== id));
                 setTotal((prev) => Math.max(0, prev - 1));
@@ -169,8 +164,6 @@ export function BenyClient({
                 toast.error(res.code ? `${res.message} (${res.code})` : res.message);
             }
             setDeactivateTarget(null);
-            setDeactivationReason('User Cancelled');
-            setCustomReason('');
         });
     };
 
@@ -181,18 +174,7 @@ export function BenyClient({
         : rows;
     const displayedTotal = usingLocalFallback ? initialTotal : total;
 
-    // The trigger (member cancel / failed payment / refund) already decided the
-    // reason, so seed the dialog from the row instead of always guessing "User
-    // Cancelled" and making the admin re-pick it.
     const openDeactivate = (row: BenyRow) => {
-        const known = REASON_OPTIONS.find((o) => o.toLowerCase() === (row.deactivationReason ?? '').toLowerCase());
-        if (known) {
-            setDeactivationReason(known);
-            setCustomReason('');
-        } else if (row.deactivationReason) {
-            setDeactivationReason('Other');
-            setCustomReason(row.deactivationReason);
-        }
         setDeactivateTarget(row);
     };
 
@@ -273,8 +255,6 @@ export function BenyClient({
                 onOpenChange={(open) => {
                     if (!open) {
                         setDeactivateTarget(null);
-                        setDeactivationReason('User Cancelled');
-                        setCustomReason('');
                     }
                 }}
                 className='dashboard-theme dark'
@@ -284,31 +264,8 @@ export function BenyClient({
                 destructive
                 isLoading={isPending}
                 handleConfirm={confirmDeactivate}
-                desc={`This records that ${deactivateTarget?.name}'s BENY access has already been revoked in the BENY portal, and moves them to Cancelled. It does not revoke anything itself — do that in the BENY portal first, and only after their paid access has ended.`}>
-                <div className='mt-4 space-y-3 text-start'>
-                    <label className='block text-xs font-semibold text-slate-400 uppercase'>Deactivation Reason</label>
-                    <select
-                        value={deactivationReason}
-                        onChange={(e) => setDeactivationReason(e.target.value)}
-                        className='border-slr-navy-border bg-slr-navy-card focus:ring-primary w-full rounded-lg border p-2 text-sm text-white focus:ring-1 focus:outline-none'>
-                        {REASON_OPTIONS.map((r) => (
-                            <option key={r} value={r}>
-                                {r === 'Other' ? 'Other...' : r}
-                            </option>
-                        ))}
-                    </select>
-
-                    {deactivationReason === 'Other' && (
-                        <input
-                            type='text'
-                            placeholder='Specify custom reason...'
-                            value={customReason}
-                            onChange={(e) => setCustomReason(e.target.value)}
-                            className='border-slr-navy-border bg-slr-navy-card focus:ring-primary w-full rounded-lg border p-2 text-sm text-white focus:ring-2 focus:outline-none'
-                        />
-                    )}
-                </div>
-            </ConfirmDialog>
+                desc={`This records that ${deactivateTarget?.name}'s BENY access has already been revoked in the BENY portal, and moves them to Cancelled. It does not revoke anything itself — do that in the BENY portal first, and only after their paid access has ended.`}
+            />
         </>
     );
 }

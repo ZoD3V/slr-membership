@@ -27,27 +27,49 @@ export default async function BenyPage({ searchParams }: { searchParams: Promise
 
     if (token) {
         try {
-            // Fetch from the stable getBenyPending endpoint to support legacy backend on initial load
-            const pending = await getBenyPending(token);
-            const pendingList = Array.isArray(pending)
-                ? pending
-                : (pending && (pending as any).items
-                    ? (pending as any).items
-                    : []);
-            rows = pendingList.map((b: any) => ({
-                id: b.beny_subscription_id,
-                name: b.name || '-',
-                email: b.email || '-',
-                phone: b.phone || '-',
-                status: b.status || '-',
-                requestedAt: formatDate(b.created_at),
-                activatedAt: null,
-                accessEndsAt: null,
-                accessEndsAtIso: null,
-                deactivatedAt: null,
-                deactivationReason: null
-            }));
-            totalCount = rows.length;
+            if (initialTab === 'pending_deactivation') {
+                const { API } = await import('@/lib/api/endpoints');
+                const { apiFetch } = await import('@/lib/api/http');
+                const res = await apiFetch<any>(API.admin.benyList, { token, cache: 'no-store' });
+                const items = res.items || res.data || [];
+                const filtered = items.filter((b: any) => (b.status || '').toLowerCase() === 'pending_deactivation');
+                rows = filtered.map((b: any) => ({
+                    id: b.beny_subscription_id,
+                    name: b.name || '-',
+                    email: b.email || '-',
+                    phone: b.phone || '-',
+                    status: b.status || '-',
+                    requestedAt: formatDate(b.created_at),
+                    activatedAt: formatDate(b.activated_at),
+                    accessEndsAt: formatDate(b.access_ends_at),
+                    accessEndsAtIso: b.access_ends_at ?? null,
+                    deactivatedAt: formatDate(b.deactivated_at),
+                    deactivationReason: b.deactivation_reason || null
+                }));
+                totalCount = rows.length;
+            } else {
+                // Fetch from the stable getBenyPending endpoint to support legacy backend on initial load
+                const pending = await getBenyPending(token);
+                const pendingList = Array.isArray(pending)
+                    ? pending
+                    : (pending && (pending as any).items
+                        ? (pending as any).items
+                        : []);
+                rows = pendingList.map((b: any) => ({
+                    id: b.beny_subscription_id,
+                    name: b.name || '-',
+                    email: b.email || '-',
+                    phone: b.phone || '-',
+                    status: b.status || '-',
+                    requestedAt: formatDate(b.created_at),
+                    activatedAt: null,
+                    accessEndsAt: null,
+                    accessEndsAtIso: null,
+                    deactivatedAt: null,
+                    deactivationReason: null
+                }));
+                totalCount = rows.length;
+            }
         } catch (error) {
             handleApiAuthError(error); // 401 only → force logout; others fall through
             listError = toListError(error);

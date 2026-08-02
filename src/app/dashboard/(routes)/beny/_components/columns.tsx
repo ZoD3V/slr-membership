@@ -37,38 +37,16 @@ export function benyColumnsFor(tab: BenyTab, { onActivate, onDeactivate }: Handl
 
     if (tab === 'active') {
         base.push(
-            { key: 'activatedAt', label: 'Activated At', render: (row) => row.activatedAt || '-' },
-            {
-                key: 'accessEndsAt',
-                label: 'Access Ends At',
-                render: (row) =>
-                    row.accessEndsAt ? (
-                        <span className='font-medium text-red-400'>{row.accessEndsAt}</span>
-                    ) : (
-                        <span className='text-slate-400'>Ongoing</span>
-                    )
-            }
+            { key: 'activatedAt', label: 'Activated At', render: (row) => row.activatedAt || '-' }
         );
     }
 
     if (tab === 'pending_deactivation') {
-        base.push({
-            key: 'accessEndsAt',
-            label: 'Deactivate On',
-            // PRD §2.3: access runs to the end of the paid period, so this is the
-            // date the admin may revoke in the BENY portal — never "now".
-            render: (row) => (
-                <span className='font-medium text-red-400'>
-                    {row.accessEndsAt ? `Deactivate on ${row.accessEndsAt}` : 'Immediately'}
-                </span>
-            )
-        });
+        // No accessEndsAt / Deactivate On column since it's not supported by API
     }
 
     if (tab === 'cancelled') {
-        base.push(
-            { key: 'deactivatedAt', label: 'Deactivated At', render: (row) => row.deactivatedAt || '-' }
-        );
+        // No Deactivated At column package since it is not returned by API
     }
 
     // `rowAction` rather than `action` — the latter is a DataTable magic key that
@@ -98,11 +76,7 @@ export function benyColumnsFor(tab: BenyTab, { onActivate, onDeactivate }: Handl
 
                 return (
                     <span
-                        title={
-                            due
-                                ? 'Record that you have revoked this account in the BENY portal.'
-                                : `Paid access runs until ${row.accessEndsAt}. Revoke in the BENY portal only after that date.`
-                        }>
+                        title='Record that you have revoked this account in the BENY portal.'>
                         <Button
                             size='sm'
                             variant='destructive'

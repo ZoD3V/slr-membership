@@ -13,7 +13,7 @@ export const TABS = [
  * that tab renders a notice instead of firing a request that can only fail.
  * Delete this set once the backend adds the status.
  */
-const SUPPORTED: ReadonlySet<string> = new Set(['pending_activation', 'active', 'cancelled']);
+const SUPPORTED: ReadonlySet<string> = new Set(['pending_activation', 'active', 'pending_deactivation', 'cancelled']);
 
 export const isTabSupported = (tab: BenyTab): boolean => SUPPORTED.has(tab);
 
