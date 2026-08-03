@@ -144,7 +144,7 @@ export default async function DashboardHome() {
     const token = await getAccessToken();
 
     // `members_by_tier` sends only marketing names, so r4 and b4 both arrive as
-    // "Plus" and merge into one meaningless row. /memberships/stats groups by
+    // \"Plus\" and merge into one meaningless row. /memberships/stats groups by
     // sub-tier id instead, which keeps Red and Blue distinguishable — fetched
     // alongside the metrics so the breakdown survives a metrics failure.
     const [metricsResult, statsResult] = await Promise.allSettled([
@@ -159,6 +159,7 @@ export default async function DashboardHome() {
     const subTierCounts: SubTierCount[] = statsResult.status === 'fulfilled' ? statsResult.value : [];
 
     const tierRows = subTierCounts
+        .filter((c) => (c.subTierId || '').toLowerCase() !== 'beny') // Saring keluar add-on BENY dari breakdown tier memberships
         .map((c) => ({ label: formatAdminTierName(subTierCodeOf(c.subTierId)), count: c.count }))
         .sort((a, b) => b.count - a.count);
 

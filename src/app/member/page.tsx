@@ -5,7 +5,7 @@ import { SPIN_ELIGIBLE_SUB_TIERS, SUB_TIERS } from '@/constant/tiers';
 import { getCurrentMember } from '@/data/member-dashboard';
 import { handleApiAuthError } from '@/lib/api/guard';
 import { type Discount, getPublicDiscounts } from '@/lib/api/resources/discounts';
-import { getEntryHistory } from '@/lib/api/resources/entries';
+import { getEntryHistory, isCycleExpired } from '@/lib/api/resources/entries';
 import { type ApiGiveaway, getGiveaways, tierGroupFromApi, toGiveaway } from '@/lib/api/resources/giveaways';
 import { getMyMembership } from '@/lib/api/resources/memberships';
 import { getSpinStatus } from '@/lib/api/resources/spin';
@@ -67,7 +67,12 @@ export default async function MemberDashboardPage() {
 
     const membership = membershipR?.status === 'fulfilled' ? membershipR.value : null;
     const rawCycle = entriesR?.status === 'fulfilled' ? entriesR.value.current_cycle : null;
-    const cycle = rawCycle && (rawCycle.tier || '').toLowerCase() !== 'beny' ? rawCycle : null;
+    // G2 (docs/BACKEND-ISSUES-SPRINT3-GIVEAWAYS.md): the API can keep reporting a
+    // cycle as `current` + `entry_status: "active"` days after its own `end_at` —
+    // renewal not having run yet. Treat it as gone rather than show stale tokens /
+    // draw eligibility; the dashboard falls back to the no-active-draw empty state.
+    const cycle =
+        rawCycle && (rawCycle.tier || '').toLowerCase() !== 'beny' && !isCycleExpired(rawCycle) ? rawCycle : null;
     const giveaways = giveawaysR?.status === 'fulfilled' ? giveawaysR.value : [];
     // A rejected read is not an empty read: keep them apart so a dead endpoint
     // never renders as "you have no draws / no membership".

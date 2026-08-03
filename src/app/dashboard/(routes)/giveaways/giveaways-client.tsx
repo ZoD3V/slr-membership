@@ -1,11 +1,12 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
 import { type ListError, ListErrorCard } from '@/components/common/list-error-card';
 import { DataTable } from '@/components/data-table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 import { giveawaysColumns } from './_components/columns';
 import { deleteGiveawayAction } from './actions';
@@ -25,9 +26,17 @@ export type GiveawayRow = {
     draws: string;
 };
 
+type StatusFilter = 'all' | 'OPEN' | 'CLOSED' | 'DRAWN';
+
 export function GiveawaysClient({ rows, listError }: { rows: GiveawayRow[]; listError: ListError | null }) {
     const router = useRouter();
     const [, startTransition] = useTransition();
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+
+    const filteredRows = useMemo(() => {
+        if (statusFilter === 'all') return rows;
+        return rows.filter((row) => row.status === statusFilter);
+    }, [rows, statusFilter]);
 
     const handleEdit = (row: GiveawayRow) => router.push(`/dashboard/giveaways/${row.id}`);
 
@@ -54,16 +63,28 @@ export function GiveawaysClient({ rows, listError }: { rows: GiveawayRow[]; list
                 />
             ) : null}
 
+            <div className='mb-4 flex items-center gap-3'>
+                <label className='text-sm font-medium text-slate-400'>Status:</label>
+                <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
+                    <SelectTrigger className='w-[180px]'>
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value='all'>All</SelectItem>
+                        <SelectItem value='OPEN'>Open</SelectItem>
+                        <SelectItem value='CLOSED'>Closed</SelectItem>
+                        <SelectItem value='DRAWN'>Drawn</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
             <DataTable
-                // The endpoint ignores ?search=, so the page loads every row and
-                // DataTable searches/paginates client-side (same as ebooks).
                 searchKey='name'
                 columns={giveawaysColumns}
-                data={rows}
+                data={filteredRows}
                 nowrap
-                alwaysShowPagination
-                onEdit={(row) => handleEdit(row as GiveawayRow)}
-                onDelete={(row) => handleDelete(row as GiveawayRow)}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
             />
         </>
     );
