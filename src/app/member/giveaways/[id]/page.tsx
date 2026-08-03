@@ -197,9 +197,13 @@ export default async function GiveawayDetailPage({ params }: { params: Promise<{
             {/* Body */}
             <div className='grid gap-5 lg:grid-cols-3'>
                 <div className='space-y-5 lg:col-span-2'>
-                    <InfoCard title='The Prize'>
-                        <p className='text-slr-muted text-sm leading-relaxed'>{giveaway.prize_description}</p>
-                    </InfoCard>
+                    {/* The live API has a single `prize` field, so the description usually just
+                        repeats the hero. Only render when the backend sends something richer. */}
+                    {giveaway.prize_description !== giveaway.prize_label && (
+                        <InfoCard title='The Prize'>
+                            <p className='text-slr-muted text-sm leading-relaxed'>{giveaway.prize_description}</p>
+                        </InfoCard>
+                    )}
 
                     <InfoCard title='How It Works'>
                         <ul className='space-y-2.5'>
