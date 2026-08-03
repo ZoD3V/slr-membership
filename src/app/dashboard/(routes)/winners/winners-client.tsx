@@ -24,30 +24,9 @@ export type WinnerRow = {
     recorded_at: string;
 };
 
-export function WinnersClient({
-    rows,
-    listError,
-    page,
-    total,
-    perPage,
-    giveawayFilter
-}: {
-    rows: WinnerRow[];
-    listError: ListError | null;
-    page: number;
-    total: number;
-    perPage: number;
-    giveawayFilter?: string;
-}) {
+export function WinnersClient({ rows, listError }: { rows: WinnerRow[]; listError: ListError | null }) {
     const router = useRouter();
     const [, startTransition] = useTransition();
-
-    const hrefFor = (next: number) => {
-        const params = new URLSearchParams({ page: String(next) });
-        if (giveawayFilter) params.set('giveaway', giveawayFilter);
-
-        return `/dashboard/winners?${params}`;
-    };
 
     const handleEdit = (row: WinnerRow) => router.push(`/dashboard/winners/${row.id}`);
 
@@ -75,17 +54,12 @@ export function WinnersClient({
             ) : null}
 
             <DataTable
-                // Server-paginated; the endpoint has no ?search= param.
-                isSearch={false}
+                // The endpoint ignores ?search=, so the page loads every row and
+                // DataTable searches/paginates client-side (same as ebooks).
                 searchKey='winner'
                 columns={winnersColumns}
                 data={rows}
                 nowrap
-                serverSide
-                currentPage={page}
-                totalItems={total}
-                itemsPerPage={perPage}
-                onPageChange={(next) => router.push(hrefFor(next))}
                 alwaysShowPagination
                 onEdit={(row) => handleEdit(row as WinnerRow)}
                 onDelete={(row) => handleDelete(row as WinnerRow)}

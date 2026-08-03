@@ -286,6 +286,39 @@ function listQs(query: ListQuery = {}): string {
 export const getAdminGiveaways = (token: string, query: ListQuery = {}) =>
     apiFetch<Paginated<AdminGiveaway>>(`${API.admin.giveaways}${listQs(query)}`, { token, cache: 'no-store' });
 
+/** Server-enforced ceiling: per_page above this returns 400 VALIDATION_ERROR. */
+const MAX_PER_PAGE = 100;
+
+/**
+ * Admin: every giveaway, following pagination. Both admin lists silently IGNORE
+ * `?search=` (verified live 2026-08-03 — a bogus term still returns every row),
+ * so search has to happen client-side over the full set.
+ */
+export async function getAllAdminGiveaways(token: string): Promise<AdminGiveaway[]> {
+    const all: AdminGiveaway[] = [];
+
+    for (let page = 1; ; page++) {
+        const res = await getAdminGiveaways(token, { page, perPage: MAX_PER_PAGE });
+        all.push(...res.items);
+        if (res.items.length < MAX_PER_PAGE) break;
+    }
+
+    return all;
+}
+
+/** Admin: every recorded winner, following pagination (see getAllAdminGiveaways on why). */
+export async function getAllAdminWinners(token: string, giveawayId?: string): Promise<AdminWinner[]> {
+    const all: AdminWinner[] = [];
+
+    for (let page = 1; ; page++) {
+        const res = await getAdminWinners(token, { page, perPage: MAX_PER_PAGE, giveawayId });
+        all.push(...res.items);
+        if (res.items.length < MAX_PER_PAGE) break;
+    }
+
+    return all;
+}
+
 /** Admin: one giveaway's full record. */
 export const getAdminGiveaway = (id: string, token: string) =>
     apiFetch<AdminGiveaway>(API.admin.giveawayDetail(id), { token, cache: 'no-store' });

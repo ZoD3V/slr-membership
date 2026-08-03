@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import Heading from '@/components/ui/heading';
 import { handleApiAuthError } from '@/lib/api/guard';
 import { toListError } from '@/lib/api/list-error';
-import { getAdminWinners } from '@/lib/api/resources/giveaways';
+import { getAllAdminWinners } from '@/lib/api/resources/giveaways';
 import { getAccessToken } from '@/lib/api/server';
 import { formatShortDate } from '@/lib/member';
 
@@ -14,32 +14,24 @@ import { loadGiveawaySchedules } from './_components/load';
 import { type WinnerRow, WinnersClient } from './winners-client';
 import { Plus } from 'lucide-react';
 
-const PER_PAGE = 10;
-
-export default async function WinnersPage({
-    searchParams
-}: {
-    searchParams: Promise<{ page?: string; giveaway?: string }>;
-}) {
-    const { page: rawPage, giveaway } = await searchParams;
-    const page = Math.max(1, Number(rawPage) || 1);
+export default async function WinnersPage({ searchParams }: { searchParams: Promise<{ giveaway?: string }> }) {
+    const { giveaway } = await searchParams;
     const token = await getAccessToken();
 
     let rows: WinnerRow[] = [];
-    let total = 0;
     let listError: ListError | null = null;
 
     try {
         if (token) {
             // Independent calls — the winners payload carries no schedule, so the
-            // dates are joined in from the giveaways list by `giveaway_id`.
-            const [res, schedules] = await Promise.all([
-                getAdminWinners(token, { page, perPage: PER_PAGE, giveawayId: giveaway }),
+            // dates are joined in from the giveaways list by `giveaway_id`. Full
+            // set: the endpoint ignores ?search=, so DataTable filters client-side.
+            const [winners, schedules] = await Promise.all([
+                getAllAdminWinners(token, giveaway),
                 loadGiveawaySchedules()
             ]);
 
-            total = res.pagination.total;
-            rows = res.items.map((w) => {
+            rows = winners.map((w) => {
                 const schedule = w.giveaway?.giveaway_id ? schedules.get(w.giveaway.giveaway_id) : undefined;
 
                 return {
@@ -85,14 +77,7 @@ export default async function WinnersPage({
                 </div>
             </div>
 
-            <WinnersClient
-                rows={rows}
-                listError={listError}
-                page={page}
-                total={total}
-                perPage={PER_PAGE}
-                giveawayFilter={giveaway}
-            />
+            <WinnersClient rows={rows} listError={listError} />
         </DashboardPageShell>
     );
 }

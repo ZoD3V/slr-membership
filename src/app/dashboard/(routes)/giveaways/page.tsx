@@ -6,29 +6,23 @@ import { Button } from '@/components/ui/button';
 import Heading from '@/components/ui/heading';
 import { handleApiAuthError } from '@/lib/api/guard';
 import { toListError } from '@/lib/api/list-error';
-import { getAdminGiveaways } from '@/lib/api/resources/giveaways';
+import { getAllAdminGiveaways } from '@/lib/api/resources/giveaways';
 import { getAccessToken } from '@/lib/api/server';
 
 import { toGiveawayRow } from './_components/to-row';
 import { type GiveawayRow, GiveawaysClient } from './giveaways-client';
 import { Plus } from 'lucide-react';
 
-const PER_PAGE = 10;
-
-export default async function GiveawaysPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
-    const { page: rawPage } = await searchParams;
-    const page = Math.max(1, Number(rawPage) || 1);
+export default async function GiveawaysPage() {
     const token = await getAccessToken();
 
     let rows: GiveawayRow[] = [];
-    let total = 0;
     let listError: ListError | null = null;
 
     try {
         if (token) {
-            const res = await getAdminGiveaways(token, { page, perPage: PER_PAGE });
-            rows = res.items.map(toGiveawayRow);
-            total = res.pagination.total;
+            // Full set: the admin list ignores ?search=, so DataTable searches/paginates client-side.
+            rows = (await getAllAdminGiveaways(token)).map(toGiveawayRow);
         }
     } catch (error) {
         handleApiAuthError(error); // 401 → force logout; others fall through
@@ -47,7 +41,7 @@ export default async function GiveawaysPage({ searchParams }: { searchParams: Pr
                 </Button>
             </div>
 
-            <GiveawaysClient rows={rows} listError={listError} page={page} total={total} perPage={PER_PAGE} />
+            <GiveawaysClient rows={rows} listError={listError} />
         </DashboardPageShell>
     );
 }

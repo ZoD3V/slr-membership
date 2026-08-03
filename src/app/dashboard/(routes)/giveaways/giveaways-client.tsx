@@ -25,19 +25,7 @@ export type GiveawayRow = {
     draws: string;
 };
 
-export function GiveawaysClient({
-    rows,
-    listError,
-    page,
-    total,
-    perPage
-}: {
-    rows: GiveawayRow[];
-    listError: ListError | null;
-    page: number;
-    total: number;
-    perPage: number;
-}) {
+export function GiveawaysClient({ rows, listError }: { rows: GiveawayRow[]; listError: ListError | null }) {
     const router = useRouter();
     const [, startTransition] = useTransition();
 
@@ -67,18 +55,12 @@ export function GiveawaysClient({
             ) : null}
 
             <DataTable
-                // Server-paginated: search would only filter the current page, and
-                // the endpoint has no ?search= param.
-                isSearch={false}
+                // The endpoint ignores ?search=, so the page loads every row and
+                // DataTable searches/paginates client-side (same as ebooks).
                 searchKey='name'
                 columns={giveawaysColumns}
                 data={rows}
                 nowrap
-                serverSide
-                currentPage={page}
-                totalItems={total}
-                itemsPerPage={perPage}
-                onPageChange={(next) => router.push(`/dashboard/giveaways?page=${next}`)}
                 alwaysShowPagination
                 onEdit={(row) => handleEdit(row as GiveawayRow)}
                 onDelete={(row) => handleDelete(row as GiveawayRow)}

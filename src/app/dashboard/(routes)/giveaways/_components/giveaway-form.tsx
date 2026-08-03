@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useEffect, useTransition } from 'react';
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -31,6 +31,22 @@ const TYPE_OPTIONS: { value: AdminGiveawayType; label: string }[] = [
     { value: 'MONTHLY', label: 'Monthly' }
 ];
 
+const TYPE_DURATION_DAYS: Record<AdminGiveawayType, number> = { WEEKLY: 7, MONTHLY: 28 };
+
+const pad = (n: number) => String(n).padStart(2, '0');
+
+const formatLocalInput = (d: Date): string =>
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+/** Same wall-clock time `days` later — calendar-based so DST transitions don't shift the hour. */
+const addDaysLocal = (local: string, days: number): string => {
+    const d = new Date(local);
+    if (Number.isNaN(d.getTime())) return '';
+    d.setDate(d.getDate() + days);
+
+    return formatLocalInput(d);
+};
+
 // All three dates are required server-side; a partial body is rejected.
 const formSchema = z
     .object({
@@ -45,16 +61,8 @@ const formSchema = z
     .refine(
         (data) => {
             if (!data.opensAt || !data.closesAt) return true; // Let required validation handle empty fields
-            const opens = new Date(data.opensAt);
-            const closes = new Date(data.closesAt);
-            const diffDays = Math.ceil((closes.getTime() - opens.getTime()) / (1000 * 60 * 60 * 24));
 
-            if (data.type === 'WEEKLY') {
-                return diffDays === 7;
-            } else if (data.type === 'MONTHLY') {
-                return diffDays === 28;
-            }
-            return true;
+            return data.closesAt === addDaysLocal(data.opensAt, TYPE_DURATION_DAYS[data.type]);
         },
         {
             message: 'Closes At must be 7 days after Opens At for Weekly, or 28 days for Monthly',
@@ -80,9 +88,8 @@ const toLocalInput = (iso: string | null | undefined): string => {
     if (!iso) return '';
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '';
-    const pad = (n: number) => String(n).padStart(2, '0');
 
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return formatLocalInput(d);
 };
 
 const toIso = (local: string): string => new Date(local).toISOString();
@@ -108,6 +115,16 @@ export function GiveawayForm({ initialData }: { initialData?: GiveawayFormInitia
               }
             : { name: '', tier: 'RED', type: 'MONTHLY', prize: '', opensAt: '', closesAt: '', drawsAt: '' }
     });
+
+    const opensAt = form.watch('opensAt');
+    const type = form.watch('type');
+
+    useEffect(() => {
+        if (initialData) return; // Edit mode: schedule fields are read-only
+
+        const closes = opensAt ? addDaysLocal(opensAt, TYPE_DURATION_DAYS[type]) : '';
+        form.setValue('closesAt', closes, { shouldValidate: !!closes });
+    }, [opensAt, type, form, initialData]);
 
     const onSubmit = (values: FormValues) => {
         const opens = toIso(values.opensAt);
@@ -263,7 +280,7 @@ export function GiveawayForm({ initialData }: { initialData?: GiveawayFormInitia
                                     <FormItem>
                                         <FormLabel>Closes at</FormLabel>
                                         <FormControl>
-                                            <Input type='datetime-local' {...field} disabled={!!initialData} />
+                                            <Input type='datetime-local' {...field} disabled />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
