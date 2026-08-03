@@ -4,10 +4,10 @@ Endpoints that return errors or behave against the PRD, found while integrating 
 
 - **Base URL:** `https://api.smartliferewards.com.au/api/v1`
 - **Swagger:** `https://api.smartliferewards.com.au/docsx-2s3crt3-199`
-- **Captured:** 2026-07-08 · **Re-verified:** 2026-07-17
+- **Captured:** 2026-07-08 · **Re-verified:** 2026-07-17 · **Giveaways module:** 2026-08-03
 - **Envelope:** every response is `{ success, message, data, meta }`.
 
-> **Reading order.** The **Sprint 3 (Ronde 3)** section directly below is the active sprint (Giveaway, Stripe, pembayaran). Sprint 2 follows it (CLEAR — no blockers). Everything after that is older history.
+> **Reading order.** Newest handoff: **[BACKEND-ISSUES-SPRINT3-GIVEAWAYS.md](BACKEND-ISSUES-SPRINT3-GIVEAWAYS.md)** (modul giveaways, 2026-08-03). The **Sprint 3 (Ronde 3)** section directly below is the active sprint (Giveaway, Stripe, pembayaran). Sprint 2 follows it (CLEAR — no blockers). Everything after that is older history.
 
 ---
 
