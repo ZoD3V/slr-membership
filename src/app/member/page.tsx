@@ -145,7 +145,7 @@ export default async function MemberDashboardPage() {
 
     const draw = giveawayDraw ?? cycleDraw;
     const drawEyebrow = giveawayDraw ? 'Current Draw' : 'Current Cycle';
-    const drawDateWord = giveawayDraw ? 'Draws' : 'Renews';
+    const drawDateWord = isVisitor ? 'Ends' : (giveawayDraw ? 'Draws' : 'Renews');
 
     // Featured partner offers — ONLY discounts flagged is_featured, capped. Empty → hidden.
     const featuredDiscounts: Discount[] = publicDiscounts
