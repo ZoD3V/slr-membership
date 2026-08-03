@@ -18,6 +18,13 @@ export default async function PrizesPage() {
 
     return (
         <div className='mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 md:px-6 md:py-8'>
+            <header className='space-y-1'>
+                <h1 className='font-bebas-neue text-3xl tracking-wide uppercase sm:text-4xl'>Prizes</h1>
+                <p className='text-slr-muted text-sm md:text-base'>
+                    The prize pool for the current membership stage and what each tier can win.
+                </p>
+            </header>
+
             {/* Prize pool hero */}
             <section className='slr-section-bg border-slr-navy-border relative overflow-hidden rounded-2xl border p-6 text-center md:p-10'>
                 <p className='text-slr-gold-label text-xs font-semibold tracking-widest uppercase md:text-sm'>

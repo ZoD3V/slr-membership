@@ -15,13 +15,22 @@ const BILLING_TEXT: Record<string, string> = {
     canceled: 'text-red-400'
 };
 
-// Static benefits shown for paid tiers (PRD §2.2 "Benefit Umum RED & BLUE").
-const BENEFITS = [
+// Static benefits shown on the plan card (PRD §2.2 "Benefit Umum RED & BLUE").
+const PAID_BENEFITS = [
     '9 Draws Weekly/Monthly',
     'Monthly bonus prize',
     'Community discounts',
     'Access to E-books (Finance & Wellbeing)',
     'Upgrade or cancel anytime'
+];
+
+// Mirrors the public Free Visitors section — visitors get the visitor draw only:
+// no discounts, no bonus prize, no e-book content (listing preview only).
+const VISITOR_BENEFITS = [
+    'Free to join — no credit card required',
+    'Weekly visitor giveaways & bonus draws',
+    'Upgrade to RED or BLUE anytime',
+    'No commitment — cancel anytime'
 ];
 
 interface TierCardProps {
@@ -37,6 +46,7 @@ interface TierCardProps {
 export function TierCard({ subTier, priceCents, billingStatus, nextRenewal, children }: TierCardProps) {
     const meta = SUB_TIERS[subTier];
     const visual = TIER_VISUALS[meta.group];
+    const benefits = meta.group === 'visitor' ? VISITOR_BENEFITS : PAID_BENEFITS;
 
     return (
         <section className='bg-card-dark-navy border-slr-navy-border rounded-2xl border p-5 md:p-6'>
@@ -80,7 +90,7 @@ export function TierCard({ subTier, priceCents, billingStatus, nextRenewal, chil
             </div>
 
             <ul className='mt-4 grid gap-2 border-t border-white/5 pt-4 text-sm text-white/90 sm:grid-cols-2'>
-                {BENEFITS.map((b) => (
+                {benefits.map((b) => (
                     <li key={b} className='flex items-center gap-2'>
                         <span className='text-slr-gold-label'>✓</span> {b}
                     </li>

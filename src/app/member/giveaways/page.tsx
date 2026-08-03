@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 
+import Link from 'next/link';
+
 import EmptyState from '@/components/common/empty-state';
 import { getCurrentMember } from '@/data/member-dashboard';
 import { handleApiAuthError } from '@/lib/api/guard';
@@ -10,7 +12,7 @@ import { tierGroupOf } from '@/lib/member';
 import type { Giveaway } from '@/types/member';
 
 import { GiveawaysBoard } from './_components/giveaways-board';
-import { CircleAlert, Gift } from 'lucide-react';
+import { ArrowLeft, CircleAlert, Gift } from 'lucide-react';
 
 export const metadata: Metadata = {
     title: 'Giveaways · SLR Member'
@@ -54,10 +56,19 @@ export default async function GiveawaysPage() {
                     description='We couldn’t load the draws for your tier right now. Please try again shortly.'
                 />
             ) : giveaways.length === 0 ? (
+                // Open layout matching the Referral (ComingSoon) empty state — no card box.
                 <EmptyState
                     icon={Gift}
                     title='No Giveaways Right Now'
                     description='Active draws for your tier will appear here soon.'
+                    action={
+                        <Link
+                            href='/member'
+                            className='text-slr-gold-label inline-flex items-center gap-1.5 text-sm font-semibold uppercase transition-opacity hover:opacity-80'>
+                            <ArrowLeft className='size-4' /> Back to dashboard
+                        </Link>
+                    }
+                    className='border-0 bg-transparent py-16'
                 />
             ) : (
                 <GiveawaysBoard giveaways={giveaways} memberSubTier={member.sub_tier} />
