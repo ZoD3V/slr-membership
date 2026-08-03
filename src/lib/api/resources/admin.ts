@@ -39,7 +39,14 @@ export interface AdminMemberListItem {
     email: string;
     phone: string;
     state: string;
-    status: 'active' | 'suspended' | 'deactivated';
+    /**
+     * Live OpenAPI (2026-08-03) declares a bare `string` with no enum, and the
+     * values are not all documented — `pending_payment` (registered, never paid)
+     * shows up in the admin UI but appears nowhere in the spec. Typing it as a
+     * closed union hid that, so compare case-insensitively rather than assuming
+     * the set below is complete: 'active' | 'pending_payment' | 'suspended' | 'deactivated'.
+     */
+    status: string;
     tier: string; // e.g., 'RED R4'
     created_at: string;
 }

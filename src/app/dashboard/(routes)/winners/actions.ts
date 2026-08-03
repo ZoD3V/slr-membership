@@ -119,7 +119,13 @@ export async function searchWinnerMembersAction(query: WinnerMemberQuery): Promi
         const search = query.search?.trim();
         const rows = await fetchAllMembers(token, query.tier, search || undefined);
         const scoped = query.state ? rows.filter((m) => m.state === query.state) : rows;
-        const eligible = await withDrawPass(scoped, token);
+
+        // Only a live account can be recorded as a winner: `pending_payment`
+        // (registered but never paid), `suspended` and `deactivated` members are
+        // not in any draw pool. Runs before the draw_pass lookups below so it also
+        // cuts how many detail requests those need.
+        const active = scoped.filter((m) => m.status?.toLowerCase() === 'active');
+        const eligible = await withDrawPass(active, token);
 
         return {
             ok: true,

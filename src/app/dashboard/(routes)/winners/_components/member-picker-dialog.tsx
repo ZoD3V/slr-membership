@@ -155,7 +155,7 @@ export function MemberPickerDialog({
                         itemsPerPage={8}
                         emptyMessage={
                             error ??
-                            'No eligible members in this draw pool. Members who have already won or used all their entries this cycle are not listed.'
+                            'No eligible members in this draw pool. Only active accounts are listed — members still pending payment, suspended, or who have already won this cycle are excluded.'
                         }
                     />
                 </div>
