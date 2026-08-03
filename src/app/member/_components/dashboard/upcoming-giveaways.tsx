@@ -15,8 +15,10 @@ function GiveawayCard({ giveaway }: { giveaway: UpcomingGiveaway }) {
     const visual = TIER_VISUALS[giveaway.tier_group];
 
     return (
-        <article
-            className='shadow-card-warm flex flex-col gap-3 rounded-2xl border p-4 sm:p-5'
+        // Whole card is the click target (same pattern as Quick Actions).
+        <Link
+            href={giveaway.locked ? '/member/membership' : `/member/giveaways/${giveaway.id}`}
+            className='group shadow-card-warm flex flex-col gap-3 rounded-2xl border p-4 transition-shadow duration-200 hover:shadow-[0_0_28px_rgba(212,175,55,0.15)] sm:p-5'
             style={{ background: visual.badgeBg, borderColor: visual.badgeBorder }}>
             <div className='flex items-center justify-between gap-2'>
                 <span className='flex items-center gap-1.5'>
@@ -44,20 +46,18 @@ function GiveawayCard({ giveaway }: { giveaway: UpcomingGiveaway }) {
                     {formatDrawDateTime(giveaway.draws_at)}
                 </span>
                 {giveaway.locked ? (
-                    <Link
-                        href='/member/membership'
-                        className='text-slr-gold-label inline-flex items-center gap-1 text-xs font-semibold uppercase transition-opacity hover:opacity-80'>
-                        Upgrade <ArrowRight className='size-3' />
-                    </Link>
+                    <span className='text-slr-gold-label inline-flex items-center gap-1 text-xs font-semibold uppercase'>
+                        Upgrade{' '}
+                        <ArrowRight className='size-3 transition-transform duration-200 group-hover:translate-x-0.5' />
+                    </span>
                 ) : (
-                    <Link
-                        href='/member/giveaways'
-                        className='inline-flex items-center gap-1 text-xs font-semibold text-white/80 uppercase transition-colors hover:text-white'>
-                        View <ArrowRight className='size-3' />
-                    </Link>
+                    <span className='inline-flex items-center gap-1 text-xs font-semibold text-white/80 uppercase transition-colors group-hover:text-white'>
+                        View{' '}
+                        <ArrowRight className='size-3 transition-transform duration-200 group-hover:translate-x-0.5' />
+                    </span>
                 )}
             </div>
-        </article>
+        </Link>
     );
 }
 

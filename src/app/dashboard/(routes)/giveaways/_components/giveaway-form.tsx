@@ -33,18 +33,41 @@ const TYPE_OPTIONS: { value: AdminGiveawayType; label: string }[] = [
 
 const TYPE_DURATION_DAYS: Record<AdminGiveawayType, number> = { WEEKLY: 7, MONTHLY: 28 };
 
+// Giveaway schedules are Sydney business events: every datetime-local value in
+// this form is Sydney wall-clock (AEST/AEDT), no matter where the admin's
+// browser sits. Conversion to/from UTC ISO happens only at the edges below.
+const SYDNEY_TZ = 'Australia/Sydney';
+
 const pad = (n: number) => String(n).padStart(2, '0');
 
-const formatLocalInput = (d: Date): string =>
-    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const INPUT_RE = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/;
 
-/** Same wall-clock time `days` later — calendar-based so DST transitions don't shift the hour. */
+/** Sydney wall-clock parts of a UTC instant. */
+const sydneyParts = (date: Date) => {
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: SYDNEY_TZ,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23'
+    }).formatToParts(date);
+    const p = Object.fromEntries(parts.map((x) => [x.type, x.value]));
+
+    return { y: +p.year, mo: +p.month, d: +p.day, h: +p.hour, mi: +p.minute };
+};
+
+/**
+ * Same wall-clock time `days` later. Pure calendar math on the string — the
+ * AEST/AEDT switch only matters when converting to an instant (`toIso`).
+ */
 const addDaysLocal = (local: string, days: number): string => {
-    const d = new Date(local);
-    if (Number.isNaN(d.getTime())) return '';
-    d.setDate(d.getDate() + days);
+    const m = local.match(INPUT_RE);
+    if (!m) return '';
+    const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3] + days, +m[4], +m[5]));
 
-    return formatLocalInput(d);
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
 };
 
 // All three dates are required server-side; a partial body is rejected.
@@ -83,16 +106,33 @@ export interface GiveawayFormInitialData {
     drawsAt: string;
 }
 
-/** ISO → the `YYYY-MM-DDTHH:mm` a datetime-local input expects, in local time. */
+/** UTC ISO → the Sydney wall-clock `YYYY-MM-DDTHH:mm` a datetime-local input expects. */
 const toLocalInput = (iso: string | null | undefined): string => {
     if (!iso) return '';
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '';
+    const p = sydneyParts(d);
 
-    return formatLocalInput(d);
+    return `${p.y}-${pad(p.mo)}-${pad(p.d)}T${pad(p.h)}:${pad(p.mi)}`;
 };
 
-const toIso = (local: string): string => new Date(local).toISOString();
+/**
+ * Sydney wall-clock `YYYY-MM-DDTHH:mm` → UTC ISO. Two-pass correction: start
+ * from the wall time read as UTC, then shift by however far Sydney renders it
+ * off — converges across the AEST/AEDT offset change.
+ */
+const toIso = (local: string): string => {
+    const m = local.match(INPUT_RE);
+    if (!m) return '';
+    const wanted = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+    let utc = wanted;
+    for (let i = 0; i < 2; i++) {
+        const p = sydneyParts(new Date(utc));
+        utc += wanted - Date.UTC(p.y, p.mo - 1, p.d, p.h, p.mi);
+    }
+
+    return new Date(utc).toISOString();
+};
 
 export function GiveawayForm({ initialData }: { initialData?: GiveawayFormInitialData }) {
     const router = useRouter();
@@ -265,7 +305,7 @@ export function GiveawayForm({ initialData }: { initialData?: GiveawayFormInitia
                                 name='opensAt'
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Opens at</FormLabel>
+                                        <FormLabel>Opens at (AEST)</FormLabel>
                                         <FormControl>
                                             <Input type='datetime-local' {...field} disabled={!!initialData} />
                                         </FormControl>
@@ -278,7 +318,7 @@ export function GiveawayForm({ initialData }: { initialData?: GiveawayFormInitia
                                 name='closesAt'
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Closes at</FormLabel>
+                                        <FormLabel>Closes at (AEST)</FormLabel>
                                         <FormControl>
                                             <Input type='datetime-local' {...field} disabled />
                                         </FormControl>
@@ -291,7 +331,7 @@ export function GiveawayForm({ initialData }: { initialData?: GiveawayFormInitia
                                 name='drawsAt'
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Draw at</FormLabel>
+                                        <FormLabel>Draw at (AEST)</FormLabel>
                                         <FormControl>
                                             <Input type='datetime-local' {...field} disabled={!!initialData} />
                                         </FormControl>
