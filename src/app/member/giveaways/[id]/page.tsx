@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { CountdownBoxes } from '@/components/common/countdown';
+import { DrawTypeBadge } from '@/components/common/draw-type-badge';
 import { EntryStatusBadge } from '@/components/common/entry-status-badge';
 import { TierGroupBadge } from '@/components/common/tier-badge';
 import { TIER_VISUALS } from '@/constant/tiers';
@@ -23,6 +24,7 @@ import {
     ArrowRight,
     CheckCircle2,
     ChevronRight,
+    Clock,
     Lock,
     MapPin,
     ShieldCheck,
@@ -99,7 +101,10 @@ export default async function GiveawayDetailPage({ params }: { params: Promise<{
                 className='shadow-card-warm relative isolate overflow-hidden rounded-2xl border p-5 md:p-7'
                 style={{ background: visual.badgeBg, borderColor: visual.badgeBorder }}>
                 <div className='flex flex-wrap items-center justify-between gap-2'>
-                    <TierGroupBadge group={giveaway.tier_group} size='md' />
+                    <span className='flex items-center gap-2'>
+                        <TierGroupBadge group={giveaway.tier_group} size='md' />
+                        <DrawTypeBadge type={giveaway.draw_type} className='px-2.5 text-xs' />
+                    </span>
                     {giveaway.entered ? (
                         <span className='inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-400'>
                             <CheckCircle2 className='size-3.5' /> You&apos;re Entered
@@ -139,10 +144,28 @@ export default async function GiveawayDetailPage({ params }: { params: Promise<{
                     )}
                 </div>
 
-                <div className='mt-5'>
-                    <CountdownBoxes targetIso={giveaway.draws_at} />
-                </div>
-                <p className='text-slr-dim mt-3 text-xs'>Draws {formatDrawDateTime(giveaway.draws_at)}</p>
+                {giveaway.phase === 'drawn' ? (
+                    <div className='mt-5'>
+                        <span className='text-slr-muted inline-flex items-center gap-2 rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm font-semibold'>
+                            <CheckCircle2 className='size-4' /> Drawn
+                        </span>
+                        <p className='text-slr-dim mt-3 text-xs'>Drawn {formatDrawDateTime(giveaway.draws_at)}</p>
+                    </div>
+                ) : giveaway.phase === 'upcoming' ? (
+                    <div className='mt-5'>
+                        <span className='text-slr-muted inline-flex items-center gap-2 rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm font-semibold'>
+                            <Clock className='size-4' /> Opens {formatDrawDateTime(giveaway.opens_at)}
+                        </span>
+                        <p className='text-slr-dim mt-3 text-xs'>Draws {formatDrawDateTime(giveaway.draws_at)}</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className='mt-5'>
+                            <CountdownBoxes targetIso={giveaway.draws_at} />
+                        </div>
+                        <p className='text-slr-dim mt-3 text-xs'>Draws {formatDrawDateTime(giveaway.draws_at)}</p>
+                    </>
+                )}
 
                 {giveaway.locked && (
                     <div className='mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 p-4'>

@@ -1,7 +1,15 @@
 import { cache } from 'react';
 
 import { formatDrawPool, formatShortDate, isGiveawayLocked } from '@/lib/member';
-import type { EntryStatus, Giveaway, GiveawayDetail, GiveawayEntryRow, PastWinner, TierGroup } from '@/types/member';
+import type {
+    EntryStatus,
+    Giveaway,
+    GiveawayDetail,
+    GiveawayEntryRow,
+    GiveawayPhase,
+    PastWinner,
+    TierGroup
+} from '@/types/member';
 
 import { API } from '../endpoints';
 import { apiFetch } from '../http';
@@ -128,28 +136,70 @@ function toEntryHistory(cycle: EntryCycle | null, entered: boolean): GiveawayEnt
     ];
 }
 
+/** Where a giveaway sits in its window: before opens_at / open / past draws_at. */
+export function giveawayPhase(opensAt: string | null | undefined, drawsAt: string | null | undefined): GiveawayPhase {
+    const now = Date.now();
+    const draws = Date.parse(drawsAt ?? '');
+    if (!Number.isNaN(draws) && now >= draws) return 'drawn';
+    const opens = Date.parse(opensAt ?? '');
+    if (!Number.isNaN(opens) && now < opens) return 'upcoming';
+
+    return 'active';
+}
+
 /**
  * Map an API giveaway → the UI `Giveaway`. The API exposes no `state` or per-giveaway
  * entry/pool counts, so pool = the member's `state + tier`, and (per CLAUDE.md §1)
  * a member's entries = their active token count for the cycle (`memberTokens`).
+ *
+ * Entry claims are gated by phase: entries are per-cycle (PRD — reset each cycle,
+ * no carry-over), so `is_entered`/tokens only apply while the draw window is live.
+ * The API sends `is_entered: true` even for drawn/not-yet-open draws — ignore it there.
  */
 export function toGiveaway(g: ApiGiveaway, memberGroup: TierGroup, memberState: string, memberTokens = 0): Giveaway {
     const group = tierGroupFromApi(g.tier);
     const locked = isGiveawayLocked(group, memberGroup);
+    const phase = giveawayPhase(g.opens_at, g.draws_at);
+    const entered = phase === 'active' && (g.is_entered ?? false);
+    const type = g.type?.toLowerCase();
 
     return {
         id: g.giveaway_id || '-',
         title: g.name?.trim() || '-',
         tier_group: group,
+        draw_type: type === 'weekly' || type === 'monthly' ? type : null,
         draw_pool: formatDrawPool(group, memberState || '-'),
         prize_label: g.prize?.trim() || '-',
-        entered: g.is_entered ?? false,
-        entry_status: g.entry_status ?? 'inactive',
-        total_entries: g.is_entered ? memberTokens : 0,
+        entered,
+        entry_status: entered ? (g.entry_status ?? 'inactive') : 'inactive',
+        total_entries: entered ? memberTokens : 0,
         pool_entries: 0, // community pool count not exposed by the API
         locked,
+        phase,
+        opens_at: g.opens_at ?? '',
         draws_at: g.draws_at ?? ''
     };
+}
+
+const PHASE_ORDER: Record<GiveawayPhase, number> = { active: 0, upcoming: 1, drawn: 2 };
+
+const timeMs = (iso: string): number => {
+    const t = Date.parse(iso);
+
+    return Number.isNaN(t) ? Infinity : t;
+};
+
+/**
+ * Display order: live draws first (soonest draw), then not-yet-open (soonest
+ * opening), already-drawn last (most recent first).
+ */
+export function compareGiveaways(a: Giveaway, b: Giveaway): number {
+    const byPhase = PHASE_ORDER[a.phase] - PHASE_ORDER[b.phase];
+    if (byPhase !== 0) return byPhase;
+    if (a.phase === 'drawn') return timeMs(b.draws_at) - timeMs(a.draws_at);
+    if (a.phase === 'upcoming') return timeMs(a.opens_at) - timeMs(b.opens_at);
+
+    return timeMs(a.draws_at) - timeMs(b.draws_at);
 }
 
 /**

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { DrawTypeBadge } from '@/components/common/draw-type-badge';
 import { TierGroupBadge } from '@/components/common/tier-badge';
 import { TIER_VISUALS } from '@/constant/tiers';
 import { formatDrawDateTime } from '@/lib/member';
@@ -18,7 +19,10 @@ function GiveawayCard({ giveaway }: { giveaway: UpcomingGiveaway }) {
             className='shadow-card-warm flex flex-col gap-3 rounded-2xl border p-4 sm:p-5'
             style={{ background: visual.badgeBg, borderColor: visual.badgeBorder }}>
             <div className='flex items-center justify-between gap-2'>
-                <TierGroupBadge group={giveaway.tier_group} />
+                <span className='flex items-center gap-1.5'>
+                    <TierGroupBadge group={giveaway.tier_group} />
+                    <DrawTypeBadge type={giveaway.draw_type} />
+                </span>
                 {giveaway.locked && (
                     <span className='text-slr-dim inline-flex items-center gap-1 text-xs font-semibold tracking-wide uppercase'>
                         <Lock className='size-3' /> Locked
@@ -60,7 +64,7 @@ function GiveawayCard({ giveaway }: { giveaway: UpcomingGiveaway }) {
 export function UpcomingGiveaways({ giveaways }: { giveaways: UpcomingGiveaway[] }) {
     return (
         <section>
-            <SectionTitle viewAllHref='/member/giveaways'>Upcoming Giveaways</SectionTitle>
+            <SectionTitle viewAllHref='/member/giveaways'>Active Giveaways</SectionTitle>
             <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
                 {giveaways.map((giveaway) => (
                     <GiveawayCard key={giveaway.id} giveaway={giveaway} />

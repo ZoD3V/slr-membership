@@ -2,12 +2,15 @@
 
 import { useState } from 'react';
 
+import Link from 'next/link';
+
 import { TIER_VISUALS } from '@/constant/tiers';
-import { tierGroupOf, visibleGiveawayTabs } from '@/lib/member';
+import { formatShortDate, isGiveawayLocked, tierGroupOf, visibleGiveawayTabs } from '@/lib/member';
 import { cn } from '@/lib/utils';
 import type { Giveaway, SubTierCode, TierGroup } from '@/types/member';
 
 import { GiveawayCard } from './giveaway-card';
+import { Lock } from 'lucide-react';
 
 function GiveawayGrid({ items }: { items: Giveaway[] }) {
     if (items.length === 0) {
@@ -23,7 +26,15 @@ function GiveawayGrid({ items }: { items: Giveaway[] }) {
     );
 }
 
-export function GiveawaysBoard({ giveaways, memberSubTier }: { giveaways: Giveaway[]; memberSubTier: SubTierCode }) {
+export function GiveawaysBoard({
+    giveaways,
+    memberSubTier,
+    nextRenewalIso
+}: {
+    giveaways: Giveaway[];
+    memberSubTier: SubTierCode;
+    nextRenewalIso?: string | null;
+}) {
     const memberGroup = tierGroupOf(memberSubTier);
     const tabs = visibleGiveawayTabs(memberGroup);
 
@@ -70,6 +81,34 @@ export function GiveawaysBoard({ giveaways, memberSubTier }: { giveaways: Giveaw
                     );
                 })}
             </div>
+
+            {/* Locked-tab upsell — the active tab is above the member's tier (PRD: paid→paid
+                upgrades apply at the next renewal, so the date comes from billing). */}
+            {isGiveawayLocked(active, memberGroup) && (
+                <div
+                    className='flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4 md:p-5'
+                    style={{ background: TIER_VISUALS[active].badgeBg, borderColor: TIER_VISUALS[active].badgeBorder }}>
+                    <div className='flex items-start gap-3'>
+                        <Lock className={cn('mt-0.5 size-5 shrink-0', TIER_VISUALS[active].textClass)} />
+                        <div>
+                            <p className={cn('text-sm font-semibold md:text-base', TIER_VISUALS[active].textClass)}>
+                                You&apos;re on {TIER_VISUALS[memberGroup].label} — these draws are{' '}
+                                {TIER_VISUALS[active].label} only
+                            </p>
+                            <p className='text-slr-muted mt-0.5 text-xs md:text-sm'>
+                                {nextRenewalIso
+                                    ? `Upgrading takes effect at your next cycle on ${formatShortDate(nextRenewalIso)}.`
+                                    : 'Upgrading takes effect at your next cycle.'}
+                            </p>
+                        </div>
+                    </div>
+                    <Link
+                        href='/member/membership'
+                        className='inline-flex items-center rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/10'>
+                        Compare tiers
+                    </Link>
+                </div>
+            )}
 
             <GiveawayGrid items={giveaways.filter((g) => g.tier_group === active)} />
         </div>

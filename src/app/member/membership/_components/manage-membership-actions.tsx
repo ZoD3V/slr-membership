@@ -30,7 +30,7 @@ interface ManageMembershipActionsProps {
 interface ChangeOption {
     id: MemberSubTierId;
     label: string;
-    priceLabel: string;
+    price: string;
     tokens: number;
     badgeIcon: string | null;
 }
@@ -69,7 +69,7 @@ export function ManageMembershipActions({
                 return {
                     id: code.toLowerCase() as MemberSubTierId,
                     label: formatTierName(code),
-                    priceLabel: `${formatAud(meta.price_cents)} / 28 days`,
+                    price: formatAud(meta.price_cents),
                     tokens: meta.tokens,
                     badgeIcon: meta.badgeIcon
                 };
@@ -197,8 +197,12 @@ export function ManageMembershipActions({
                                 )}
                                 <span className='text-sm text-white/90'>{opt.label}</span>
                             </span>
-                            <span className='text-slr-dim text-xs'>
-                                {opt.priceLabel} · {opt.tokens} tokens
+                            <span className='shrink-0 text-sm'>
+                                <span className='font-semibold text-white'>{opt.price}</span>
+                                <span className='text-slr-dim'>
+                                    {' '}
+                                    / 28 days · {opt.tokens} {opt.tokens === 1 ? 'token' : 'tokens'}
+                                </span>
                             </span>
                         </label>
                     ))}

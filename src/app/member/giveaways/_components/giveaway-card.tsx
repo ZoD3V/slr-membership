@@ -1,8 +1,10 @@
 import Link from 'next/link';
 
 import { CountdownCompact } from '@/components/common/countdown';
+import { DrawTypeBadge } from '@/components/common/draw-type-badge';
 import { TierGroupBadge } from '@/components/common/tier-badge';
 import { TIER_VISUALS } from '@/constant/tiers';
+import { formatShortDate } from '@/lib/member';
 import { cn } from '@/lib/utils';
 import type { Giveaway } from '@/types/member';
 
@@ -16,14 +18,17 @@ export function GiveawayCard({ giveaway }: { giveaway: Giveaway }) {
             className='shadow-card-soft flex flex-col gap-3 rounded-2xl border p-4 md:p-5'
             style={{ background: visual.badgeBg, borderColor: visual.badgeBorder }}>
             <div className='flex items-center justify-between gap-2'>
-                <TierGroupBadge group={giveaway.tier_group} />
+                <span className='flex items-center gap-1.5'>
+                    <TierGroupBadge group={giveaway.tier_group} />
+                    <DrawTypeBadge type={giveaway.draw_type} />
+                </span>
                 {giveaway.entered ? (
                     <span className='inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-400 uppercase'>
                         <CheckCircle2 className='size-3' /> You&apos;re Entered
                     </span>
                 ) : giveaway.locked ? (
                     <span className='text-slr-dim inline-flex items-center gap-1 text-xs font-semibold uppercase'>
-                        <Lock className='size-3' /> Locked
+                        <Lock className='size-3' /> Not your tier
                     </span>
                 ) : null}
             </div>
@@ -52,7 +57,13 @@ export function GiveawayCard({ giveaway }: { giveaway: Giveaway }) {
 
             <div className='flex items-center gap-1.5 text-sm text-white/90'>
                 <Clock className='text-slr-dim size-4' />
-                <CountdownCompact targetIso={giveaway.draws_at} />
+                {giveaway.phase === 'drawn' ? (
+                    <span className='text-slr-dim'>Drawn · {formatShortDate(giveaway.draws_at)}</span>
+                ) : giveaway.phase === 'upcoming' ? (
+                    <span className='text-slr-muted'>Opens {formatShortDate(giveaway.opens_at)}</span>
+                ) : (
+                    <CountdownCompact targetIso={giveaway.draws_at} />
+                )}
             </div>
 
             <div className='mt-auto border-t border-white/10 pt-3'>

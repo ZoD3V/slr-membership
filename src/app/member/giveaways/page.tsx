@@ -5,8 +5,9 @@ import Link from 'next/link';
 import EmptyState from '@/components/common/empty-state';
 import { getCurrentMember } from '@/data/member-dashboard';
 import { handleApiAuthError } from '@/lib/api/guard';
+import { getBillingStatus } from '@/lib/api/resources/billing';
 import { getEntryHistory } from '@/lib/api/resources/entries';
-import { getGiveaways, toGiveaway } from '@/lib/api/resources/giveaways';
+import { compareGiveaways, getGiveaways, toGiveaway } from '@/lib/api/resources/giveaways';
 import { getAccessToken } from '@/lib/api/server';
 import { tierGroupOf } from '@/lib/member';
 import type { Giveaway } from '@/types/member';
@@ -25,19 +26,29 @@ export default async function GiveawaysPage() {
 
     let giveaways: Giveaway[] = [];
     let failed = false;
+    let nextRenewalIso: string | null = null;
 
     if (token) {
         // Giveaways + entries in parallel — entries gives the cycle token count, which
         // is the member's entries-per-giveaway (the API has no per-giveaway count).
-        const [giveawaysRes, entriesRes] = await Promise.allSettled([getGiveaways(token), getEntryHistory(token)]);
+        // Billing feeds the locked-tab banner ("upgrade takes effect at your next cycle").
+        const [giveawaysRes, entriesRes, billingRes] = await Promise.allSettled([
+            getGiveaways(token),
+            getEntryHistory(token),
+            getBillingStatus(token)
+        ]);
 
         if (giveawaysRes.status === 'fulfilled') {
             const tokens = entriesRes.status === 'fulfilled' ? (entriesRes.value.current_cycle?.total_token ?? 0) : 0;
-            giveaways = giveawaysRes.value.map((g) => toGiveaway(g, memberGroup, member.state, tokens));
+            giveaways = giveawaysRes.value
+                .map((g) => toGiveaway(g, memberGroup, member.state, tokens))
+                .sort(compareGiveaways);
         } else {
             handleApiAuthError(giveawaysRes.reason); // expired session → force logout
             failed = true;
         }
+        if (billingRes.status === 'fulfilled') nextRenewalIso = billingRes.value.next_renewal_at ?? null;
+        else handleApiAuthError(billingRes.reason);
     }
 
     return (
@@ -71,7 +82,7 @@ export default async function GiveawaysPage() {
                     className='border-0 bg-transparent py-16'
                 />
             ) : (
-                <GiveawaysBoard giveaways={giveaways} memberSubTier={member.sub_tier} />
+                <GiveawaysBoard giveaways={giveaways} memberSubTier={member.sub_tier} nextRenewalIso={nextRenewalIso} />
             )}
         </div>
     );

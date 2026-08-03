@@ -147,9 +147,19 @@ export default async function MemberDashboardPage() {
         .filter((d) => d.is_featured && (d.title?.trim() || d.partner_name?.trim()))
         .slice(0, 6);
 
-    // Upcoming giveaways — exclude the one already shown as the Current Draw.
+    // Upcoming giveaways — every not-yet-drawn draw, soonest first. The active
+    // giveaway stays INCLUDED: the Current Draw card is an entries summary, not
+    // this grid, and a tier often has exactly one live draw — excluding it made
+    // this section claim "No Upcoming Giveaways" while /member/giveaways showed it.
+    // Missing draws_at → treated as upcoming, sorted last (the API allows null).
+    const drawTimeMs = (g: ApiGiveaway) => {
+        const t = Date.parse(g.draws_at ?? '');
+
+        return Number.isNaN(t) ? Infinity : t;
+    };
     const upcomingGiveaways: UpcomingGiveaway[] = giveaways
-        .filter((g) => g.giveaway_id !== activeGiveaway?.giveaway_id)
+        .filter((g) => drawTimeMs(g) > nowMs)
+        .sort((a, b) => drawTimeMs(a) - drawTimeMs(b))
         .slice(0, 6)
         .map((g) => {
             const mapped = toGiveaway(g, memberGroup, member.state);
@@ -158,6 +168,7 @@ export default async function MemberDashboardPage() {
                 id: mapped.id,
                 title: mapped.title,
                 tier_group: mapped.tier_group,
+                draw_type: mapped.draw_type,
                 prize_label: mapped.prize_label,
                 draws_at: mapped.draws_at,
                 locked: mapped.locked
@@ -220,12 +231,12 @@ export default async function MemberDashboardPage() {
                 <EmptyState
                     icon={CircleAlert}
                     title='Giveaways Unavailable'
-                    description='We couldn’t load the upcoming draws right now. Please try again shortly.'
+                    description='We couldn’t load the active draws right now. Please try again shortly.'
                 />
             ) : isVisitor ? null : (
                 <EmptyState
                     icon={Gift}
-                    title='No Upcoming Giveaways'
+                    title='No Active Giveaways'
                     description='Active draws for your tier will show here soon.'
                 />
             )}

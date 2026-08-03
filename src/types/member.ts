@@ -48,6 +48,7 @@ export interface UpcomingGiveaway {
     id: string;
     title: string;
     tier_group: TierGroup;
+    draw_type: GiveawayDrawType;
     prize_label: string;
     draws_at: string; // ISO datetime
     locked: boolean; // true when the giveaway tier is above the member's (upgrade required)
@@ -86,10 +87,16 @@ export interface MemberDashboard {
 
 // ── Giveaways (PRD §4.3) ─────────────────────────────────────────────────────
 
+/** Lifecycle derived from the giveaway window: not yet open / open (countdown) / draw time passed. */
+export type GiveawayPhase = 'upcoming' | 'active' | 'drawn';
+
+export type GiveawayDrawType = 'weekly' | 'monthly' | null;
+
 export interface Giveaway {
     id: string;
     title: string;
     tier_group: TierGroup;
+    draw_type: GiveawayDrawType; // Weekly/Monthly chip; null when the API sends something else
     draw_pool: string; // state + tier, e.g. 'SLR Red · NSW'
     prize_label: string;
     entered: boolean; // "You're Entered" — member has active entries in this draw
@@ -97,6 +104,8 @@ export interface Giveaway {
     total_entries: number; // member's entries in this draw (token count; 0 if not entered)
     pool_entries: number; // aggregate community entries in the pool (odds context)
     locked: boolean; // giveaway tier above the member's → upgrade required
+    phase: GiveawayPhase;
+    opens_at: string; // ISO datetime — "Opens …" copy for upcoming draws
     draws_at: string; // ISO datetime — drives the countdown
 }
 
