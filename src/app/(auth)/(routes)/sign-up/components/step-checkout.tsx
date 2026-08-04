@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { SafeHoursNotice } from '@/components/common/safe-hours-notice';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { AU_STATES } from '@/constant/au-states';
 import { useSafeHours } from '@/hooks/use-safe-hours';
 import { createMembershipCheckout } from '@/lib/api/resources/stripe';
@@ -25,6 +26,7 @@ type StepCheckoutProps = {
 
 const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => {
     const [redirecting, setRedirecting] = useState(false);
+    const [addBeny, setAddBeny] = useState(false);
     const safeHoursLocked = useSafeHours();
 
     const tier = data.tier;
@@ -33,11 +35,9 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
         return null;
     }
 
-    // BENY is deliberately absent from this total: POST /membership/checkout takes
-    // only a sub-tier, so a $4 line here would be shown but never charged.
     const subtotal = subTierPrice(subTier);
     const discount = Math.min(spinPrize?.discountAmount ?? 0, subtotal);
-    const total = subtotal - discount;
+    const total = subtotal - discount + (addBeny ? BENY_PRICE : 0);
 
     const stateLabel = AU_STATES.find((s) => s.code === data.state)?.label ?? data.state;
 
@@ -52,11 +52,14 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
         }
         setRedirecting(true);
         try {
-            const { url } = await createMembershipCheckout(token, { sub_tier: subTier.toLowerCase() });
+            const { url } = await createMembershipCheckout(token, {
+                sub_tier: subTier.toLowerCase(),
+                beny: addBeny
+            });
             if (process.env.NODE_ENV === 'development') {
                 console.log('[SignUp Checkout Created]', {
                     endpoint: 'POST /api/v1/membership/checkout',
-                    payload: { sub_tier: subTier.toLowerCase() },
+                    payload: { sub_tier: subTier.toLowerCase(), beny: addBeny },
                     url
                 });
             }
@@ -103,9 +106,20 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
                         value={`$${subtotal.toFixed(2)}`}
                     />
 
+                    {addBeny ? (
+                        <>
+                            <div className='h-px w-full bg-white/10' />
+                            <SummaryRow
+                                label='BENY Add-on'
+                                sub='Partner savings platform'
+                                value={`$${BENY_PRICE.toFixed(2)}`}
+                            />
+                        </>
+                    ) : null}
+
                     <div className='h-px w-full bg-white/10' />
 
-                    <SummaryRow label='Subtotal' value={`$${subtotal.toFixed(2)}`} muted />
+                    <SummaryRow label='Subtotal' value={`$${(subtotal + (addBeny ? BENY_PRICE : 0)).toFixed(2)}`} muted />
                     {discount > 0 && (
                         <SummaryRow
                             label='Spin Wheel discount'
@@ -121,11 +135,31 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
                         <div>
                             <p className='font-bebas-neue text-xl tracking-wider text-white uppercase'>Due today</p>
                             <p className='text-slr-muted text-xs'>
-                                Then ${subtotal.toFixed(2)}/month from your next billing date.
+                                Then ${(subtotal + (addBeny ? BENY_PRICE : 0)).toFixed(2)}/month from your next billing date.
                             </p>
                         </div>
                         <p className='font-bebas-neue text-3xl font-extrabold text-[#FFDC75]'>${total.toFixed(2)}</p>
                     </div>
+                </div>
+            </div>
+
+            <div className='rounded-xl border border-[#D4AF3759] bg-[#D4AF371A]/5 p-4 transition-all hover:bg-[#D4AF371A]/10 flex items-start gap-3'>
+                <Checkbox
+                    id='beny'
+                    checked={addBeny}
+                    onCheckedChange={(checked) => setAddBeny(Boolean(checked))}
+                    className='mt-1 border-[#FFD147] data-[state=checked]:bg-[#FFD147] data-[state=checked]:text-[#131619]'
+                />
+                <div className='grid gap-1.5 leading-none'>
+                    <label
+                        htmlFor='beny'
+                        className='text-sm font-bold text-white cursor-pointer select-none uppercase tracking-wide'
+                    >
+                        Add BENY Add-on — +${BENY_PRICE.toFixed(2)}/month
+                    </label>
+                    <p className='text-slr-muted text-xs leading-relaxed'>
+                        Access premium discount offers on major Australian brands via the third-party BENY app. Billed monthly alongside your membership, cancel anytime.
+                    </p>
                 </div>
             </div>
 
@@ -136,15 +170,6 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
                 </p>
                 <p className='text-slr-muted mt-1 text-xs'>
                     Your entries will be allocated to this pool after your first successful payment.
-                </p>
-            </div>
-
-            <div className='rounded-xl border border-white/10 bg-white/2 p-4'>
-                <p className='text-slr-dim text-[10px] font-semibold tracking-widest uppercase'>Optional add-on</p>
-                <p className='mt-1 text-sm text-white'>BENY — ${BENY_PRICE.toFixed(2)}/month</p>
-                <p className='text-slr-muted mt-1 text-xs'>
-                    Premium third-party discount platform. Add it any time from your dashboard once your membership is
-                    active — it&apos;s billed separately, so it isn&apos;t part of today&apos;s payment.
                 </p>
             </div>
 
