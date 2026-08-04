@@ -144,8 +144,10 @@ export default async function MemberDashboardPage() {
         : null;
 
     const draw = giveawayDraw ?? cycleDraw;
+    const isCancelled = summary.billing_status === 'canceled';
+
     const drawEyebrow = giveawayDraw ? 'Current Draw' : 'Current Cycle';
-    const drawDateWord = isVisitor ? 'Ends' : (giveawayDraw ? 'Draws' : 'Renews');
+    const drawDateWord = isVisitor || isCancelled ? 'Ends' : (giveawayDraw ? 'Draws' : 'Renews');
 
     // Featured partner offers — ONLY discounts flagged is_featured, capped. Empty → hidden.
     const featuredDiscounts: Discount[] = publicDiscounts

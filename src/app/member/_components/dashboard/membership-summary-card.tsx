@@ -100,7 +100,10 @@ export function MembershipSummaryCard({
                                     </span>
                                 )}
                             </Row>
-                            <Row icon={<CalendarClock className='size-4' />} label='Next payment'>
+                            <Row
+                                icon={<CalendarClock className='size-4' />}
+                                label={summary.billing_status === 'canceled' ? 'Access ends' : 'Next payment'}
+                            >
                                 {formatShortDate(summary.next_payment_date)}
                             </Row>
                         </>

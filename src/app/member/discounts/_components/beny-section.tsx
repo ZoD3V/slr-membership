@@ -6,6 +6,7 @@ import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { BENY_CATEGORIES } from '@/data/discounts';
 import { type BenyStatusValue, isBenyCancelled, isBenyWindingDown } from '@/lib/api/resources/beny';
+import { formatShortDate } from '@/lib/member';
 import { goldButtonStyle, inputClassName } from '@/lib/styles';
 import { cn } from '@/lib/utils';
 import type { MemberProfile } from '@/types/member';
@@ -21,14 +22,33 @@ const CATEGORY_ICON: Record<string, LucideIcon> = {
     'Health & Wellbeing': Heart
 };
 
+function formatExpiryLongDate(iso: string | null | undefined): string {
+    if (!iso) return '-';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '-';
+    
+    return d.toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'Australia/Sydney'
+    });
+}
+
 export function BenySection({
     status: initialStatus,
-    userProfile
+    userProfile,
+    cancelledAt = null,
+    expiresAt = null
 }: {
     status: BenyStatusValue;
     userProfile?: MemberProfile | null;
+    cancelledAt?: string | null;
+    expiresAt?: string | null;
 }) {
-    const [status, setStatus] = useState<BenyStatusValue>(initialStatus);
+    const [status, setStatus] = useState<BenyStatusValue>(
+        initialStatus === 'active' && cancelledAt ? 'pending_deactivation' : initialStatus
+    );
     const [showForm, setShowForm] = useState(false);
     const [form, setForm] = useState({
         name: userProfile?.name ?? '',
@@ -167,8 +187,7 @@ export function BenySection({
                 {isBenyWindingDown(status) ? (
                     <span className='inline-flex items-start gap-2 text-sm text-white/90'>
                         <Clock className='text-slr-gold-label mt-0.5 size-4 shrink-0' />
-                        BENY cancelled — your access stays active until the end of the period you&apos;ve already paid
-                        for. You won&apos;t be charged again.
+                        Deactivate on {formatExpiryLongDate(expiresAt)}
                     </span>
                 ) : null}
 

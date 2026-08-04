@@ -3,7 +3,7 @@ import type { ListError } from '@/components/common/list-error-card';
 import Heading from '@/components/ui/heading';
 import { handleApiAuthError } from '@/lib/api/guard';
 import { toListError } from '@/lib/api/list-error';
-import { getBenyPending } from '@/lib/api/resources/admin';
+import { getBenyPending, getBenySubscriptions } from '@/lib/api/resources/admin';
 import { getAccessToken } from '@/lib/api/server';
 import { formatDateTime as formatDate } from '@/lib/member';
 
@@ -20,47 +20,33 @@ export default async function BenyPage({ searchParams }: { searchParams: Promise
 
     if (token) {
         try {
-            if (initialTab === 'pending_deactivation') {
-                const { API } = await import('@/lib/api/endpoints');
-                const { apiFetch } = await import('@/lib/api/http');
-                const res = await apiFetch<any>(API.admin.benyList, { token, cache: 'no-store' });
-                const items = res.items || res.data || [];
-                const filtered = items.filter((b: any) => (b.status || '').toLowerCase() === 'pending_deactivation');
-                rows = filtered.map((b: any) => ({
-                    id: b.beny_subscription_id,
-                    name: b.name || '-',
-                    email: b.email || '-',
-                    phone: b.phone || '-',
-                    status: b.status || '-',
-                    requestedAt: formatDate(b.created_at),
-                    activatedAt: formatDate(b.activated_at),
-                    accessEndsAt: formatDate(b.access_ends_at),
-                    accessEndsAtIso: b.access_ends_at ?? null,
-                    deactivatedAt: formatDate(b.deactivated_at),
-                    deactivationReason: b.deactivation_reason || null
-                }));
-            } else {
-                // Fetch from the stable getBenyPending endpoint to support legacy backend on initial load
-                const pending = await getBenyPending(token);
-                const pendingList = Array.isArray(pending)
-                    ? pending
-                    : pending && (pending as any).items
-                      ? (pending as any).items
-                      : [];
-                rows = pendingList.map((b: any) => ({
-                    id: b.beny_subscription_id,
-                    name: b.name || '-',
-                    email: b.email || '-',
-                    phone: b.phone || '-',
-                    status: b.status || '-',
-                    requestedAt: formatDate(b.created_at),
-                    activatedAt: null,
-                    accessEndsAt: null,
-                    accessEndsAtIso: null,
-                    deactivatedAt: null,
-                    deactivationReason: null
-                }));
+            const res = await getBenySubscriptions(initialTab, token, 1, 200).catch((err) => {
+                if (initialTab === 'pending_activation') {
+                    return getBenyPending(token);
+                }
+                throw err;
+            });
+
+            let items: any[] = [];
+            if (Array.isArray(res)) {
+                items = res;
+            } else if (res && typeof res === 'object') {
+                items = res.items || res.data || res.subscriptions || [];
             }
+
+            rows = items.map((b: any) => ({
+                id: b.beny_subscription_id,
+                name: b.name || '-',
+                email: b.email || '-',
+                phone: b.phone || '-',
+                status: b.status || '-',
+                requestedAt: formatDate(b.created_at),
+                activatedAt: b.activated_at ? formatDate(b.activated_at) : null,
+                accessEndsAt: b.access_ends_at ? formatDate(b.access_ends_at) : null,
+                accessEndsAtIso: b.access_ends_at ?? null,
+                deactivatedAt: b.deactivated_at ? formatDate(b.deactivated_at) : null,
+                deactivationReason: b.deactivation_reason || null
+            }));
         } catch (error) {
             handleApiAuthError(error); // 401 only → force logout; others fall through
             listError = toListError(error);

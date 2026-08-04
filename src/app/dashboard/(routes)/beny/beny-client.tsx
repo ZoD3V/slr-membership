@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { type ListError, ListErrorCard } from '@/components/common/list-error-card';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable } from '@/components/data-table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatDateTime } from '@/lib/member';
 
 import { benyColumnsFor } from './_components/columns';
@@ -69,6 +70,7 @@ export function BenyClient({
 
     const [activateTarget, setActivateTarget] = useState<BenyRow | null>(null);
     const [deactivateTarget, setDeactivateTarget] = useState<BenyRow | null>(null);
+    const [deactivationReason, setDeactivationReason] = useState('');
 
     const [isPending, startTransition] = useTransition();
 
@@ -147,10 +149,11 @@ export function BenyClient({
         const { id } = deactivateTarget;
 
         startTransition(async () => {
-            const res = await deactivateBenyAction(id);
+            const res = await deactivateBenyAction(id, deactivationReason || undefined);
             if (res.ok) {
                 setRows((prev) => prev.filter((r) => r.id !== id));
                 toast.success(res.message);
+                setDeactivationReason('');
             } else {
                 toast.error(res.code ? `${res.message} (${res.code})` : res.message);
             }
@@ -236,6 +239,7 @@ export function BenyClient({
                 onOpenChange={(open) => {
                     if (!open) {
                         setDeactivateTarget(null);
+                        setDeactivationReason('');
                     }
                 }}
                 className='dashboard-theme dark'
@@ -246,7 +250,24 @@ export function BenyClient({
                 isLoading={isPending}
                 handleConfirm={confirmDeactivate}
                 desc={`This records that ${deactivateTarget?.name}'s BENY access has already been revoked in the BENY portal, and moves them to Cancelled. It does not revoke anything itself — do that in the BENY portal first, and only after their paid access has ended.`}
-            />
+            >
+                <div className='mt-4 space-y-2 text-start'>
+                    <label htmlFor='reason' className='text-xs font-semibold text-muted-foreground uppercase'>
+                        Deactivation Reason
+                    </label>
+                    <Select value={deactivationReason} onValueChange={setDeactivationReason}>
+                        <SelectTrigger className='w-full border-neutral-700 bg-neutral-900 text-white'>
+                            <SelectValue placeholder='Select a reason...' />
+                        </SelectTrigger>
+                        <SelectContent className='dashboard-theme dark border-border bg-background text-foreground'>
+                            <SelectItem value='Member cancelled'>Member cancelled</SelectItem>
+                            <SelectItem value='Payment failed'>Payment failed</SelectItem>
+                            <SelectItem value='Admin refund'>Admin refund</SelectItem>
+                            <SelectItem value='Other'>Other / manual revocation</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </ConfirmDialog>
         </>
     );
 }

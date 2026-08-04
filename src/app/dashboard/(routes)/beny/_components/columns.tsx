@@ -42,11 +42,14 @@ export function benyColumnsFor(tab: BenyTab, { onActivate, onDeactivate }: Handl
     }
 
     if (tab === 'pending_deactivation') {
-        // No accessEndsAt / Deactivate On column since it's not supported by API
+        base.push({ key: 'accessEndsAt', label: 'Deactivate On' });
     }
 
     if (tab === 'cancelled') {
-        // No Deactivated At column package since it is not returned by API
+        base.push(
+            { key: 'deactivatedAt', label: 'Deactivated At', render: (row) => row.deactivatedAt || '-' },
+            { key: 'deactivationReason', label: 'Reason', render: (row) => row.deactivationReason || '-' }
+        );
     }
 
     // `rowAction` rather than `action` — the latter is a DataTable magic key that
@@ -76,12 +79,12 @@ export function benyColumnsFor(tab: BenyTab, { onActivate, onDeactivate }: Handl
 
                 return (
                     <span
-                        title='Record that you have revoked this account in the BENY portal.'>
+                        title={!due ? 'Cannot deactivate until paid access ends.' : 'Record that you have revoked this account in the BENY portal.'}>
                         <Button
                             size='sm'
                             variant='destructive'
                             disabled={!due}
-                            className='font-medium hover:bg-red-600/80'
+                            className='font-medium hover:bg-red-600/80 disabled:opacity-50'
                             onClick={() => onDeactivate(row as BenyRow)}>
                             <UserMinus className='mr-2 h-4 w-4' />
                             Mark as Deactivated

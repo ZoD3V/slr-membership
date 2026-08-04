@@ -35,6 +35,9 @@ export const isBenyWindingDown = (status: BenyStatusValue) => status === 'pendin
 
 export interface BenyStatusResponse {
     beny_status: BenyStatusValue;
+    activated_at?: string | null;
+    cancelled_at?: string | null;
+    expires_at?: string | null;
 }
 
 // POST /beny/subscribe requires `name` (not `full_name`), plus email + phone.

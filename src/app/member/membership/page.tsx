@@ -6,7 +6,7 @@ import { SUB_TIERS } from '@/constant/tiers';
 import { getCurrentMember } from '@/data/member-dashboard';
 import { getMemberProfile } from '@/data/profile';
 import { handleApiAuthError } from '@/lib/api/guard';
-import { type BenyStatusValue, getBenyStatus } from '@/lib/api/resources/beny';
+import { type BenyStatusResponse, type BenyStatusValue, getBenyStatus } from '@/lib/api/resources/beny';
 import {
     type BillingInvoice,
     type BillingStatus,
@@ -36,6 +36,8 @@ export default async function MembershipPage() {
     let invoices: BillingInvoice[] = [];
     let membership: MembershipRecord | null = null;
     let benyStatus: BenyStatusValue = 'inactive';
+    let benyCancelledAt: string | null = null;
+    let benyExpiresAt: string | null = null;
     // Tracked separately from the data: a failed read must never render as "you
     // have none" — a member who has paid would be told they never did.
     let invoicesFailed = false;
@@ -56,7 +58,11 @@ export default async function MembershipPage() {
         }
         if (m.status === 'fulfilled') membership = m.value;
         else handleApiAuthError(m.reason);
-        if (y.status === 'fulfilled') benyStatus = y.value.beny_status ?? 'inactive';
+        if (y.status === 'fulfilled') {
+            benyStatus = y.value.beny_status ?? 'inactive';
+            benyCancelledAt = y.value.cancelled_at ?? null;
+            benyExpiresAt = y.value.expires_at ?? null;
+        }
         else handleApiAuthError(y.reason);
     }
 
@@ -101,7 +107,14 @@ export default async function MembershipPage() {
             </section>
 
             {/* BENY */}
-            {isVisitor ? null : <BenySection status={benyStatus} userProfile={profile} />}
+            {isVisitor ? null : (
+                <BenySection
+                    status={benyStatus}
+                    userProfile={profile}
+                    cancelledAt={benyCancelledAt}
+                    expiresAt={benyExpiresAt ?? billing?.next_renewal_at ?? null}
+                />
+            )}
 
             {/* Payment history */}
             <section className='bg-card-dark-navy border-slr-navy-border rounded-2xl border p-5 md:p-6'>
