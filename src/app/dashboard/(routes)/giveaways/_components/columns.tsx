@@ -13,7 +13,8 @@ const TIER_STYLE: Record<AdminGiveawayTier, string> = {
 const STATUS_STYLE: Record<string, string> = {
     OPEN: 'border-emerald-500/40 text-emerald-400',
     CLOSED: 'border-amber-500/40 text-amber-400',
-    DRAWN: 'border-slate-500/40 text-slate-300'
+    DRAWN: 'border-slate-500/40 text-slate-300',
+    COMPLETED: 'border-slate-500/40 text-slate-300'
 };
 
 const pill = 'rounded-md border px-2 py-0.5 text-xs font-semibold uppercase';

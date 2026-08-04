@@ -8,9 +8,8 @@ import { handleApiAuthError } from '@/lib/api/guard';
 import { toListError } from '@/lib/api/list-error';
 import { getAllAdminWinners } from '@/lib/api/resources/giveaways';
 import { getAccessToken } from '@/lib/api/server';
-import { formatShortDate } from '@/lib/member';
+import { formatDateTime, formatShortDate } from '@/lib/member';
 
-import { loadGiveawaySchedules } from './_components/load';
 import { type WinnerRow, WinnersClient } from './winners-client';
 import { Plus } from 'lucide-react';
 
@@ -23,17 +22,9 @@ export default async function WinnersPage({ searchParams }: { searchParams: Prom
 
     try {
         if (token) {
-            // Independent calls — the winners payload carries no schedule, so the
-            // dates are joined in from the giveaways list by `giveaway_id`. Full
-            // set: the endpoint ignores ?search=, so DataTable filters client-side.
-            const [winners, schedules] = await Promise.all([
-                getAllAdminWinners(token, giveaway),
-                loadGiveawaySchedules()
-            ]);
+            const winners = await getAllAdminWinners(token, giveaway);
 
             rows = winners.map((w) => {
-                const schedule = w.giveaway?.giveaway_id ? schedules.get(w.giveaway.giveaway_id) : undefined;
-
                 return {
                     id: w.winner_id,
                     prize: w.prize || '-',
@@ -41,9 +32,9 @@ export default async function WinnersPage({ searchParams }: { searchParams: Prom
                     tier: w.giveaway?.tier || '-',
                     winner: w.full_name || '-',
                     state: w.state || '-',
-                    opens: schedule?.opens ?? '-',
-                    closes: schedule?.closes ?? '-',
-                    draws: schedule?.draws ?? '-',
+                    opens: formatDateTime(w.giveaway?.opens_at),
+                    closes: formatDateTime(w.giveaway?.closes_at ?? w.giveaway?.ends_at),
+                    draws: formatDateTime(w.giveaway?.draws_at),
                     recorded_at: formatShortDate(w.recorded_at)
                 };
             });

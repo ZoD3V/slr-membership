@@ -16,7 +16,7 @@ export default async function EditWinnerPage({ params }: { params: Promise<{ id:
     let winner;
     try {
         const res = await getAdminWinners(token, { page: 1, perPage: 100 });
-        winner = res.items.find((w) => w.winner_id === id);
+        winner = res.find((w) => w.winner_id === id);
     } catch (error) {
         handleApiAuthError(error);
         notFound();

@@ -49,6 +49,7 @@ export interface AdminMemberListItem {
     status: string;
     tier: string; // e.g., 'RED R4'
     created_at: string;
+    draw_pass?: number | null;
 }
 
 export interface AdminMemberDetailMembership {

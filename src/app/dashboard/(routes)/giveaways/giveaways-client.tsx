@@ -26,7 +26,7 @@ export type GiveawayRow = {
     draws: string;
 };
 
-type StatusFilter = 'all' | 'OPEN' | 'CLOSED' | 'DRAWN';
+type StatusFilter = 'all' | 'OPEN' | 'CLOSED' | 'COMPLETED';
 
 export function GiveawaysClient({ rows, listError }: { rows: GiveawayRow[]; listError: ListError | null }) {
     const router = useRouter();
@@ -35,7 +35,8 @@ export function GiveawaysClient({ rows, listError }: { rows: GiveawayRow[]; list
 
     const filteredRows = useMemo(() => {
         if (statusFilter === 'all') return rows;
-        return rows.filter((row) => row.status === statusFilter);
+        
+return rows.filter((row) => row.status === statusFilter);
     }, [rows, statusFilter]);
 
     const handleEdit = (row: GiveawayRow) => router.push(`/dashboard/giveaways/${row.id}`);
@@ -73,7 +74,7 @@ export function GiveawaysClient({ rows, listError }: { rows: GiveawayRow[]; list
                         <SelectItem value='all'>All</SelectItem>
                         <SelectItem value='OPEN'>Open</SelectItem>
                         <SelectItem value='CLOSED'>Closed</SelectItem>
-                        <SelectItem value='DRAWN'>Drawn</SelectItem>
+                        <SelectItem value='COMPLETED'>Completed</SelectItem>
                     </SelectContent>
                 </Select>
             </div>

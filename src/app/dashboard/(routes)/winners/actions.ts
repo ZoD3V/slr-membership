@@ -2,9 +2,7 @@
 
 import { handleApiAuthError } from '@/lib/api/guard';
 import {
-    type AdminMemberDetailCycle,
     type AdminMemberListItem,
-    getAdminMemberDetail,
     getAdminMembers
 } from '@/lib/api/resources/admin';
 import { getAccessToken } from '@/lib/api/server';
@@ -51,58 +49,6 @@ async function fetchAllMembers(token: string, tier: TierGroup, search?: string):
     return all;
 }
 
-// ── draw_pass gate ───────────────────────────────────────────────────────────
-// A member on draw_pass 0 has left the cycle's pool (they already won, or spent
-// all four passes), so they must not be selectable as a winner.
-//
-// This costs one detail request per member: verified against the live OpenAPI
-// (2026-08-03), `GET /admin/members` declares `additionalProperties: false` and
-// carries neither `draw_pass` nor `entry_status`, and exposes no filter for
-// them — `cycles[].draw_pass` on `GET /admin/members/{userId}` is the only
-// source. See docs/BACKEND-ISSUES.md for the ask that would make this one call.
-
-/** Requests in flight at once — enough to stay quick without flooding the API. */
-const DETAIL_CONCURRENCY = 8;
-
-/** The cycle the member is in right now: the active one, else the most recent. */
-function currentCycle(cycles: AdminMemberDetailCycle[]): AdminMemberDetailCycle | null {
-    if (!cycles.length) return null;
-    const active = cycles.find((c) => c.status?.toLowerCase() === 'active');
-    if (active) return active;
-
-    return [...cycles].sort((a, b) => (b.start_at ?? '').localeCompare(a.start_at ?? ''))[0] ?? null;
-}
-
-async function isInPool(userId: string, token: string): Promise<boolean> {
-    try {
-        const detail = await getAdminMemberDetail(userId, token);
-        const cycle = currentCycle(detail.cycles ?? []);
-        // No cycle at all means entries were never allocated — not in any pool.
-        if (!cycle) return false;
-
-        // `-1` is the Visitor "infinite passes" sentinel, so only an exact 0 excludes.
-        return cycle.draw_pass !== 0;
-    } catch {
-        // A failed lookup must not silently hide a member who is genuinely eligible.
-        return true;
-    }
-}
-
-/** Drops members whose current cycle sits on draw_pass 0. */
-async function withDrawPass(members: AdminMemberListItem[], token: string): Promise<AdminMemberListItem[]> {
-    const kept: AdminMemberListItem[] = [];
-
-    for (let i = 0; i < members.length; i += DETAIL_CONCURRENCY) {
-        const batch = members.slice(i, i + DETAIL_CONCURRENCY);
-        const eligible = await Promise.all(batch.map((m) => isInPool(m.user_id, token)));
-        batch.forEach((m, j) => {
-            if (eligible[j]) kept.push(m);
-        });
-    }
-
-    return kept;
-}
-
 /**
  * Members eligible to be recorded as a winner of a giveaway, scoped to its draw
  * pool (CLAUDE.md §1: pool = state + tier).
@@ -122,10 +68,9 @@ export async function searchWinnerMembersAction(query: WinnerMemberQuery): Promi
 
         // Only a live account can be recorded as a winner: `pending_payment`
         // (registered but never paid), `suspended` and `deactivated` members are
-        // not in any draw pool. Runs before the draw_pass lookups below so it also
-        // cuts how many detail requests those need.
+        // not in any draw pool.
         const active = scoped.filter((m) => m.status?.toLowerCase() === 'active');
-        const eligible = await withDrawPass(active, token);
+        const eligible = active.filter((m) => m.draw_pass !== 0);
 
         return {
             ok: true,

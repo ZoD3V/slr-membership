@@ -18,11 +18,7 @@ import type { EntryCycle } from './entries';
 // ─── DTOs (mirrored from the live GET /giveaways/winners response) ────────────
 
 /**
- * The giveaway STUB embedded in both winners endpoints. Verified against the live
- * OpenAPI 2026-08-03: `additionalProperties: false` on `GET /admin/winners` and
- * `GET /giveaways/winners`, carrying only these fields — **no `opens_at` /
- * `closes_at` / `draws_at`**. Anything needing the schedule must join it in from
- * `GET /admin/giveaways` by `giveaway_id`.
+ * The giveaway STUB embedded in both winners endpoints.
  */
 export interface GiveawayWinnerGiveaway {
     giveaway_id: string;
@@ -31,6 +27,10 @@ export interface GiveawayWinnerGiveaway {
     type: string;
     /** Present on the admin stub only; the member endpoint omits it. */
     prize?: string;
+    opens_at?: string | null;
+    closes_at?: string | null;
+    ends_at?: string | null;
+    draws_at?: string | null;
 }
 
 export interface GiveawayWinner {
@@ -270,7 +270,7 @@ export type AdminGiveawayTier = 'VISITOR' | 'RED' | 'BLUE';
 export type AdminGiveawayType = 'WEEKLY' | 'MONTHLY';
 
 /** Server-derived lifecycle — do not recompute it from the dates. */
-export type AdminGiveawayStatus = 'OPEN' | 'CLOSED' | 'DRAWN' | string;
+export type AdminGiveawayStatus = 'OPEN' | 'CLOSED' | 'COMPLETED' | 'DRAWN' | string;
 
 export interface AdminGiveaway {
     giveaway_id: string;
@@ -334,7 +334,7 @@ function listQs(query: ListQuery = {}): string {
 
 /** Admin: list giveaways (paginated, UPPERCASE tier/type). */
 export const getAdminGiveaways = (token: string, query: ListQuery = {}) =>
-    apiFetch<Paginated<AdminGiveaway>>(`${API.admin.giveaways}${listQs(query)}`, { token, cache: 'no-store' });
+    apiFetch<AdminGiveaway[]>(`${API.admin.giveaways}${listQs(query)}`, { token, cache: 'no-store' });
 
 /** Server-enforced ceiling: per_page above this returns 400 VALIDATION_ERROR. */
 const MAX_PER_PAGE = 100;
@@ -349,8 +349,8 @@ export async function getAllAdminGiveaways(token: string): Promise<AdminGiveaway
 
     for (let page = 1; ; page++) {
         const res = await getAdminGiveaways(token, { page, perPage: MAX_PER_PAGE });
-        all.push(...res.items);
-        if (res.items.length < MAX_PER_PAGE) break;
+        all.push(...res);
+        if (res.length < MAX_PER_PAGE) break;
     }
 
     return all;
@@ -362,8 +362,8 @@ export async function getAllAdminWinners(token: string, giveawayId?: string): Pr
 
     for (let page = 1; ; page++) {
         const res = await getAdminWinners(token, { page, perPage: MAX_PER_PAGE, giveawayId });
-        all.push(...res.items);
-        if (res.items.length < MAX_PER_PAGE) break;
+        all.push(...res);
+        if (res.length < MAX_PER_PAGE) break;
     }
 
     return all;
@@ -387,7 +387,7 @@ export const deleteGiveaway = (token: string, id: string) =>
 
 /** Admin: list recorded winners (paginated). */
 export const getAdminWinners = (token: string, query: ListQuery = {}) =>
-    apiFetch<Paginated<AdminWinner>>(`${API.admin.winners}${listQs(query)}`, { token, cache: 'no-store' });
+    apiFetch<AdminWinner[]>(`${API.admin.winners}${listQs(query)}`, { token, cache: 'no-store' });
 
 /** Admin: record a winner for a giveaway. */
 export const createWinner = (token: string, payload: AdminWinnerPayload) =>
