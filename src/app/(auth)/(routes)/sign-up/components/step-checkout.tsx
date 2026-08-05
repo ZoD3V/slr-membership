@@ -167,7 +167,7 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
                         Add BENY Add-on — +${BENY_PRICE.toFixed(2)}/month
                     </label>
                     <p className='text-slr-muted text-xs leading-relaxed'>
-                        Access premium discount offers on major Australian brands via the third-party BENY app. Billed monthly alongside your membership, cancel anytime.
+                        Access premium brand discounts through the BENY app. Billed directly to your card on Stripe (+${BENY_PRICE.toFixed(2)}/mo). Access requires manual activation and confirmation by an SLR Admin after registration.
                     </p>
                 </div>
             </div>
