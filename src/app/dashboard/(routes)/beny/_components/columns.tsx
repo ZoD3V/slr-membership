@@ -41,16 +41,9 @@ export function benyColumnsFor(tab: BenyTab, { onActivate, onDeactivate }: Handl
         );
     }
 
-    if (tab === 'pending_deactivation') {
-        base.push({ key: 'accessEndsAt', label: 'Deactivate On' });
-    }
 
-    if (tab === 'cancelled') {
-        base.push(
-            { key: 'deactivatedAt', label: 'Deactivated At', render: (row) => row.deactivatedAt || '-' },
-            { key: 'deactivationReason', label: 'Reason', render: (row) => row.deactivationReason || '-' }
-        );
-    }
+
+
 
     // `rowAction` rather than `action` — the latter is a DataTable magic key that
     // renders the generic Edit/Delete dropdown, which BENY does not use.
