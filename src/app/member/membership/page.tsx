@@ -21,6 +21,7 @@ import { GraceBanner } from './_components/grace-banner';
 import { ManageBillingButton } from './_components/manage-billing-button';
 import { ManageTier } from './_components/manage-tier';
 import { TierCard } from './_components/tier-card';
+import { CancelledMembershipBanner } from '../_components/dashboard/cancelled-membership-banner';
 import { CircleAlert, CreditCard, ExternalLink, ReceiptText } from 'lucide-react';
 
 export const metadata: Metadata = { title: 'Membership · SLR Member', robots: { index: false } };
@@ -76,6 +77,10 @@ export default async function MembershipPage() {
 
             {billing?.billing_status === 'grace' ? (
                 <GraceBanner expiresAt={billing.grace_period?.expires_at ?? null} />
+            ) : null}
+
+            {!isVisitor && billing?.cancel_at_period_end && billing?.next_renewal_at ? (
+                <CancelledMembershipBanner accessEndsAt={billing.next_renewal_at} />
             ) : null}
 
             <TierCard

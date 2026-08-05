@@ -25,6 +25,7 @@ export interface MembershipSummary {
     price_cents: number; // integer cents AUD, billed per 28-day cycle
     next_payment_date: string; // ISO date — next renewal
     beny_addon: boolean | null; // BENY $4/mo add-on active; null = unknown (row hidden until the BENY endpoint lands)
+    cancel_at_period_end?: boolean; // true = membership cancelled, will end at cycle end
 }
 
 export interface DrawStatus {

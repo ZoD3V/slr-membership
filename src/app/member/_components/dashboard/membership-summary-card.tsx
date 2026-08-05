@@ -43,6 +43,7 @@ export function MembershipSummaryCard({
     // Unknown ≠ active: when the membership read failed, say so rather than
     // painting a green dot the API never confirmed.
     const billing = summary.billing_status ? BILLING[summary.billing_status] : null;
+    const isCancelled = summary.cancel_at_period_end ?? false;
 
     const tierName = meta.group === 'visitor' ? 'Visitor Pass' : formatTierName(summary.sub_tier);
     const price = meta.price_cents === 0 ? 'Free' : formatAud(meta.price_cents);
@@ -102,7 +103,7 @@ export function MembershipSummaryCard({
                             </Row>
                             <Row
                                 icon={<CalendarClock className='size-4' />}
-                                label={summary.billing_status === 'canceled' ? 'Access ends' : 'Next payment'}
+                                label={isCancelled ? 'Access ends' : 'Next payment'}
                             >
                                 {formatShortDate(summary.next_payment_date)}
                             </Row>

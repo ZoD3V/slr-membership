@@ -29,6 +29,7 @@ import { QuickActions } from './_components/dashboard/quick-actions';
 import { RenewalSpinCard } from './_components/dashboard/renewal-spin-card';
 import { UpcomingGiveaways } from './_components/dashboard/upcoming-giveaways';
 import { VisitorUpgradeBanner } from './_components/dashboard/visitor-upgrade-banner';
+import { CancelledMembershipBanner } from './_components/dashboard/cancelled-membership-banner';
 import { CircleAlert, Gift } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -45,17 +46,22 @@ export default async function MemberDashboardPage() {
 
     // Independent authed reads — allSettled so the giveaways 500 can't blank the
     // membership/cycle cards (per API-INTEGRATION.md degradation rules).
-    const [membershipR, entriesR, giveawaysR, spinR] = token
+    const [membershipR, entriesR, giveawaysR, spinR, billingR] = token
         ? await Promise.allSettled([
               getMyMembership(token),
               getEntryHistory(token),
               getGiveaways(token),
-              spinEligible ? getSpinStatus(token) : Promise.resolve(null)
+              spinEligible ? getSpinStatus(token) : Promise.resolve(null),
+              (async () => {
+                  const { getBillingStatus } = await import('@/lib/api/resources/billing');
+                  
+return getBillingStatus(token);
+              })()
           ])
         : [];
 
     // Any expired-session failure → force logout (never returns).
-    for (const result of [membershipR, entriesR, giveawaysR, spinR]) {
+    for (const result of [membershipR, entriesR, giveawaysR, spinR, billingR]) {
         if (result?.status === 'rejected') handleApiAuthError(result.reason);
     }
 
@@ -78,6 +84,7 @@ export default async function MemberDashboardPage() {
     // never renders as "you have no draws / no membership".
     const giveawaysFailed = giveawaysR?.status === 'rejected';
     const drawDataFailed = giveawaysFailed || entriesR?.status === 'rejected';
+    const billing = billingR?.status === 'fulfilled' ? billingR.value : null;
 
     // PRD §4.5 moment 2 — offered 24h before auto-renewal, and only for the
     // token-upgrade sub-tiers the API already gates on. A registration-moment
@@ -99,7 +106,8 @@ export default async function MemberDashboardPage() {
         billing_status: membership ? mapBillingStatus(membership.billingStatus) : null,
         price_cents: membership?.subTier.priceCents ?? SUB_TIERS[subTier].price_cents,
         next_payment_date: nextPayment,
-        beny_addon: null // hidden until the BENY endpoint lands (SP4)
+        beny_addon: null, // hidden until the BENY endpoint lands (SP4)
+        cancel_at_period_end: billing?.cancel_at_period_end ?? false
     };
 
     // Live draw-cycle surface (entries/ current_cycle) — real entry_status + tokens + renewal.
@@ -187,6 +195,10 @@ export default async function MemberDashboardPage() {
             <Greeting member={member} />
 
             {isVisitor ? <VisitorUpgradeBanner /> : null}
+
+            {!isVisitor && billing?.cancel_at_period_end && cycle?.end_at ? (
+                <CancelledMembershipBanner accessEndsAt={cycle.end_at} />
+            ) : null}
 
             {renewalSpin ? (
                 <RenewalSpinCard discount={renewalSpin.discount_cents / 100} expiresAt={renewalSpin.expires_at} />

@@ -10,6 +10,8 @@ export interface BillingStatus {
     next_renewal_at: string | null;
     grace_period: { started_at: string; expires_at: string } | null;
     stripe_subscription_id: string | null;
+    subscription_status?: string;
+    cancel_at_period_end?: boolean;
 }
 
 // GET /billing/invoices → `data` is the invoice array (meta holds pagination).
