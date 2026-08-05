@@ -20,18 +20,29 @@ export default async function BenyPage({ searchParams }: { searchParams: Promise
 
     if (token) {
         try {
-            const res = await getBenySubscriptions(initialTab, token, 1, 200).catch((err) => {
-                if (initialTab === 'pending_activation') {
-                    return getBenyPending(token);
-                }
-                throw err;
-            });
+            let res;
+            if (initialTab === 'pending_deactivation') {
+                // Backend does not support ?status=pending_deactivation and 400s.
+                // Fetch all items and filter client side.
+                res = await getBenySubscriptions('', token, 1, 200);
+            } else {
+                res = await getBenySubscriptions(initialTab, token, 1, 200).catch((err) => {
+                    if (initialTab === 'pending_activation') {
+                        return getBenyPending(token);
+                    }
+                    throw err;
+                });
+            }
 
             let items: any[] = [];
             if (Array.isArray(res)) {
                 items = res;
             } else if (res && typeof res === 'object') {
                 items = res.items || res.data || res.subscriptions || [];
+            }
+
+            if (initialTab === 'pending_deactivation') {
+                items = items.filter((b: any) => (b.status || '').toLowerCase() === 'pending_deactivation');
             }
 
             rows = items.map((b: any) => ({

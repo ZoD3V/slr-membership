@@ -27,12 +27,11 @@ function formatExpiryLongDate(iso: string | null | undefined): string {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '-';
     
-    return d.toLocaleDateString('en-US', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        timeZone: 'Australia/Sydney'
-    });
+    const day = d.toLocaleString('en-US', { day: 'numeric', timeZone: 'Australia/Sydney' });
+    const month = d.toLocaleString('en-US', { month: 'long', timeZone: 'Australia/Sydney' });
+    const year = d.toLocaleString('en-US', { year: 'numeric', timeZone: 'Australia/Sydney' });
+
+    return `${day} ${month} ${year}`;
 }
 
 export function BenySection({

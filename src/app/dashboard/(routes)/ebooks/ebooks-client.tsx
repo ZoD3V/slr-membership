@@ -49,10 +49,6 @@ export function EbooksClient({ initialRows, listError }: { initialRows: EbookRow
 
     return (
         <>
-            {listError ? (
-                <ListErrorCard error={listError} title='Ebooks list failed — report this to the backend' />
-            ) : null}
-
             <DataTable
                 searchKey='title'
                 columns={ebooksColumns}

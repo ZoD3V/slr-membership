@@ -52,6 +52,15 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
         }
         setRedirecting(true);
         try {
+            if (addBeny) {
+                const { subscribeBeny } = await import('@/lib/api/resources/beny');
+                await subscribeBeny(token, {
+                    name: data.name,
+                    email: data.email,
+                    phone: data.phone
+                });
+            }
+
             const { url } = await createMembershipCheckout(token, {
                 sub_tier: subTier.toLowerCase(),
                 beny: addBeny

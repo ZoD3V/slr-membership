@@ -48,14 +48,6 @@ export function DiscountsClient({
 
     return (
         <>
-            {listError ? (
-                <ListErrorCard
-                    error={listError}
-                    title='Discounts list unavailable — report this to the backend'
-                    description={`GET /api/v1/discounts/ failed, so existing discounts can't be shown. New discounts you create still work and can be deleted.`}
-                />
-            ) : null}
-
             <DataTable
                 searchKey='title'
                 columns={discountsColumns}

@@ -45,14 +45,6 @@ export function WinnersClient({ rows, listError }: { rows: WinnerRow[]; listErro
 
     return (
         <>
-            {listError ? (
-                <ListErrorCard
-                    error={listError}
-                    title='Winners list unavailable — report this to the backend'
-                    description='GET /api/v1/admin/winners failed, so recorded winners cannot be shown.'
-                />
-            ) : null}
-
             <DataTable
                 // The endpoint ignores ?search=, so the page loads every row and
                 // DataTable searches/paginates client-side (same as ebooks).

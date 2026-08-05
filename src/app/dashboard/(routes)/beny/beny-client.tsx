@@ -171,14 +171,6 @@ export function BenyClient({
 
     return (
         <>
-            {listError ? (
-                <ListErrorCard
-                    error={listError}
-                    title='BENY list unavailable — report this to the backend'
-                    description={`Retrieve failed, so BENY subscriptions can't be shown.`}
-                />
-            ) : null}
-
             <div className='border-slr-navy-border mb-2 flex gap-2 overflow-x-auto border-b'>
                 {TABS.map((t) => (
                     <button

@@ -56,14 +56,6 @@ return rows.filter((row) => row.status === statusFilter);
 
     return (
         <>
-            {listError ? (
-                <ListErrorCard
-                    error={listError}
-                    title='Giveaways list unavailable — report this to the backend'
-                    description='GET /api/v1/admin/giveaways failed, so existing giveaways cannot be shown.'
-                />
-            ) : null}
-
             <div className='mb-4 flex items-center gap-3'>
                 <label className='text-sm font-medium text-slate-400'>Status:</label>
                 <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
