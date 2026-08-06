@@ -8,10 +8,9 @@ type FooterLink = { name: string; href: string };
 const navigationLinks: FooterLink[] = [
     { name: 'Home', href: '/' },
     { name: 'Membership', href: '/membership' },
-    { name: 'Rewards', href: '/#tiers' },
-    { name: 'Offers', href: '/#partners' },
-    { name: 'Win', href: '/#tiers' },
-    { name: 'About Us', href: '/about' }
+    { name: 'Prizes', href: '/prizes' },
+    { name: 'About', href: '/about' },
+    { name: 'Contact', href: '/contact' }
 ];
 
 const membershipLinks: FooterLink[] = [

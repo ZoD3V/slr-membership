@@ -6,6 +6,7 @@ import { Bebas_Neue, Montserrat } from 'next/font/google';
 import '@/app/globals.css';
 import { VersionWatcher } from '@/components/common/version-watcher';
 import { Toaster } from '@/components/ui/sonner';
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 const montserrat = Montserrat({
     subsets: ['latin'],
@@ -62,6 +63,8 @@ export const metadata: Metadata = {
 };
 
 const Layout = ({ children }: Readonly<{ children: ReactNode }>) => {
+    const gaId = process.env.NEXT_PUBLIC_GA_ID;
+
     return (
         <html suppressHydrationWarning lang='en'>
             <body
@@ -70,6 +73,7 @@ const Layout = ({ children }: Readonly<{ children: ReactNode }>) => {
                 {children}
                 <Toaster />
                 <VersionWatcher />
+                {gaId && <GoogleAnalytics gaId={gaId} />}
             </body>
         </html>
     );
