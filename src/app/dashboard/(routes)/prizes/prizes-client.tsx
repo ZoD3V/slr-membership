@@ -169,9 +169,12 @@ export function PrizesClient({ pool }: { pool: PrizePool }) {
                     <CardHeader>
                         <CardTitle>Prize pool</CardTitle>
                     </CardHeader>
-                    {/* Two columns: headline and the member count are short values that
-                        looked stranded at full width, and pairing them keeps the four
-                        fields on one tidy block. */}
+                    {/* Headline and sub-label are both short, plain values — paired on
+                        one row. Odds and paid members each get a full-width row of
+                        their own instead of pairing with one another: a CSS grid
+                        stretches every cell in a row to the tallest one, and paid
+                        members' derived stage line can run to two lines, which left
+                        odds looking oddly padded when the two shared a row. */}
                     <CardContent className='grid gap-4 sm:grid-cols-2'>
                         <FormField
                             control={form.control}
@@ -203,7 +206,7 @@ export function PrizesClient({ pool }: { pool: PrizePool }) {
                             control={form.control}
                             name='odds_label'
                             render={({ field }) => (
-                                <FormItem className='min-w-0'>
+                                <FormItem className='min-w-0 sm:col-span-2'>
                                     <FormLabel>Odds</FormLabel>
                                     <FormControl>
                                         <Input placeholder='9 in 10 wins yearly' {...field} />
@@ -216,10 +219,10 @@ export function PrizesClient({ pool }: { pool: PrizePool }) {
                             control={form.control}
                             name='current_members'
                             render={({ field }) => (
-                                <FormItem className='min-w-0'>
+                                <FormItem className='min-w-0 sm:col-span-2'>
                                     <FormLabel>Paid members</FormLabel>
                                     <FormControl>
-                                        <Input type='number' min={0} step={1} {...field} />
+                                        <Input type='number' min={0} step={1} className='max-w-40' {...field} />
                                     </FormControl>
                                     <FormDescription aria-live='polite'>
                                         {stageLabel(stage)} · progress {progress.pct}%
