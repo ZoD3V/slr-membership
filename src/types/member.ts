@@ -134,7 +134,9 @@ export interface GiveawayDetail extends Giveaway {
 // ── Prizes (PRD §"Sistem Stage Prize Pool") ──────────────────────────────────
 // Informational, CMS-editable page. Every field below is a plain text/number
 // the admin edits per stage — no system logic. Prize pool figures are marketing
-// language; actual draws happen externally at TPAL.
+// language; actual draws happen externally at TPAL. Stage figures (label,
+// current stage, thresholds) are derived from `current_members` in `@/lib/prizes`
+// rather than stored — see that module for the derivation.
 
 export interface PrizeTierBreakdown {
     tier_group: TierGroup;
@@ -144,20 +146,12 @@ export interface PrizeTierBreakdown {
     monthly: string | null; // monthly bonus copy, or null when none
 }
 
-export interface PrizeStage {
-    stage: number;
-    members_required: number; // total paid members (RED + BLUE) that defines the stage
-}
-
 export interface PrizePool {
     headline: string; // CMS text, e.g. '$2,100'
     prizes_sublabel: string; // e.g. '@ 22 Prizes • One Month'
-    stage_label: string; // e.g. 'For 100 Members • Stage 1'
-    current_stage: number;
-    current_members: number; // paid members currently displayed (CMS)
+    current_members: number; // paid members, typed by admin (PRD §3.2 "total members")
     odds_label: string; // e.g. '9 in 10 wins yearly'
     tiers: PrizeTierBreakdown[];
-    stages: PrizeStage[];
 }
 
 // ── Discounts (PRD §4.4) ─────────────────────────────────────────────────────

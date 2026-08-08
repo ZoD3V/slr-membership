@@ -10,8 +10,6 @@ import type { PrizePool } from '@/types/member';
 const PRIZE_POOL: PrizePool = {
     headline: '$2,100',
     prizes_sublabel: '@ 22 Prizes • One Month',
-    stage_label: 'For 100 Members • Stage 1',
-    current_stage: 1,
     current_members: 142,
     odds_label: '9 in 10 wins yearly',
     tiers: [
@@ -36,15 +34,6 @@ const PRIZE_POOL: PrizePool = {
             weekly: '$25 Coles Credits + $150 Cash',
             monthly: '$700 Bonus Monthly Credit'
         }
-    ],
-    stages: [
-        { stage: 1, members_required: 100 },
-        { stage: 2, members_required: 200 },
-        { stage: 3, members_required: 300 },
-        { stage: 4, members_required: 400 },
-        { stage: 5, members_required: 500 },
-        { stage: 6, members_required: 1000 },
-        { stage: 7, members_required: 2000 }
     ]
 };
 

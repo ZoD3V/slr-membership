@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { getCurrentMember } from '@/data/member-dashboard';
 import { getPrizePool } from '@/data/prizes';
 import { tierGroupOf } from '@/lib/member';
+import { activeStage, stageLabel } from '@/lib/prizes';
 
 import { PrizeTierCard } from './_components/prize-tier-card';
 import { StageTracker } from './_components/stage-tracker';
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
 export default async function PrizesPage() {
     const [pool, member] = await Promise.all([getPrizePool(), getCurrentMember()]);
     const memberGroup = tierGroupOf(member.sub_tier);
+    const stage = activeStage(pool.current_members);
 
     return (
         <div className='mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 md:px-6 md:py-8'>
@@ -28,7 +30,7 @@ export default async function PrizesPage() {
             {/* Prize pool hero */}
             <section className='slr-section-bg border-slr-navy-border relative overflow-hidden rounded-2xl border p-6 text-center md:p-10'>
                 <p className='text-slr-gold-label text-xs font-semibold tracking-widest uppercase md:text-sm'>
-                    {pool.stage_label}
+                    {stageLabel(stage)}
                 </p>
                 <p className='font-bebas-neue mt-2 leading-none'>
                     <span className='text-gradient-gold text-6xl md:text-8xl'>{pool.headline}</span>

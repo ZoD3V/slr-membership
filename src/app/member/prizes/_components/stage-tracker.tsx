@@ -1,16 +1,11 @@
+import { PRIZE_STAGES, activeStage, nextStageNumber, stageProgress } from '@/lib/prizes';
 import { cn } from '@/lib/utils';
 import type { PrizePool } from '@/types/member';
 
 export function StageTracker({ pool }: { pool: PrizePool }) {
-    const current = pool.stages.find((s) => s.stage === pool.current_stage);
-    const next = pool.stages.find((s) => s.stage === pool.current_stage + 1);
-
-    const base = current?.members_required ?? 0;
-    const target = next?.members_required;
-    const pct = target
-        ? Math.min(100, Math.max(0, Math.round(((pool.current_members - base) / (target - base)) * 100)))
-        : 100;
-    const remaining = target ? Math.max(0, target - pool.current_members) : 0;
+    const stage = activeStage(pool.current_members);
+    const nextStage = nextStageNumber(pool.current_members);
+    const { pct, remaining } = stageProgress(pool.current_members);
 
     return (
         <section className='bg-card-dark-navy border-slr-navy-border rounded-2xl border p-5 md:p-6'>
@@ -19,9 +14,7 @@ export function StageTracker({ pool }: { pool: PrizePool }) {
                     <p className='text-slr-gold-label text-xs font-semibold tracking-widest uppercase'>
                         Membership Stage
                     </p>
-                    <p className='font-bebas-neue text-2xl tracking-wide text-white uppercase'>
-                        Stage {pool.current_stage}
-                    </p>
+                    <p className='font-bebas-neue text-2xl tracking-wide text-white uppercase'>Stage {stage.stage}</p>
                 </div>
                 <p className='text-slr-muted text-sm'>
                     <span className='font-semibold text-white tabular-nums'>
@@ -36,10 +29,10 @@ export function StageTracker({ pool }: { pool: PrizePool }) {
                     <div className='bg-gradient-gold h-full rounded-full' style={{ width: `${pct}%` }} />
                 </div>
                 <p className='text-slr-dim mt-2 text-xs'>
-                    {next ? (
+                    {nextStage !== null ? (
                         <>
                             <span className='tabular-nums'>{remaining.toLocaleString('en-AU')}</span> more members until
-                            Stage {next.stage}
+                            Stage {nextStage}
                         </>
                     ) : (
                         'Top stage reached'
@@ -48,13 +41,13 @@ export function StageTracker({ pool }: { pool: PrizePool }) {
             </div>
 
             <div className='mt-4 flex flex-wrap gap-2'>
-                {pool.stages.map((s) => {
-                    const reached = pool.current_members >= s.members_required;
-                    const isCurrent = s.stage === pool.current_stage;
+                {PRIZE_STAGES.map((threshold, index) => {
+                    const reached = pool.current_members >= threshold;
+                    const isCurrent = index + 1 === stage.stage;
 
                     return (
                         <span
-                            key={s.stage}
+                            key={threshold}
                             className={cn(
                                 'rounded-full border px-2.5 py-1 text-xs font-medium tabular-nums',
                                 isCurrent
@@ -63,7 +56,7 @@ export function StageTracker({ pool }: { pool: PrizePool }) {
                                       ? 'border-white/10 text-white/70'
                                       : 'text-slr-dim border-white/5'
                             )}>
-                            Stage {s.stage} · {s.members_required.toLocaleString('en-AU')}
+                            Stage {index + 1} · {threshold.toLocaleString('en-AU')}
                         </span>
                     );
                 })}
