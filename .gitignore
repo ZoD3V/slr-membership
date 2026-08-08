@@ -42,3 +42,6 @@ next-env.d.ts
 .claude/settings.local.json
 
 graphify-out/
+
+# subagent-driven-development scratch (ledgers, briefs, review packages)
+.superpowers/
