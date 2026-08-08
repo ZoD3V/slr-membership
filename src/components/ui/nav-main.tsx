@@ -14,6 +14,7 @@ import {
 import {
     BookOpen,
     ClipboardList,
+    Clock,
     FileSpreadsheet,
     Gift,
     LayoutGrid,
@@ -39,6 +40,7 @@ const ITEMS: NavItem[] = [
     { title: 'Giveaways', href: '/dashboard/giveaways', icon: Gift },
     { title: 'Winners', href: '/dashboard/winners', icon: Trophy },
     { title: 'Prizes', href: '/dashboard/prizes', icon: Sparkles },
+    { title: 'Safe Hours', href: '/dashboard/safe-hours', icon: Clock },
     { title: 'TPAL Exports', href: '/dashboard/draw-exports', icon: FileSpreadsheet },
     { title: 'Discounts', href: '/dashboard/discounts', icon: Ticket },
     { title: 'BENY', href: '/dashboard/beny', icon: UserCheck },
