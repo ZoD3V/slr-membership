@@ -1,22 +1,25 @@
 import { DashboardPageShell } from '@/app/dashboard/_components/page-shell';
-import { type ListError, ListErrorCard } from '@/components/common/list-error-card';
 import Heading from '@/components/ui/heading';
 import { handleApiAuthError } from '@/lib/api/guard';
-import { toListError } from '@/lib/api/list-error';
 import { getPrizePool } from '@/lib/api/resources/prizes';
 import type { PrizePool } from '@/types/member';
 
 import { PrizesClient } from './prizes-client';
+import { PRIZE_POOL_SEED } from './seed';
 
 export default async function PrizesPage() {
-    let pool: PrizePool | null = null;
-    let listError: ListError | null = null;
+    let pool: PrizePool;
+    let isPlaceholder = false;
 
     try {
         pool = await getPrizePool();
     } catch (error) {
         handleApiAuthError(error); // 401 → force logout; other errors fall through
-        listError = toListError(error);
+        // The endpoint is still unimplemented, so the editor renders against the
+        // seed document rather than an error card — the form stays usable for
+        // admin walkthroughs. Saving still fails loudly via the action's toast.
+        pool = PRIZE_POOL_SEED;
+        isPlaceholder = true;
     }
 
     return (
@@ -26,15 +29,13 @@ export default async function PrizesPage() {
                 description='Edit the prize pool shown on the Prizes page. Saved changes are not yet reflected on member-facing pages.'
             />
 
-            {listError ? (
-                <ListErrorCard
-                    error={listError}
-                    title='Could not load the prize pool'
-                    description='The prizes endpoint is not available yet. See docs/BACKEND-ISSUES.md.'
-                />
+            {isPlaceholder ? (
+                <p className='text-muted-foreground text-sm'>
+                    Showing placeholder figures — the prizes endpoint is not live yet, so saving will not persist.
+                </p>
             ) : null}
 
-            {pool ? <PrizesClient pool={pool} /> : null}
+            <PrizesClient pool={pool} />
         </DashboardPageShell>
     );
 }
