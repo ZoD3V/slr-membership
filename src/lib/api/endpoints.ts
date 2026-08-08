@@ -79,6 +79,12 @@ export const API = {
         list: '/api/v1/notifications/',
         read: (id: string) => `/api/v1/notifications/${id}/read`
     },
+    // Proposed 2026-08-08 — both routes return 404 today (verified live).
+    // See docs/superpowers/specs/2026-08-08-admin-prizes-cms-design.md §4.
+    prizes: {
+        public: '/api/v1/public/prizes',
+        update: '/api/v1/admin/prizes'
+    },
     users: {
         me: '/api/v1/users/me',
         update: (id: string) => `/api/v1/users/${id}`
