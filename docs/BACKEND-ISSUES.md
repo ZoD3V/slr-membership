@@ -7,7 +7,7 @@ Endpoints that return errors or behave against the PRD, found while integrating 
 - **Captured:** 2026-07-08 · **Re-verified:** 2026-07-17 · **Giveaways module:** 2026-08-03
 - **Envelope:** every response is `{ success, message, data, meta }`.
 
-> **Reading order.** Newest handoff: **[BACKEND-ISSUES-SPRINT3-GIVEAWAYS.md](BACKEND-ISSUES-SPRINT3-GIVEAWAYS.md)** (modul giveaways, 2026-08-03). The **Sprint 3 (Ronde 3)** section directly below is the active sprint (Giveaway, Stripe, pembayaran). Sprint 2 follows it (CLEAR — no blockers). Everything after that is older history.
+> **Reading order.** Newest handoff: **[BACKEND-ISSUES-SPRINT3-GIVEAWAYS.md](BACKEND-ISSUES-SPRINT3-GIVEAWAYS.md)** (modul giveaways, 2026-08-03), plus the **Sprint 4 (Ronde 4)** section near the end of this file — that's the active handoff (Prizes CMS + Safe Hours admin settings, both 404). The **Sprint 3 (Ronde 3)** section directly below is the previous sprint (Giveaway, Stripe, pembayaran). Sprint 2 follows it (CLEAR — no blockers).
 
 ---
 
@@ -849,7 +849,9 @@ The detail/list GET never returned `is_active`, so the admin edit form couldn't 
 
 ---
 
-## 🆕 SPRINT 4 (Ronde 4) — Prizes CMS: `GET /public/prizes` + `PUT /admin/prizes` belum ada (404)
+# 🆕 SPRINT 4 (Ronde 4) — Admin dashboard modules: Prizes CMS & Safe Hours belum ada di backend
+
+## Prizes CMS — `GET /public/prizes` + `PUT /admin/prizes` belum ada (404)
 
 **Captured:** 2026-08-08 · **Sprint:** 4 (Ronde 4), item "Admin dashboard modules & content management (halaman Prizes)" · **Spec:** [2026-08-08-admin-prizes-cms-design.md](superpowers/specs/2026-08-08-admin-prizes-cms-design.md)
 
@@ -902,3 +904,36 @@ Response body (snake_case, di-unwrap dari envelope standar `{ success, message, 
 4. Konfirmasi route admin (`PUT /admin/prizes`) menegakkan role admin dan menjawab 401/403 konsisten dengan `/api/v1/admin/*` lain.
 
 **Catatan:** editor admin di frontend (`/dashboard/prizes`) **sudah selesai dibangun** dan sudah nunggu — begitu kedua endpoint di atas menjawab 200, halaman langsung berfungsi tanpa perubahan FE lebih lanjut. `/member/prizes` dan `/prizes` (public) sengaja **belum** di-rewire ke API ini (Phase 2, lihat spec §8) — masih baca mock lokal `src/data/prizes.ts` sampai `GET /public/prizes` beneran 200.
+
+---
+
+## Safe Hours (Admin Settings)
+
+Endpoint yang dibutuhkan admin editor Safe Hours (verified 404, 2026-08-08):
+
+### GET /api/v1/admin/safe-hours
+Ambil window lockout saat ini. Admin JWT.
+
+### PUT /api/v1/admin/safe-hours
+Update window (full-document replace). Admin JWT.
+
+Request/response body:
+```json
+{
+  "weekday": "Fri",
+  "start_hour": 16,
+  "end_hour": 19
+}
+```
+
+`weekday` salah satu dari `Mon|Tue|Wed|Thu|Fri|Sat|Sun`. `start_hour`/`end_hour` integer 0-23. Tidak ada field timezone — window selalu `Australia/Sydney`, ditangani di kode FE.
+
+**Yang diminta ke tim backend:**
+1. Implement kedua endpoint di atas.
+2. Seed dokumen dengan nilai default saat ini: `{ weekday: "Fri", start_hour: 16, end_hour: 19 }` — sama seperti yang FE pakai sebagai fallback.
+3. Konfirmasi PUT full-replace dan mengembalikan dokumen yang tersimpan.
+4. Konfirmasi route mewajibkan role admin, 401/403 konsisten dengan `/api/v1/admin/*` lainnya.
+
+**Tambahan — belum ada di kontrak sama sekali:** pertimbangkan endpoint publik atau member-authenticated buat *membaca* window saat ini (atau masukkan ke payload session/bootstrap member). Tanpa itu, pengecekan advisory di sisi member (`src/lib/safe-hours.ts` — constant hardcoded) tidak bisa mengikuti window yang diubah admin. Backend tetap jadi otoritas penegakan baik dengan atau tanpa ini (member yang mencoba di luar window versi FE tetap kena 403 dari backend), tapi tombol member bisa disable di jam yang salah sampai constant di kode di-update manual. Ini gap UX-timing, bukan gap keamanan, tapi sebaiknya jadi keputusan sadar bukan kejutan.
+
+FE admin editor sudah dibangun dan langsung berfungsi begitu endpoint di atas hidup.
