@@ -18,6 +18,7 @@ import {
     Gift,
     LayoutGrid,
     type LucideIcon,
+    Sparkles,
     Ticket,
     Trophy,
     UserCheck
@@ -37,6 +38,7 @@ const ITEMS: NavItem[] = [
     { title: 'Members', href: '/dashboard/members', icon: ClipboardList },
     { title: 'Giveaways', href: '/dashboard/giveaways', icon: Gift },
     { title: 'Winners', href: '/dashboard/winners', icon: Trophy },
+    { title: 'Prizes', href: '/dashboard/prizes', icon: Sparkles },
     { title: 'TPAL Exports', href: '/dashboard/draw-exports', icon: FileSpreadsheet },
     { title: 'Discounts', href: '/dashboard/discounts', icon: Ticket },
     { title: 'BENY', href: '/dashboard/beny', icon: UserCheck },
