@@ -41,7 +41,8 @@ export const API = {
         giveaways: '/api/v1/admin/giveaways',
         giveawayDetail: (id: string) => `/api/v1/admin/giveaways/${id}`,
         winners: '/api/v1/admin/winners',
-        winnerDetail: (id: string) => `/api/v1/admin/winners/${id}`
+        winnerDetail: (id: string) => `/api/v1/admin/winners/${id}`,
+        safeHours: '/api/v1/admin/safe-hours'
     },
     discounts: {
         list: '/api/v1/discounts/',

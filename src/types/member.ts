@@ -154,6 +154,20 @@ export interface PrizePool {
     tiers: PrizeTierBreakdown[];
 }
 
+// ── Safe Hours (PRD §5.8 "Safe Hours Management") ────────────────────────────
+// Admin-edited window during which sign-up/upgrade/downgrade are locked. The
+// member-facing advisory check in src/lib/safe-hours.ts is a separate, static
+// constant — there is no public endpoint for it to read this document from
+// (see docs/superpowers/specs/2026-08-08-admin-safe-hours-design.md §2).
+
+export type Weekday = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
+
+export interface SafeHoursConfig {
+    weekday: Weekday;
+    start_hour: number; // 0-23
+    end_hour: number; // 0-23, strictly greater than start_hour
+}
+
 // ── Discounts (PRD §4.4) ─────────────────────────────────────────────────────
 // Basic partner discounts: RED/BLUE only (Visitor sees an upgrade gate). BENY is
 // a separate $4/mo external add-on — web collects contact details then admin
