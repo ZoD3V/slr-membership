@@ -163,7 +163,7 @@ Ranges per PRD: Stage 1 = 100–199, 2 = 200–299, 3 = 300–399, 4 = 400–499
 
 ```ts
 export const getPrizePool = cache((token?: string) => apiFetch<PrizePool>(API.prizes.public, { token }));
-export function updatePrizePool(payload: PrizePool, token: string): Promise<PrizePool>;
+export function updatePrizePool(token: string, payload: PrizePool): Promise<PrizePool>;
 ```
 
 `src/data/prizes.ts` is deleted **in Phase 2** (§8), once consumers no longer read it. Its mock constant survives only as the §4 example and the backend seed request — no stale local copy is kept, because per §3.3 a failed fetch must surface rather than silently fall back. During Phase 1 the old `data/prizes.ts#getPrizePool` and the new `resources/prizes.ts#getPrizePool` coexist in separate modules with no shared importer.

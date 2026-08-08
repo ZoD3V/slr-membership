@@ -4,16 +4,11 @@ import Heading from '@/components/ui/heading';
 import { handleApiAuthError } from '@/lib/api/guard';
 import { toListError } from '@/lib/api/list-error';
 import { getPrizePool } from '@/lib/api/resources/prizes';
-import { getAccessToken } from '@/lib/api/server';
 import type { PrizePool } from '@/types/member';
 
 import { PrizesClient } from './prizes-client';
 
 export default async function PrizesPage() {
-    // The read itself is public; the token is fetched here for the save action
-    // in PrizesClient, not to gate this page — middleware already does that.
-    await getAccessToken();
-
     let pool: PrizePool | null = null;
     let listError: ListError | null = null;
 
@@ -26,7 +21,10 @@ export default async function PrizesPage() {
 
     return (
         <DashboardPageShell>
-            <Heading title='Prizes' description='Edit the prize pool shown on the Prizes page' />
+            <Heading
+                title='Prizes'
+                description='Edit the prize pool shown on the Prizes page. Saved changes are not yet reflected on member-facing pages.'
+            />
 
             {listError ? (
                 <ListErrorCard

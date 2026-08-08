@@ -68,7 +68,11 @@ describe('stageProgress', () => {
     it.each([
         [99, 99, 1],
         [142, 71, 58],
-        [200, 67, 100]
+        [200, 67, 100],
+        // 199/200 and 1999/2000 round to 100% — the bar must not read "full"
+        // while the caption still says members are needed.
+        [199, 99, 1],
+        [1999, 99, 1]
     ])('%i members → %i%% with %i remaining', (members, pct, remaining) => {
         expect(stageProgress(members)).toEqual({ pct, remaining });
     });

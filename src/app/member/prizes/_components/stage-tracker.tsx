@@ -31,8 +31,11 @@ export function StageTracker({ pool }: { pool: PrizePool }) {
                 <p className='text-slr-dim mt-2 text-xs'>
                     {nextStage !== null ? (
                         <>
-                            <span className='tabular-nums'>{remaining.toLocaleString('en-AU')}</span> more members until
-                            Stage {nextStage}
+                            <span className='tabular-nums'>{remaining.toLocaleString('en-AU')}</span> more member
+                            {remaining === 1 ? '' : 's'} until Stage {nextStage}
+                            {/* Pre-launch (nextStage === active stage): read as Stage 1 opening,
+                                not advancing past it, since the header above already reads "Stage 1". */}
+                            {nextStage === stage.stage ? ' opens' : ''}
                         </>
                     ) : (
                         'Top stage reached'

@@ -71,7 +71,10 @@ export function stageProgress(paidMembers: number): StageProgress {
     if (target === null) return { pct: 100, remaining: 0 };
 
     return {
-        pct: Math.min(100, Math.max(0, Math.round((paidMembers / target) * 100))),
+        // target !== null means paidMembers < target, so remaining is always
+        // at least 1 here — cap below 100 so the bar never reads "full" next
+        // to a caption that still says members are needed (e.g. 199/200).
+        pct: Math.min(99, Math.max(0, Math.round((paidMembers / target) * 100))),
         remaining: Math.max(0, target - paidMembers)
     };
 }

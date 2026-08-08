@@ -846,3 +846,59 @@ Once these are live and verified, the frontend just needs to swap the "Coming so
 **Captured:** 2026-07-18 · **Resolved:** 2026-07-18
 
 The detail/list GET never returned `is_active`, so the admin edit form couldn't seed the Active switch or reactivate an inactive discount. Per client, the active toggle isn't needed in the admin UI — the FE removed `isActive` entirely from the discount form, DTOs, and table (2026-07-18). No backend change required. If active/inactive management is ever wanted again, backend must add `is_active` to `GET /discounts/` and `GET /discounts/{id}`.
+
+---
+
+## 🆕 SPRINT 4 (Ronde 4) — Prizes CMS: `GET /public/prizes` + `PUT /admin/prizes` belum ada (404)
+
+**Captured:** 2026-08-08 · **Sprint:** 4 (Ronde 4), item "Admin dashboard modules & content management (halaman Prizes)" · **Spec:** [2026-08-08-admin-prizes-cms-design.md](superpowers/specs/2026-08-08-admin-prizes-cms-design.md)
+
+Halaman Prizes adalah salah satu dari dua area yang CMS-managed di platform ini (PRD §"Implementation Note: Static vs CMS", yang satu lagi E-book content). Figure-nya berubah setiap kali jumlah paid member melewati stage threshold, jadi kalau di-hardcode berarti re-deploy tiap naik stage.
+
+**Verifikasi 2026-08-08** — kedua route berikut, dan beberapa nama alternatif, semuanya **404**:
+
+```
+GET  /api/v1/prizes            → 404
+GET  /api/v1/public/prizes     → 404   (route yang dipakai FE, no auth)
+GET  /api/v1/prize-pool        → 404
+PUT  /api/v1/admin/prizes      → 404   (route yang dipakai FE, admin JWT)
+PUT  /api/v1/admin/prize-pool  → 404
+```
+
+Kontrol probe di host yang sama pada saat bersamaan mengembalikan 401 (`/ebooks/`, `/notifications/`, `/admin/members`) dan 200 (`/public/discounts/`, `/memberships/tiers`) — jadi 404 di atas berarti route-nya memang **belum ada**, bukan artefak auth.
+
+### Kontrak yang diusulkan FE
+
+```
+GET /api/v1/public/prizes     → PrizePool     no auth
+PUT /api/v1/admin/prizes      → PrizePool     admin JWT, full-document replace
+```
+
+`GET` public karena halaman marketing `/prizes` yang tidak login juga konsumsi endpoint yang sama (mengikuti presedan `/api/v1/public/discounts/`). Tidak ada admin-only read terpisah — dashboard admin dan halaman member/public sama-sama baca dari `GET /public/prizes`.
+
+Response body (snake_case, di-unwrap dari envelope standar `{ success, message, data, meta }`):
+
+```json
+{
+  "headline": "$2,100",
+  "prizes_sublabel": "@ 22 Prizes • One Month",
+  "current_members": 142,
+  "odds_label": "9 in 10 wins yearly",
+  "tiers": [
+    { "tier_group": "visitor", "tier_label": "Visitor",  "price_label": "Free to join",    "weekly": "$25 Coles Digital Credit",    "monthly": null },
+    { "tier_group": "red",     "tier_label": "SLR RED",  "price_label": "from $10/month",  "weekly": "$25 Coles Credits + $50 Cash",  "monthly": "$300 Bonus Monthly Credit" },
+    { "tier_group": "blue",    "tier_label": "SLR BLUE", "price_label": "from $26/month",  "weekly": "$25 Coles Credits + $150 Cash", "monthly": "$700 Bonus Monthly Credit" }
+  ]
+}
+```
+
+`PUT` menerima body yang sama dan mengembalikan dokumen yang tersimpan. Tidak ada `current_stage`, `stage_label`, atau `stages` di wire — semuanya di-derive di client dari `current_members` (PRD: *"current_stage is derived from paid_members — do NOT hardcode"*).
+
+### Permintaan ke backend
+
+1. Implement kedua route sesuai kontrak di atas: `GET /api/v1/public/prizes` dan `PUT /api/v1/admin/prizes`.
+2. Seed dokumennya dengan nilai Stage 1 dari PRD (contoh JSON di atas — itu memang angka Stage 1 milik PRD), supaya `GET` pertama setelah deploy langsung mengembalikan sesuatu yang bisa dirender.
+3. Konfirmasi `PUT` adalah **full-replace** (bukan merge/patch), dan mengembalikan dokumen yang baru tersimpan (bukan `{success,message}` kosong).
+4. Konfirmasi route admin (`PUT /admin/prizes`) menegakkan role admin dan menjawab 401/403 konsisten dengan `/api/v1/admin/*` lain.
+
+**Catatan:** editor admin di frontend (`/dashboard/prizes`) **sudah selesai dibangun** dan sudah nunggu — begitu kedua endpoint di atas menjawab 200, halaman langsung berfungsi tanpa perubahan FE lebih lanjut. `/member/prizes` dan `/prizes` (public) sengaja **belum** di-rewire ke API ini (Phase 2, lihat spec §8) — masih baca mock lokal `src/data/prizes.ts` sampai `GET /public/prizes` beneran 200.
