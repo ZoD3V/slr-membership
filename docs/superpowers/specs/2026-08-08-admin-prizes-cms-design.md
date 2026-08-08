@@ -193,9 +193,15 @@ Follows the established dashboard shape (`page.tsx` server fetch → `*-client.t
 **Form layout** — two cards:
 
 1. **Prize pool** — `headline`, `prizes_sublabel`, `odds_label`, `current_members` (number). Directly beneath `current_members`, a **read-only derived line** recomputed as the admin types: *"Stage 1 · label will read 'For 100 Members • Stage 1' · 58 more members until Stage 2."* This makes the derivation visible without letting the admin desynchronise it.
-2. **Prize breakdown** — three fixed rows (Visitor / RED / BLUE), each with `tier_label`, `price_label`, `weekly`, `monthly`. Rows cannot be added or removed; `tier_group` is fixed and rendered as a label. Visitor's `monthly` accepts empty → serialised as `null`.
+2. **Prize breakdown** — three fixed rows (Visitor / RED / BLUE). Rows cannot be added, removed or reordered.
 
-**Validation (Zod):** all text fields non-empty except Visitor `monthly`; `current_members` an integer ≥ 0; `tiers` exactly three entries with `tier_group` matching `visitor` / `red` / `blue`.
+   Only `weekly` and `monthly` are editable. PRD §"Implementation Note: Static vs CMS" puts *"Tier names + marketing names"* and *"All sub-tier prices ($10–$65)"* under **STATIC** — *"this data rarely changes. If it does, just edit the code + re-deploy"* — and its MINIMAL CMS list names only the pool headline, prize count, stage label, per-tier weekly/monthly breakdown, and odds. So `tier_group`, `tier_label` and `price_label` render as read-only context in the row's legend and are round-tripped untouched through the payload; no input edits them.
+
+   Visitor has **no** monthly field at all: PRD's breakdown table shows "—" for it, and its CMS list names a single *"Visitor prize (text)"*. Visitor's `monthly` is always serialised as `null`.
+
+**Validation (Zod):** every editable text field non-empty — `headline`, `prizes_sublabel`, `odds_label`, each row's `weekly`, and `monthly` for RED and BLUE; `current_members` a non-blank integer ≥ 0 (a blank must be rejected, not coerced to `0`, since it is a TPAL-regulated figure); `tiers` exactly three entries with `tier_group` matching `visitor` / `red` / `blue`. The read-only `tier_label` / `price_label` carry no constraint — they are pass-through.
+
+**Layout:** the pool card lays its four fields out on a two-column grid — `headline` and `current_members` are short values that look stranded at full width. Each tier row puts `weekly` in the first column and `monthly` in the second, so the three rows align even though Visitor's second column is empty.
 
 **Navigation:** add `{ title: 'Prizes', href: '/dashboard/prizes', icon: Sparkles }` to `ITEMS` in `src/components/ui/nav-main.tsx`, placed after *Winners*. `Gift` and `Trophy` are already taken by Giveaways and Winners.
 

@@ -16,12 +16,21 @@ import { type Resolver, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
-// tier_group is fixed: the three rows always exist and are never added or
-// removed, so the form edits their copy only.
+// The three rows are fixed — never added, removed or reordered.
+//
+// Only the weekly/monthly prize copy is editable. PRD §"Implementation Note:
+// Static vs CMS" lists tier names and sub-tier prices under STATIC ("this data
+// rarely changes. If it does, just edit the code + re-deploy"), and its MINIMAL
+// CMS list covers only the pool headline, prize count, stage label, the per-tier
+// weekly/monthly breakdown and the odds. So tier_label and price_label are shown
+// as context and round-tripped untouched, never rendered as inputs.
+//
+// Visitor carries no monthly bonus: PRD's breakdown table shows "—" for it and
+// its CMS list names a single "Visitor prize (text)".
 const TIER_ROWS = [
-    { tier_group: 'visitor', heading: 'Visitor' },
-    { tier_group: 'red', heading: 'SLR RED' },
-    { tier_group: 'blue', heading: 'SLR BLUE' }
+    { tier_group: 'visitor', heading: 'Visitor', hasMonthly: false },
+    { tier_group: 'red', heading: 'SLR RED', hasMonthly: true },
+    { tier_group: 'blue', heading: 'SLR BLUE', hasMonthly: true }
 ] as const;
 
 const formSchema = z.object({
@@ -58,10 +67,12 @@ const formSchema = z.object({
         .array(
             z.object({
                 tier_group: z.enum(['visitor', 'red', 'blue']),
-                tier_label: z.string().min(1, 'Required'),
-                price_label: z.string().min(1, 'Required'),
+                // Carried through the form untouched so a save cannot drop them.
+                // Static per PRD — see TIER_ROWS above. No input renders them.
+                tier_label: z.string(),
+                price_label: z.string(),
                 weekly: z.string().min(1, 'Required'),
-                // Visitor has no monthly bonus — empty is serialised back to null.
+                // Visitor has none — empty is serialised back to null.
                 monthly: z.string()
             })
         )
@@ -112,6 +123,12 @@ export function PrizesClient({ pool }: { pool: PrizePool }) {
         defaultValues: toFormValues(pool)
     });
 
+    // Price labels are static per PRD, so reading them once from the incoming
+    // document is enough — nothing in this form can change them.
+    const staticLabels = TIER_ROWS.map(
+        ({ tier_group }) => (pool.tiers ?? []).find((tier) => tier.tier_group === tier_group)?.price_label ?? ''
+    );
+
     // Recomputed as the admin types, so the effect of current_members is visible
     // without letting them desynchronise the stage by hand.
     const members = Number(useWatch({ control: form.control, name: 'current_members' })) || 0;
@@ -152,12 +169,15 @@ export function PrizesClient({ pool }: { pool: PrizePool }) {
                     <CardHeader>
                         <CardTitle>Prize pool</CardTitle>
                     </CardHeader>
-                    <CardContent className='space-y-4'>
+                    {/* Two columns: headline and the member count are short values that
+                        looked stranded at full width, and pairing them keeps the four
+                        fields on one tidy block. */}
+                    <CardContent className='grid gap-4 sm:grid-cols-2'>
                         <FormField
                             control={form.control}
                             name='headline'
                             render={({ field }) => (
-                                <FormItem>
+                                <FormItem className='min-w-0'>
                                     <FormLabel>Headline</FormLabel>
                                     <FormControl>
                                         <Input placeholder='$2,100' {...field} />
@@ -170,7 +190,7 @@ export function PrizesClient({ pool }: { pool: PrizePool }) {
                             control={form.control}
                             name='prizes_sublabel'
                             render={({ field }) => (
-                                <FormItem>
+                                <FormItem className='min-w-0'>
                                     <FormLabel>Sub-label</FormLabel>
                                     <FormControl>
                                         <Input placeholder='@ 22 Prizes • One Month' {...field} />
@@ -183,7 +203,7 @@ export function PrizesClient({ pool }: { pool: PrizePool }) {
                             control={form.control}
                             name='odds_label'
                             render={({ field }) => (
-                                <FormItem>
+                                <FormItem className='min-w-0'>
                                     <FormLabel>Odds</FormLabel>
                                     <FormControl>
                                         <Input placeholder='9 in 10 wins yearly' {...field} />
@@ -196,7 +216,7 @@ export function PrizesClient({ pool }: { pool: PrizePool }) {
                             control={form.control}
                             name='current_members'
                             render={({ field }) => (
-                                <FormItem>
+                                <FormItem className='min-w-0'>
                                     <FormLabel>Paid members</FormLabel>
                                     <FormControl>
                                         <Input type='number' min={0} step={1} {...field} />
@@ -221,39 +241,20 @@ export function PrizesClient({ pool }: { pool: PrizePool }) {
                     <CardContent className='space-y-6'>
                         {TIER_ROWS.map((row, index) => (
                             <fieldset key={row.tier_group} className='min-w-0 space-y-3'>
-                                <legend className='text-sm font-semibold'>{row.heading}</legend>
+                                <legend className='flex flex-wrap items-baseline gap-x-2 text-sm font-semibold'>
+                                    {row.heading}
+                                    <span className='text-muted-foreground text-xs font-normal'>
+                                        {staticLabels[index]}
+                                    </span>
+                                </legend>
+                                {/* Weekly keeps the first column on every row so the three
+                                    tiers line up, including Visitor, which has no monthly. */}
                                 <div className='grid gap-3 sm:grid-cols-2'>
-                                    <FormField
-                                        control={form.control}
-                                        name={`tiers.${index}.tier_label`}
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Tier label</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name={`tiers.${index}.price_label`}
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Price label</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
                                     <FormField
                                         control={form.control}
                                         name={`tiers.${index}.weekly`}
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className='min-w-0'>
                                                 <FormLabel>Weekly</FormLabel>
                                                 <FormControl>
                                                     <Input {...field} />
@@ -262,20 +263,21 @@ export function PrizesClient({ pool }: { pool: PrizePool }) {
                                             </FormItem>
                                         )}
                                     />
-                                    <FormField
-                                        control={form.control}
-                                        name={`tiers.${index}.monthly`}
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Monthly</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} />
-                                                </FormControl>
-                                                <FormDescription>Leave empty when the tier has none.</FormDescription>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                                    {row.hasMonthly ? (
+                                        <FormField
+                                            control={form.control}
+                                            name={`tiers.${index}.monthly`}
+                                            render={({ field }) => (
+                                                <FormItem className='min-w-0'>
+                                                    <FormLabel>Monthly</FormLabel>
+                                                    <FormControl>
+                                                        <Input {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    ) : null}
                                 </div>
                             </fieldset>
                         ))}
