@@ -7,6 +7,16 @@ import { ApiError, apiErrorCode } from '@/lib/api/types';
  *
  * The window is AU eastern time. `Australia/Sydney` is used rather than a fixed
  * +10 so the wall-clock hour stays 16:00–19:00 across daylight saving.
+ *
+ * ⚠️ This constant can drift. Admins can now edit the window at
+ * `/dashboard/safe-hours` (`PUT /api/v1/admin/safe-hours`), but there is no
+ * public or member-readable endpoint to fetch it back, so this stays hardcoded
+ * and members keep seeing the *old* schedule until someone updates it here.
+ *
+ * That is a UX-timing gap, not a security one — the API is the authority and
+ * still answers `403 SAFE_HOURS_LOCKED` on its own window. If you change the
+ * window in the admin editor, change it here too. A read endpoint that would
+ * close this properly is filed under Sprint 4 in docs/BACKEND-ISSUES.md.
  */
 export const SAFE_HOURS = {
     weekday: 'Fri',
