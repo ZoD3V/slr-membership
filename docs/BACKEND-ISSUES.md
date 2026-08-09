@@ -937,3 +937,54 @@ Request/response body:
 **Tambahan — belum ada di kontrak sama sekali:** pertimbangkan endpoint publik atau member-authenticated buat *membaca* window saat ini (atau masukkan ke payload session/bootstrap member). Tanpa itu, pengecekan advisory di sisi member (`src/lib/safe-hours.ts` — constant hardcoded) tidak bisa mengikuti window yang diubah admin. Backend tetap jadi otoritas penegakan baik dengan atau tanpa ini (member yang mencoba di luar window versi FE tetap kena 403 dari backend), tapi tombol member bisa disable di jam yang salah sampai constant di kode di-update manual. Ini gap UX-timing, bukan gap keamanan, tapi sebaiknya jadi keputusan sadar bukan kejutan.
 
 FE admin editor sudah dibangun dan langsung berfungsi begitu endpoint di atas hidup.
+
+---
+
+## Spin Wheel (Admin Panel)
+
+Endpoint yang dibutuhkan admin panel Spin Wheel (verified 404, 2026-08-08 — dan `GET /admin/spin/config` malah belum ada sama sekali di API Contract, cuma `PUT`):
+
+### GET /api/v1/admin/spin/history
+Riwayat spin, filter opsional `?tier=` (salah satu dari `R4|R7|B4|B7|B10`) dan `?moment=` (`registration|renewal`). Admin JWT.
+
+Response body yang diasumsikan FE (belum dikonfirmasi — field names inferred dari tipe `SpinResult` yang sudah ada, tolong konfirmasi atau kasih bentuk aslinya):
+```json
+[
+  {
+    "id": "spin_123",
+    "member_name": "Jane Doe",
+    "tier": "R4",
+    "moment": "registration",
+    "result": "win",
+    "discount_cents": 1000,
+    "spun_at": "2026-08-05T09:14:00Z"
+  }
+]
+```
+
+### GET /api/v1/admin/spin/config — BELUM ADA DI KONTRAK, MOHON DITAMBAHKAN
+Ambil status toggle saat ini. Tanpa ini, halaman admin gak punya cara nampilin state toggle yang aktif sebelum diedit. Admin JWT.
+
+### PUT /api/v1/admin/spin/config
+Update status enable/disable. Admin JWT.
+
+Request/response body:
+```json
+{
+  "enabled": true,
+  "sub_tier_enabled": { "R4": true, "R7": true, "B4": true, "B7": true, "B10": true }
+}
+```
+
+**Sengaja TIDAK ada** field `discount_cents`/probabilitas per sub-tier — PRD §5.7 (keputusan PO) eksplisit nunda config itu sampai rilis berikutnya. Kalau response asli backend punya field itu, FE form ini akan mengabaikannya (tidak dirender, tidak dikirim balik).
+
+**Yang diminta ke tim backend:**
+1. Implement `GET /admin/spin/history` dan `GET`+`PUT /admin/spin/config`.
+2. **Tambahkan `GET /admin/spin/config`** ke kontrak — saat ini cuma `PUT` yang terdaftar.
+3. Konfirmasi bentuk `SpinHistoryRow` di atas, atau kasih bentuk aslinya kalau beda.
+4. Konfirmasi apakah `GET .../history` di-paginate server-side atau FE tetap ambil semua baris sekaligus dan paginate di client (asumsi FE saat ini, sama seperti Winners/Ebooks).
+5. Seed `SpinConfig` dengan semua sub-tier `true` (default hari ini, tanpa toggle admin).
+
+**Tambahan — di luar kontrak sama sekali:** PRD §5.7 juga minta monitoring status kirim email reminder 24 jam sebelum renewal (sent/failed). Tidak ada endpoint untuk ini di mana pun di API Contract, baik di bawah Spin Wheel maupun Notifications. Belum di-scope FE — nunggu endpoint atau konfirmasi ini masuk modul Notifications.
+
+FE admin panel sudah dibangun (toggle + history + filter) dan langsung berfungsi begitu endpoint di atas hidup.
