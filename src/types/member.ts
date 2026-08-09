@@ -224,3 +224,24 @@ export interface MemberProfile {
     state: string;
     dob: string | null; // ISO date, "-" in UI when null
 }
+
+// ── Spin Wheel Admin (PRD §5.7 "Spin Wheel Management") ──────────────────────
+// First-release scope only: on/off + history. Discount amount and probability
+// are explicitly deferred by PRD's PO decision — never add fields for them here.
+
+export type SpinEligibleSubTier = 'R4' | 'R7' | 'B4' | 'B7' | 'B10';
+
+export interface SpinConfig {
+    enabled: boolean;
+    sub_tier_enabled: Record<SpinEligibleSubTier, boolean>;
+}
+
+export interface SpinHistoryRow {
+    id: string;
+    member_name: string;
+    tier: SubTierCode;
+    moment: 'registration' | 'renewal';
+    result: 'win' | 'lose';
+    discount_cents: number;
+    spun_at: string; // ISO 8601
+}
