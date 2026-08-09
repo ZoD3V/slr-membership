@@ -6,14 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { SUB_TIERS } from '@/constant/tiers';
+import { SPIN_ELIGIBLE_SUB_TIERS, SUB_TIERS } from '@/constant/tiers';
 import type { SpinConfig, SpinEligibleSubTier } from '@/types/member';
 
 import { saveSpinConfigAction } from './actions';
 import { Loader2Icon } from 'lucide-react';
 import { toast } from 'sonner';
 
-const ELIGIBLE_SUB_TIERS: SpinEligibleSubTier[] = ['R4', 'R7', 'B4', 'B7', 'B10'];
+// Derived from the authoritative constant (also read by the member-side spin
+// flow) so admin and member eligibility can't silently drift apart.
+const ELIGIBLE_SUB_TIERS = Array.from(SPIN_ELIGIBLE_SUB_TIERS) as SpinEligibleSubTier[];
 
 export function SpinConfigClient({ config }: { config: SpinConfig }) {
     const [isPending, startTransition] = useTransition();
@@ -53,7 +55,8 @@ export function SpinConfigClient({ config }: { config: SpinConfig }) {
                     <Switch id='spin-enabled' checked={enabled} onCheckedChange={setEnabled} />
                 </div>
 
-                <div className='space-y-3 border-t pt-4'>
+                <fieldset className='min-w-0 space-y-3 border-t pt-4'>
+                    <legend className='text-sm font-semibold'>Per sub-tier</legend>
                     {ELIGIBLE_SUB_TIERS.map((code) => (
                         <div key={code} className='flex items-center justify-between'>
                             <Label htmlFor={`spin-tier-${code}`}>
@@ -68,7 +71,7 @@ export function SpinConfigClient({ config }: { config: SpinConfig }) {
                             />
                         </div>
                     ))}
-                </div>
+                </fieldset>
 
                 <Button onClick={handleSave} disabled={isPending || !isDirty}>
                     {isPending ? <Loader2Icon className='mr-2 h-4 w-4 animate-spin' /> : null}

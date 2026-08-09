@@ -849,7 +849,7 @@ The detail/list GET never returned `is_active`, so the admin edit form couldn't 
 
 ---
 
-# 🆕 SPRINT 4 (Ronde 4) — Admin dashboard modules: Prizes CMS & Safe Hours belum ada di backend
+# 🆕 SPRINT 4 (Ronde 4) — Admin dashboard modules: Prizes CMS, Safe Hours & Spin Wheel belum ada di backend
 
 ## Prizes CMS — `GET /public/prizes` + `PUT /admin/prizes` belum ada (404)
 
@@ -984,6 +984,9 @@ Request/response body:
 3. Konfirmasi bentuk `SpinHistoryRow` di atas, atau kasih bentuk aslinya kalau beda.
 4. Konfirmasi apakah `GET .../history` di-paginate server-side atau FE tetap ambil semua baris sekaligus dan paginate di client (asumsi FE saat ini, sama seperti Winners/Ebooks).
 5. Seed `SpinConfig` dengan semua sub-tier `true` (default hari ini, tanpa toggle admin).
+6. `GET` dan `PUT /admin/spin/config` harus rilis bersamaan, bukan `PUT` sendirian — skenario paling mungkin di rilis pertama adalah `PUT` naik duluan tanpa `GET`, yang bikin UI kontradiktif (toggle kelihatan tersimpan, tapi halaman masih nampilin banner "belum live" dan balik ke seed tiap reload karena baca-nya masih gagal).
+7. Konfirmasi `PUT` adalah **full-replace** (bukan merge/patch), dan mengembalikan dokumen yang baru tersimpan (bukan `{success,message}` kosong) — sama seperti yang diminta di subsection Safe Hours di atas.
+8. Konfirmasi route ini menegakkan role admin dan menjawab 401/403 konsisten dengan `/api/v1/admin/*` lain — sama seperti yang diminta di subsection Safe Hours di atas.
 
 **Tambahan — di luar kontrak sama sekali:** PRD §5.7 juga minta monitoring status kirim email reminder 24 jam sebelum renewal (sent/failed). Tidak ada endpoint untuk ini di mana pun di API Contract, baik di bawah Spin Wheel maupun Notifications. Belum di-scope FE — nunggu endpoint atau konfirmasi ini masuk modul Notifications.
 

@@ -6,12 +6,15 @@ import { useRouter } from 'next/navigation';
 
 import { DataTable } from '@/components/data-table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { SpinHistoryRow } from '@/types/member';
+import { SPIN_ELIGIBLE_SUB_TIERS, SUB_TIERS } from '@/constant/tiers';
+import type { SpinEligibleSubTier, SpinHistoryRow } from '@/types/member';
 
 import { spinHistoryColumns } from './_components/columns';
 import { History } from 'lucide-react';
 
-const TIER_OPTIONS = ['R4', 'R7', 'B4', 'B7', 'B10'] as const;
+// Derived from the authoritative constant (also read by the member-side spin
+// flow) so admin and member eligibility can't silently drift apart.
+const TIER_OPTIONS = Array.from(SPIN_ELIGIBLE_SUB_TIERS) as SpinEligibleSubTier[];
 const MOMENT_OPTIONS = ['registration', 'renewal'] as const;
 
 export function SpinHistoryClient({ rows, tier, moment }: { rows: SpinHistoryRow[]; tier: string; moment: string }) {
@@ -45,7 +48,7 @@ export function SpinHistoryClient({ rows, tier, moment }: { rows: SpinHistoryRow
                         <SelectItem value='all'>All tiers</SelectItem>
                         {TIER_OPTIONS.map((code) => (
                             <SelectItem key={code} value={code}>
-                                {code}
+                                {SUB_TIERS[code].label} · {SUB_TIERS[code].marketingName}
                             </SelectItem>
                         ))}
                     </SelectContent>
