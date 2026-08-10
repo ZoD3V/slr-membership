@@ -1106,3 +1106,18 @@ FE admin panel sudah dibangun (toggle + history + filter) — **history dan `?mo
 **Verified 2026-08-10 (superadmin token, read-only):** `GET /api/v1/admin/notification-logs` → **200** — keys dan `meta` cocok dengan dokumentasi API. Satu data-quality gap: salah satu row live membawa `type: "password_reset"`, yang **bukan** salah satu dari 10 tipe notifikasi yang didokumentasikan di API Contract.
 
 **Yang diminta ke tim backend:** konfirmasi set `type` yang sebenarnya berjalan di production sebelum panel admin Notifications dibangun mengikuti enum yang terdokumentasi — kalau `password_reset` memang tipe yang valid, tambahkan ke dokumentasi API Contract; kalau tidak, ini bug penulisan `type` saat notifikasi reset password dikirim.
+
+---
+
+## Notification Templates (Admin) — `GET /admin/notification-templates` 500, sama seperti Safe Hours & Spin Config
+
+**Verified 2026-08-10 (superadmin token, read-only):** `GET /api/v1/admin/notification-templates` menjawab **`500 INTERNAL_ERROR`**. Kontrol probe ke route yang genuinely tidak ada (`GET /api/v1/admin/zzz-does-not-exist`) tetap `404 NOT_FOUND` di host yang sama pada pass ini, jadi 500 di sini membuktikan route-nya ada dan authenticates, tapi crash begitu sampai handler — pola yang sama persis dengan `GET /admin/safe-hours` dan `GET /admin/spin/config` di atas.
+
+**Sinyal diagnostik:** kegagalan ini spesifik ke resource `templates`, bukan ke seluruh modul Notifications — `GET /api/v1/admin/notification-logs` (subsection di atas) berjalan normal, **200**, dengan keys dan `meta` yang cocok dokumentasi. Tiga route `admin/*` yang berbeda (`safe-hours`, `spin/config`, `notification-templates`) 500 dengan pola yang identik mungkin menunjuk ke penyebab yang sama (misalnya satu lapisan middleware/serializer bersama yang crash pada resource-resource ini) — layak ditelusuri bersamaan.
+
+**Yang diminta ke tim backend:**
+
+1. **Perbaiki `500 INTERNAL_ERROR` pada `GET /api/v1/admin/notification-templates`** — route ada dan authenticates, tapi crash di handler.
+2. Karena kegagalannya berpola sama dengan Safe Hours dan Spin Config (lihat di atas), mohon cek apakah ketiganya berbagi satu root cause sebelum memperbaikinya satu-satu.
+
+**Catatan:** belum ada panel admin Notifications di frontend yang mengonsumsi endpoint ini — berbeda dari Safe Hours dan Spin Config yang masing-masing sudah punya panel admin terbangun dengan fallback ke seed data. Panel admin Notifications adalah fitur frontend berikutnya yang diantrikan sprint ini dan bergantung pada `GET /admin/notification-templates` sebagai read utamanya, jadi endpoint ini perlu diperbaiki sebelum panel itu bisa mulai dibangun melawan data live.
