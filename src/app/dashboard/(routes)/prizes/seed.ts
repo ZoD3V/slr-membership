@@ -1,44 +1,25 @@
-import type { PrizePool } from '@/types/member';
+import type { PrizeContent } from '@/types/member';
 
 /**
- * Placeholder document the editor falls back to while `GET /api/v1/public/prizes`
- * is still unimplemented (verified 404 on 2026-08-08).
+ * Defensive fallback the editor renders against when `GET /api/v1/admin/prizes`
+ * cannot be read (network error, or a non-401 API error).
  *
- * Values are PRD v3.2 §"Stage Prize Pool System"'s own Stage 1 example, and are
- * the same figures the backend is asked to seed with in docs/BACKEND-ISSUES.md —
- * so what an admin sees here matches what the first real GET will return.
+ * The endpoint is live — it answers 401 unauthenticated, verified 2026-08-10 —
+ * so reaching this seed means something went wrong, not that the backend is
+ * missing. Values are the real API doc's own Stage 1 example response.
  *
- * Scoped to this route on purpose. Member and public surfaces must NOT fall back
- * to it: prize figures are TPAL-regulated promotional claims, so serving stale
- * ones to customers is worse than showing nothing. Delete this file once the
- * endpoint answers.
+ * Scoped to this route on purpose — distinct from PrizePool's mock in
+ * src/data/prizes.ts, which is a different, still-unconfirmed document.
  */
-export const PRIZE_POOL_SEED: PrizePool = {
-    headline: '$2,100',
-    prizes_sublabel: '@ 22 Prizes • One Month',
-    current_members: 142,
-    odds_label: '9 in 10 wins yearly',
-    tiers: [
-        {
-            tier_group: 'visitor',
-            tier_label: 'Visitor',
-            price_label: 'Free to join',
-            weekly: '$25 Coles Digital Credit',
-            monthly: null
-        },
-        {
-            tier_group: 'red',
-            tier_label: 'SLR RED',
-            price_label: 'from $10/month',
-            weekly: '$25 Coles Credits + $50 Cash',
-            monthly: '$300 Bonus Monthly Credit'
-        },
-        {
-            tier_group: 'blue',
-            tier_label: 'SLR BLUE',
-            price_label: 'from $26/month',
-            weekly: '$25 Coles Credits + $150 Cash',
-            monthly: '$700 Bonus Monthly Credit'
-        }
-    ]
+export const PRIZE_CONTENT_SEED: PrizeContent = {
+    prize_pool_headline: '$2,100',
+    prize_count: '@ 22 Prizes • One Month',
+    stage_label: 'For 100 Members • Stage 1',
+    visitor_prize: '1x Free Draw Pass Entry',
+    red_weekly: '1x $100 Gift Card',
+    red_monthly: '1x $500 Tech Bundle',
+    blue_weekly: '1x $250 Gift Card',
+    blue_monthly: '1x $1000 Cash Prize',
+    odds: '9 in 10 wins yearly',
+    updated_at: null
 };

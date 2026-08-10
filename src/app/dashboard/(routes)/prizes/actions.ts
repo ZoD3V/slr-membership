@@ -3,10 +3,10 @@
 import { revalidatePath } from 'next/cache';
 
 import { handleApiAuthError } from '@/lib/api/guard';
-import { updatePrizePool } from '@/lib/api/resources/prizes';
+import { updateAdminPrizeContent } from '@/lib/api/resources/prizes';
 import { getAccessToken } from '@/lib/api/server';
 import { ApiError } from '@/lib/api/types';
-import type { PrizePool } from '@/types/member';
+import type { PrizeContent, PrizeContentUpdatePayload } from '@/types/member';
 
 export type ActionError = {
     ok: false;
@@ -37,18 +37,21 @@ function toActionError(error: unknown): ActionError {
     return { ok: false, message: 'Something went wrong. Please try again.' };
 }
 
-export async function savePrizePoolAction(payload: PrizePool): Promise<ActionResult<PrizePool>> {
+export async function savePrizeContentAction(
+    payload: PrizeContentUpdatePayload
+): Promise<ActionResult<PrizeContent>> {
     const token = await getAccessToken();
     if (!token) return { ok: false, message: 'Not authenticated.' };
 
     try {
-        const data = await updatePrizePool(token, payload);
+        const data = await updateAdminPrizeContent(token, payload);
 
+        // Only this route consumes PrizeContent — the member/public prizes
+        // pages read a different, unrelated document (PrizePool), so they are
+        // no longer revalidated here.
         revalidatePath('/dashboard/prizes');
-        revalidatePath('/member/prizes');
-        revalidatePath('/prizes');
 
-        return { ok: true, data, message: 'Prize pool saved.' };
+        return { ok: true, data, message: 'Prize content saved.' };
     } catch (error) {
         return toActionError(error);
     }

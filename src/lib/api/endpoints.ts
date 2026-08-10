@@ -44,7 +44,8 @@ export const API = {
         winnerDetail: (id: string) => `/api/v1/admin/winners/${id}`,
         safeHours: '/api/v1/admin/safe-hours',
         spinHistory: '/api/v1/admin/spin/history',
-        spinConfig: '/api/v1/admin/spin/config'
+        spinConfig: '/api/v1/admin/spin/config',
+        prizes: '/api/v1/admin/prizes'
     },
     discounts: {
         list: '/api/v1/discounts/',
@@ -82,11 +83,8 @@ export const API = {
         list: '/api/v1/notifications/',
         read: (id: string) => `/api/v1/notifications/${id}/read`
     },
-    // Proposed 2026-08-08 — both routes return 404 today (verified live).
-    // See docs/superpowers/specs/2026-08-08-admin-prizes-cms-design.md §4.
     prizes: {
-        public: '/api/v1/public/prizes',
-        update: '/api/v1/admin/prizes'
+        public: '/api/v1/public/prizes'
     },
     users: {
         me: '/api/v1/users/me',

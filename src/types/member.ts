@@ -154,6 +154,27 @@ export interface PrizePool {
     tiers: PrizeTierBreakdown[];
 }
 
+// ── Admin Prize Content (real API, 2026-08-09) ───────────────────────────────
+// Flat CMS document returned by GET/PUT /admin/prizes. Distinct from PrizePool
+// above, which models a still-unconfirmed public/member document on a
+// different, still-404 endpoint (Phase 2, not touched by this rewire).
+export interface PrizeContent {
+    prize_pool_headline: string;
+    prize_count: string;
+    stage_label: string;
+    visitor_prize: string;
+    red_weekly: string;
+    red_monthly: string;
+    blue_weekly: string;
+    blue_monthly: string;
+    odds: string;
+    // Nullable: the live endpoint returned `null` here on 2026-08-10 even
+    // though the API doc's example shows an ISO string.
+    updated_at: string | null;
+}
+
+export type PrizeContentUpdatePayload = Omit<PrizeContent, 'updated_at'>;
+
 // ── Safe Hours (PRD §5.8 "Safe Hours Management") ────────────────────────────
 // Admin-edited window during which sign-up/upgrade/downgrade are locked. The
 // member-facing advisory check in src/lib/safe-hours.ts is a separate, static
