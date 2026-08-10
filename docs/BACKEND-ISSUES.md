@@ -7,7 +7,7 @@ Endpoints that return errors or behave against the PRD, found while integrating 
 - **Captured:** 2026-07-08 · **Re-verified:** 2026-07-17 · **Giveaways module:** 2026-08-03
 - **Envelope:** every response is `{ success, message, data, meta }`.
 
-> **Reading order.** Newest handoff: **[BACKEND-ISSUES-SPRINT3-GIVEAWAYS.md](BACKEND-ISSUES-SPRINT3-GIVEAWAYS.md)** (modul giveaways, 2026-08-03), plus the **Sprint 4 (Ronde 4)** section near the end of this file — that's the active handoff (Prizes CMS + Safe Hours admin settings, both 404). The **Sprint 3 (Ronde 3)** section directly below is the previous sprint (Giveaway, Stripe, pembayaran). Sprint 2 follows it (CLEAR — no blockers).
+> **Reading order.** Newest handoff: **[BACKEND-ISSUES-SPRINT3-GIVEAWAYS.md](BACKEND-ISSUES-SPRINT3-GIVEAWAYS.md)** (modul giveaways, 2026-08-03), plus the **Sprint 4 (Ronde 4)** section near the end of this file — that's the active handoff (Prizes CMS, Safe Hours & Spin Wheel admin endpoints — **all live**, re-verified 2026-08-10; the earlier "404 / belum ada" claims in that section were probe artifacts and have been corrected in place — see real defects: several routes 500, plus data-quality gaps in tier labels and `updated_at`). The **Sprint 3 (Ronde 3)** section directly below is the previous sprint (Giveaway, Stripe, pembayaran). Sprint 2 follows it (CLEAR — no blockers).
 
 ---
 
@@ -22,7 +22,7 @@ Legend: ✅ = dites live 2026-07-24 · 📄 = dari kontrak/handoff sebelumnya
 
 > ✅ **RESOLVED. (Re-verified live 2026-08-02 via powinew327@gmail.com).** `POST /auth/register` (paid) kini mengembalikan `access_token` + `refresh_token` langsung (`requires_otp:false, requires_payment:true`), **dan** `POST /auth/login` juga 200 + token. Register→checkout tidak lagi terblokir dan login berjalan normal tanpa paksaan OTP. Laporan asli di bawah.
 
-Blocker utama sprint (*register RED/BLUE harus jalan penuh sampai transaksi*).
+Blocker utama sprint (_register RED/BLUE harus jalan penuh sampai transaksi_).
 
 ```json
 // POST /api/v1/auth/register
@@ -68,7 +68,7 @@ Dibuktikan live. Jadwalkan r4→r7, lalu baca `me`:
 
 > 🟡 **UPDATE 2026-07-26.** Backend menyatakan `hosted_invoice_url` sudah ada di `GET /billing/invoices`. **Belum bisa dikonfirmasi live**: field belum muncul di OpenAPI publik (kemungkinan schema drift / belum ke-regenerate), dan tak ada akun test dengan invoice berbayar (`red@` = 0 invoice). FE sudah wire tombol **"View"** di tabel payment-history `/member/membership` secara defensif (field opsional + guard) → otomatis muncul begitu ada invoice nyata. **Ask:** regenerate OpenAPI + sediakan 1 invoice test untuk verifikasi. Laporan asli di bawah.
 
-DTO invoice live: `{ invoice_id, amount_cents, discount_cents, stripe_invoice_id, paid_at, type }` — tanpa `hosted_invoice_url`. Catatan client: *tombol download invoice diarahkan ke `hosted_invoice_url` dari Stripe (jangan generate PDF sendiri)*. FE tak bisa memasang tombol download tanpa field ini.
+DTO invoice live: `{ invoice_id, amount_cents, discount_cents, stripe_invoice_id, paid_at, type }` — tanpa `hosted_invoice_url`. Catatan client: _tombol download invoice diarahkan ke `hosted_invoice_url` dari Stripe (jangan generate PDF sendiri)_. FE tak bisa memasang tombol download tanpa field ini.
 
 **Permintaan:** tambahkan `hosted_invoice_url` pada tiap invoice di `GET /api/v1/billing/invoices` (dan simpan ke `payments`, lihat B1). Akun seed juga `data:[]` (0 invoice) → belum bisa dites sampai ada pembayaran nyata (lihat C3).
 
@@ -77,6 +77,7 @@ DTO invoice live: `{ invoice_id, amount_cents, discount_cents, stripe_invoice_id
 **Captured 2026-07-26 via real Stripe test payment.** Blocker paling kritikal Sprint 3 — lebih dalam dari A1.
 
 **Repro (end-to-end):**
+
 1. `POST /auth/register` (paid red/r4, throwaway `fe-stripe-test-1785041074@example.com`) → 201 + `access_token` ✅ (A1 fixed).
 2. `POST /stripe/checkout {tier:"RED"}` → `200 { url, sessionId: "cs_test_b1PxwF2SgOIrdiMElP2j2cw4Fzn3sHOnaIUdByOP1JdElrwKJgl3Z7rqRA" }` ✅.
 3. Bayar kartu test `4242 4242 4242 4242` di hosted checkout → **sukses**, redirect ke `…/payment/success?session_id=cs_test_b1PxwF2…` (Stripe konfirmasi bayar).
@@ -94,6 +95,7 @@ GET /memberships/me     → { "subTierId":"r4", "billingStatus":"INACTIVE" }
 **Expected (Kontrak §12):** `checkout.session.completed` → aktifkan akun, assign token + 4 draw_pass, set exact-time billing, generate referral code, buat invoice row.
 
 **Ask (mohon telusuri di Stripe Dashboard):**
+
 1. Cek webhook endpoint `POST /api/v1/webhooks/stripe/` terdaftar di Stripe Dashboard (test mode) → Developers → Webhooks.
 2. Cari event untuk session `cs_test_b1PxwF2…` → lihat **delivery attempts** + response code (200? 4xx/5xx? signature error?).
 3. Pastikan handler `checkout.session.completed` benar-benar mengaktivasi + membuat cycle/invoice.
@@ -111,6 +113,7 @@ GET /memberships/me     → { "subTierId":"r4", "billingStatus":"INACTIVE" }
 **Dampak:** pelanggan AU melihat + ditagih dalam IDR; ladder harga AUD ($10/$20/$30/$26/$39/$52/$65) tidak terpetakan benar. Salah mata uang = salah tagih.
 
 **Ask:**
+
 1. Buat ulang Stripe **Product/Price per sub-tier dalam `aud`** (r1=$10, r4=$20, r7=$30, b1=$26, b4=$39, b7=$52, b10=$65 → integer cents AUD).
 2. Pastikan Checkout Session line items mereferensikan Price **AUD** yang benar per `tier`/`sub_tier`.
 3. Pastikan `payments.currency` (client note B1) menyimpan `aud`.
@@ -145,11 +148,11 @@ Saat **create Customer + Checkout Session**, sertakan `metadata`: `user_id, full
 
 Client kelola billing langsung dari Stripe dashboard → **tidak perlu UI billing khusus di admin**. Konsekuensinya webhook wajib menangani:
 
-| Event | Aksi wajib |
-|---|---|
+| Event                           | Aksi wajib                                                                                 |
+| ------------------------------- | ------------------------------------------------------------------------------------------ |
 | `customer.subscription.deleted` | membership → inactive, **`draw_pass = 0`** (termasuk saat admin cancel langsung di Stripe) |
-| `customer.subscription.updated` | sinkron plan/pause/resume → update tier/status di DB |
-| `charge.refunded` | catat refund di `payments`, evaluasi ulang status membership |
+| `customer.subscription.updated` | sinkron plan/pause/resume → update tier/status di DB                                       |
+| `charge.refunded`               | catat refund di `payments`, evaluasi ulang status membership                               |
 
 🔴 **Risiko kalau tidak:** admin cancel di Stripe → web tidak tahu → member yang berhenti bayar **tetap masuk CSV undian**.
 
@@ -161,7 +164,7 @@ id,email,full_name,state,phone,total_token
 019f2145-…,red@smartliferewards.com.au,SLR Red Paid Member,VIC,+61400000004,7
 ```
 
-`row_count`: red=1, blue=2, visitor=8 (masing-masing 1 baris). PRD: *token* = **jumlah baris/entry** per giveaway. randomdraws.com pilih **1 baris acak** → semua member peluangnya sama; R1 (1 token) = B10 (10 token) → **ladder token/harga tidak berfungsi**.
+`row_count`: red=1, blue=2, visitor=8 (masing-masing 1 baris). PRD: _token_ = **jumlah baris/entry** per giveaway. randomdraws.com pilih **1 baris acak** → semua member peluangnya sama; R1 (1 token) = B10 (10 token) → **ladder token/harga tidak berfungsi**.
 
 **Pertanyaan — konfirmasi satu:** (1) ulang tiap member sebanyak `total_token` (1 baris per token) → perbaiki exporter; atau (2) randomdraws.com baca `total_token` sebagai **bobot** → dokumentasikan. Juga konfirmasi exporter memfilter `draw_pass > 0`.
 
@@ -180,10 +183,10 @@ GET /api/v1/subscriptions/me     → [ { "id":"019f2145-…","status":"ACTIVE","
 
 ### C4. Allocator entry jalur paid belum pernah dieksekusi; token seed salah 📄
 
-| Akun | sub_tier | config token | seed `total_token` | |
-|---|---|---|---|---|
-| red@ | r4 | 4 | **7** | ❌ |
-| blue@ | b4 | 4 | **15** | ❌ |
+| Akun  | sub_tier | config token | seed `total_token` |     |
+| ----- | -------- | ------------ | ------------------ | --- |
+| red@  | r4       | 4            | **7**              | ❌  |
+| blue@ | b4       | 4            | **15**             | ❌  |
 
 Artefak seed-script (0 invoice, sub palsu, cycle ditulis 7.56s setelah row user → allocator/webhook tak pernah jalan). Allocator Visitor terbukti benar via signup+OTP baru; jalur **paid belum terbukti**.
 
@@ -193,18 +196,18 @@ Artefak seed-script (0 invoice, sub palsu, cycle ditulis 7.56s setelah row user 
 
 ### D1. Endpoint upgrade — drift kontrak vs live ✅
 
-| | Kontrak §4 | Live (dipakai FE) |
-|---|---|---|
-| Path | `POST /membership/upgrade` | `POST /memberships/upgrade` |
-| Body | `{ target_sub_tier }` (snake) | `{ targetSubTierId }` (camel) |
-| Response `data` | `{ status, pending_upgrade:{…} }` | `{ target_sub_tier, effective_at }` + `meta.status:"scheduled"` |
-| Downgrade | endpoint terpisah `/membership/downgrade` | **tidak ada** — 1 endpoint, arah dari target |
+|                 | Kontrak §4                                | Live (dipakai FE)                                               |
+| --------------- | ----------------------------------------- | --------------------------------------------------------------- |
+| Path            | `POST /membership/upgrade`                | `POST /memberships/upgrade`                                     |
+| Body            | `{ target_sub_tier }` (snake)             | `{ targetSubTierId }` (camel)                                   |
+| Response `data` | `{ status, pending_upgrade:{…} }`         | `{ target_sub_tier, effective_at }` + `meta.status:"scheduled"` |
+| Downgrade       | endpoint terpisah `/membership/downgrade` | **tidak ada** — 1 endpoint, arah dari target                    |
 
 **Pertanyaan:** konfirmasi versi **live** kanonik + update kontrak; konfirmasi 1 endpoint menangani upgrade & downgrade.
 
 ### D2. Detail giveaway tidak lengkap vs kontrak ✅
 
-`GET /api/v1/giveaways/{id}` → key `data`: `closes_at, draws_at, giveaway_id, name, opens_at, prize, tier, type, winners`. Tidak ada `rules`, `tpal_cert_note`, `entry_count`/jumlah pool, `entry_status`. Kontrak §6: detail harus berisi *"hadiah, aturan, TPAL cert note, entry history, past winners"*.
+`GET /api/v1/giveaways/{id}` → key `data`: `closes_at, draws_at, giveaway_id, name, opens_at, prize, tier, type, winners`. Tidak ada `rules`, `tpal_cert_note`, `entry_count`/jumlah pool, `entry_status`. Kontrak §6: detail harus berisi _"hadiah, aturan, TPAL cert note, entry history, past winners"_.
 
 **Permintaan:** tambahkan `rules`, `tpal_cert_note`, `entry_count`/jumlah pool, dan `entry_status` pada detail.
 
@@ -224,10 +227,10 @@ Kontrak: sign-up/upgrade/downgrade diblokir **Jum 16:00–19:00 AEST** → `403 
 
 Dicek pada OpenAPI live 2026-07-27. `/auth/me` sekarang sudah kaya (`token`, `billing_status`, `current_cycle`, `beny_active`, `pending_upgrade`, `referral_code` — bagus, FE sudah pakai). Dua field masih hilang:
 
-| Field | Dipakai untuk | Status |
-|---|---|---|
-| `created_at` (tanggal bergabung) | PRD §4.7 header profil: *"avatar, nama, badge tier, negara bagian, **tanggal bergabung**"* | Tidak ada di `/auth/me`. Ada di `GET /admin/members/{userId}` (admin-only) → member tak bisa membaca miliknya sendiri |
-| `member_id` (mis. `SLR-NSW-004821`) | PRD §4.7 + flowchart 7.9: **kartu keanggotaan digital + QR**, isi QR = member ID untuk verifikasi kasir partner | Tidak ada. `user_id` cuma UUID — tidak layak dicetak di kartu/QR |
+| Field                               | Dipakai untuk                                                                                                   | Status                                                                                                                |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `created_at` (tanggal bergabung)    | PRD §4.7 header profil: _"avatar, nama, badge tier, negara bagian, **tanggal bergabung**"_                      | Tidak ada di `/auth/me`. Ada di `GET /admin/members/{userId}` (admin-only) → member tak bisa membaca miliknya sendiri |
+| `member_id` (mis. `SLR-NSW-004821`) | PRD §4.7 + flowchart 7.9: **kartu keanggotaan digital + QR**, isi QR = member ID untuk verifikasi kasir partner | Tidak ada. `user_id` cuma UUID — tidak layak dicetak di kartu/QR                                                      |
 
 **Dampak:** baris "Member since" sudah **dihapus** dari `/member/profile` — sebelumnya menampilkan tanggal seed yang sama untuk setiap member (data palsu). Kartu keanggotaan + QR belum bisa dibangun sama sekali.
 
@@ -235,7 +238,7 @@ Dicek pada OpenAPI live 2026-07-27. `/auth/me` sekarang sudah kaya (`token`, `bi
 
 ### D6. BENY tidak bisa dijual saat checkout awal — `checkout` tak punya field add-on
 
-PRD (§4.1 + bagian BENY) menyebut member bisa membeli add-on BENY **\$4/bulan** *"saat checkout awal atau dari halaman BENY terpisah"*. Jalur pertama tidak bisa dibangun sekarang.
+PRD (§4.1 + bagian BENY) menyebut member bisa membeli add-on BENY **\$4/bulan** _"saat checkout awal atau dari halaman BENY terpisah"_. Jalur pertama tidak bisa dibangun sekarang.
 
 Request schema `POST /membership/checkout` (OpenAPI live 2026-07-27) — `additionalProperties: false`, field tak dikenal di-strip:
 
@@ -282,15 +285,15 @@ Opsi 2 paling hemat untuk picker. Dengan salah satu dari keduanya, N+1 di atas h
 
 ## Ringkasan — apa memblokir apa
 
-| Deliverable Sprint 3 | Blocker |
-|---|---|
+| Deliverable Sprint 3               | Blocker                                                                |
+| ---------------------------------- | ---------------------------------------------------------------------- |
 | Register→transaksi paid (headline) | A1 ✅ tapi 🔴 **A4** (webhook aktivasi tak jalan) memblokir end-to-end |
-| UI upgrade/downgrade (persisten) | ~~A2~~ ✅ resolved 2026-07-26 |
-| Download invoice | 🟡 A3 backend added, FE wired — verifikasi diblokir 🔴 **A4** |
-| Semua pembayaran (kualitas data) | **B1** (dulu, tak bisa backfill) |
-| Integritas CSV undian | **B2, B3** |
-| Tes live cancel / grace | **C3** |
-| Sign-off entry engine | **C4** |
+| UI upgrade/downgrade (persisten)   | ~~A2~~ ✅ resolved 2026-07-26                                          |
+| Download invoice                   | 🟡 A3 backend added, FE wired — verifikasi diblokir 🔴 **A4**          |
+| Semua pembayaran (kualitas data)   | **B1** (dulu, tak bisa backfill)                                       |
+| Integritas CSV undian              | **B2, B3**                                                             |
+| Tes live cancel / grace            | **C3**                                                                 |
+| Sign-off entry engine              | **C4**                                                                 |
 
 ---
 
@@ -308,9 +311,10 @@ DELETE /beny/subscribe  → 200  { "success": true, "message": "BENY subscriptio
 GET    /beny/status     → 200  { "beny_status": "cancelled" }
 ```
 
-Cancel now accepts `pending_activation`, matching PRD *"user bisa cancel kapan saja"*. **FE follow-up shipped**: the Cancel button is now shown for pending members too ([beny-section.tsx](<src/app/member/discounts/_components/beny-section.tsx>)).
+Cancel now accepts `pending_activation`, matching PRD _"user bisa cancel kapan saja"_. **FE follow-up shipped**: the Cancel button is now shown for pending members too ([beny-section.tsx](src/app/member/discounts/_components/beny-section.tsx)).
 
 **Still open on this endpoint (minor, non-blocking — please confirm when convenient):**
+
 - `DELETE` returns `data: { success, message }` (and `null` on repeat) — it still never returns `beny_status`, unlike `GET /beny/status` and `POST /beny/subscribe`. Returning `{ beny_status }` would make the three consistent. FE handles it either way.
 - Enum spelling is **`"cancelled"`** (double L). Please confirm that's canonical; FE accepts both defensively.
 
@@ -326,14 +330,17 @@ Cancel now accepts `pending_activation`, matching PRD *"user bisa cancel kapan s
 GET /api/v1/beny/status
 Authorization: Bearer <JWT>
 ```
+
 ```json
 → 200 { "success": true, "data": { "beny_status": "pending_activation" } }
 ```
+
 ```http
 DELETE /api/v1/beny/subscribe
 Authorization: Bearer <JWT>
 (no request body)
 ```
+
 ```json
 → 404 { "success": false,
         "message": "No active BENY subscription found to cancel.",
@@ -354,11 +361,12 @@ GET    /beny/status     → 200  { "beny_status": "cancelled" }
 ### Why this is a bug, not a design choice
 
 PRD v3.2 states the opposite, three times, and never restricts cancel to `active`:
-- [370] *"User bisa **cancel BENY kapan saja** dari dashboard"*
-- [669] *"user bisa **cancel kapan saja**"*
-- [204] *"Saat di-cancel, akses BENY berlanjut sampai akhir periode yang sudah dibayar"*
 
-PRD also assumes `pending_activation` means **already paid** ([208] *"Member yang **sudah bayar** masuk ke daftar pending BENY activation"*). So a member who has paid cannot cancel until an admin acts — the worst case for this bug.
+- [370] _"User bisa **cancel BENY kapan saja** dari dashboard"_
+- [669] _"user bisa **cancel kapan saja**"_
+- [204] _"Saat di-cancel, akses BENY berlanjut sampai akhir periode yang sudah dibayar"_
+
+PRD also assumes `pending_activation` means **already paid** ([208] _"Member yang **sudah bayar** masuk ke daftar pending BENY activation"_). So a member who has paid cannot cancel until an admin acts — the worst case for this bug.
 
 ### Asks
 
@@ -387,26 +395,29 @@ PRD also assumes `pending_activation` means **already paid** ([208] *"Member yan
 All authed calls below use a Bearer token from `/auth/login`.
 
 **`POST /api/v1/auth/login` — Login with email + password**
+
 ```http
 POST /api/v1/auth/login
 Content-Type: application/json
 
 { "email": "<account>", "password": "ChangeMeImmediately!1" }
 ```
+
 ```json
 → 200 { "success": true, "message": "Logged in successfully.",
         "data": { "access_token": "<jwt>", "refresh_token": "…" } }
 ```
+
 Then send `Authorization: Bearer <access_token>` on each request.
 
 **Dev accounts** (all share password `ChangeMeImmediately!1`):
 
-| Account | Role | Tier |
-|---|---|---|
-| `admin@smartliferewards.com.au` | admin | visitor |
-| `red@smartliferewards.com.au` | member | r4 (RED) |
-| `blue@smartliferewards.com.au` | member | b4 (BLUE) |
-| `visitor@smartliferewards.com.au` | member | visitor |
+| Account                           | Role   | Tier      |
+| --------------------------------- | ------ | --------- |
+| `admin@smartliferewards.com.au`   | admin  | visitor   |
+| `red@smartliferewards.com.au`     | member | r4 (RED)  |
+| `blue@smartliferewards.com.au`    | member | b4 (BLUE) |
+| `visitor@smartliferewards.com.au` | member | visitor   |
 
 ---
 
@@ -417,6 +428,7 @@ Previously 500 `INTERNAL_ERROR` for every tier; **now returns 200** (fixed 2026-
 Verified list shape: `{ giveaway_id, name, tier, type, prize, opens_at, closes_at, draws_at, is_entered, entry_status }`. Detail (`/{id}`) = the same meta + `winners[]`.
 
 **Remaining giveaway gaps** (minor, not blocking):
+
 - `GET /giveaways/{id}` is **incomplete vs the Notion API Contract v1.0** — the contract specifies detail returns "hadiah, **aturan (rules), TPAL cert note, entry history, past winners**", but the live response only returns meta + `winners[]`. FE fills rules/TPAL from static copy (CLAUDE.md §1) and merges `entry_status` from the list item. Implement the contract fields to make them real/editable.
 - No **per-giveaway entry/pool counts** in either the list or detail payload — FE shows the member's cycle token count as "entries" and hides the community "in pool" figure. Add counts if you want them shown.
 
@@ -427,6 +439,7 @@ The list DTO (`GET /giveaways`) **matches the contract exactly** — no issue th
 ## ✅ Admin tier-gate — RESOLVED (2026-07-09)
 
 `GET /discounts/`, `GET /discounts/{id}`, and `GET /ebooks/{id}` previously returned **403 FORBIDDEN** for admin (they were tier-gated to RED/BLUE members). **All now return 200 for admin:**
+
 - `GET /api/v1/discounts/` (admin) → **200**, lists discounts
 - `GET /api/v1/discounts/{id}` (admin, real id) → **200**
 - `GET /api/v1/ebooks/{id}` (admin) → **200 with `chapters`** — admin can preview content
@@ -440,14 +453,17 @@ FE benefit: the admin discounts page now populates its table (no more 403 error 
 ## 🟡 Behavior question
 
 ### `DELETE /api/v1/beny/subscribe` — Cancel BENY subscription
+
 Cancels an **active** subscription (verified **200** on an active member → `{ beny_status: "cancelled" }`). But a member in `pending_activation` gets **404**, so they can't cancel a request that hasn't been activated yet (the frontend hides the cancel button for pending as a workaround).
 
 **Account:** `red@smartliferewards.com.au`
+
 ```json
 active member    → 200 { "success": true, "data": { "beny_status": "cancelled" } }
 pending member   → 404 { "success": false, "code": "NOT_FOUND",
                          "message": "No active BENY subscription found." }
 ```
+
 **Ask:** should a `pending_activation` subscription be cancelable?
 
 ---
@@ -478,7 +494,7 @@ restore + login OLD   → 200 / NEW → 401      ← account left exactly as see
 
 All three server-side rules match what the PRD-facing form needs, so the FE validation is a mirror, not the authority.
 
-**Was:** the API had only the emailed reset flow, and the FE Security card *faked* success — "Password updated." with **zero network calls**, which is why members reported "password changed but the old one still works". Now wired to the real endpoint via `changePasswordAction` in [profile/actions.ts](<src/app/member/profile/actions.ts>).
+**Was:** the API had only the emailed reset flow, and the FE Security card _faked_ success — "Password updated." with **zero network calls**, which is why members reported "password changed but the old one still works". Now wired to the real endpoint via `changePasswordAction` in [profile/actions.ts](src/app/member/profile/actions.ts).
 
 **Session behaviour (confirmed by backend 2026-07-21, by design):** a successful change does **not** revoke other sessions — existing access and refresh tokens keep working. FE relies on this: the member stays signed in after changing their password, so the Security card doesn't sign them out.
 
@@ -509,9 +525,11 @@ During the above run, `POST /auth/login` answered `500 INTERNAL_ERROR` for **eve
 ## ⚠️ Business-logic gaps (return 200, but off-spec per PRD)
 
 ### `POST /api/v1/beny/subscribe` — Subscribe to BENY add-on
+
 **⏭️ Scheduled for the next sprint (Stripe billing).** Creates `pending_activation` **immediately, with no Stripe charge and no checkout URL** in the response. PRD §1 requires the flow to redirect to Stripe Checkout ($4/mo) **before** the pending record is created. The frontend calls it directly for now and marks the gap with a removable `BACKEND BLOCK` comment — remove it once the backend returns a checkout session.
 
 **Account:** `visitor@smartliferewards.com.au` (any RED/BLUE/visitor)
+
 ```http
 POST /api/v1/beny/subscribe
 Authorization: Bearer <token>
@@ -519,6 +537,7 @@ Content-Type: application/json
 
 { "name": "V Test", "email": "visitor@smartliferewards.com.au", "phone": "0400000000" }
 ```
+
 ```json
 → 200
 {
@@ -527,9 +546,11 @@ Content-Type: application/json
   "data": { "beny_status": "pending_activation" }
 }
 ```
+
 Notes: field is `name` (not `full_name`); response carries no record id. **Ask:** return a Stripe Checkout session so the $4/mo can be collected before pending.
 
 ### `POST /api/v1/memberships/change-tier` — Admin: change user's tier/sub-tier
+
 Accepts `{ userId, subTierId }` and silently **ignores a `state` field** — but that's by design. ✅ **RESOLVED:** the draw-pool halves use two endpoints — `POST /memberships/change-tier` changes **tier/sub-tier**, and **`PATCH /users/{id}`** with `{ "state": "NSW" }` changes the **geographic state** (verified: 200 "User updated.", state persists, restored). FE **wired**: a Draw-pool state dropdown on the member-detail admin actions (`PATCH /users/{id}`).
 
 ---
@@ -537,18 +558,22 @@ Accepts `{ userId, subTierId }` and silently **ignores a `state` field** — but
 ## ✅ Correct behavior (not bugs — documented so they aren't re-reported)
 
 ### `GET /api/v1/giveaways/{id}` — Get detailed giveaway information
+
 Returns a correct 404 for an unknown id — the endpoint works and the list now yields valid ids. (Its payload is still **incomplete vs the contract** — meta + `winners[]` only; see the giveaways section above.)
 
 **Account:** `red@smartliferewards.com.au`
+
 ```json
 GET /api/v1/giveaways/00000000-0000-0000-0000-000000000000
 → 404 { "success": false, "message": "Giveaway not found.", "code": "NOT_FOUND" }
 ```
 
 ### `GET /api/v1/ebooks/{id}` — Get ebook content and chapters if unlocked
+
 Correct tier gate: a below-tier member or visitor gets 403 (the seed ebook is BLUE-only, so `red@` and `visitor@` both 403). The member reader renders an upgrade gate.
 
 **Account:** `visitor@smartliferewards.com.au`
+
 ```json
 → 403 { "code": "FORBIDDEN", "message": "Upgrade membership to unlock this ebook.",
         "requestId": "019f410e-fcea-761d-b237-14d4845771d0" }
@@ -559,9 +584,11 @@ Correct tier gate: a below-tier member or visitor gets 403 (the seed ebook is BL
 ## Resolved since the last integration pass
 
 ### `GET /api/v1/admin/members` — List all members with filters and pagination
+
 Previously returned 400 `BAD_REQUEST` for every param combination. **Now returns 200** with the member list — no frontend change needed; the members table + sub-tier stats no longer degrade.
 
 **Account:** `admin@smartliferewards.com.au`
+
 ```json
 → 200 { "success": true, "message": "OK",
         "data": [ { "user_id": "…", "full_name": "…", "email": "…", "state": "SA",
@@ -583,6 +610,7 @@ Ebook **cover + chapter image upload works end-to-end**, per `docs/Panduan Lengk
 **Captured:** 2026-07-16 · **Account:** `superadmin@smartliferewards.com.au`
 
 The API endpoint itself is **fine** — it returns 200 with a valid envelope:
+
 ```json
 → 200 { "success": true, "message": "Presigned upload URL generated.",
         "data": {
@@ -592,11 +620,13 @@ The API endpoint itself is **fine** — it returns 200 with a valid envelope:
 ```
 
 **The bug is in the presign signature.** PUT-ing the file to `upload_url` (MinIO, fronted by Cloudflare) returns:
+
 ```xml
 → 403 <Error><Code>SignatureDoesNotMatch</Code>
   <Message>The request signature we calculated does not match the signature you provided.</Message>
   <BucketName>public</BucketName> …</Error>
 ```
+
 Reproduced with a **bare `curl -X PUT --data-binary @file`** — no auth header, no extra headers, both **with and without** `Content-Type`. So it is **not** the frontend and **not** a Content-Type/CORS problem.
 
 **Root cause:** `X-Amz-SignedHeaders=host` — only the `host` header is signed, yet it still mismatches on the correct public host. The presigner is signing against a **different endpoint host than the one the URL is served on** (typical MinIO-behind-proxy setup: the S3 client signs with the internal MinIO address, then the public host `object.smartliferewards.com.au` is what's presented → signature invalid).
@@ -619,9 +649,10 @@ The endpoint works and produces 3 files (visitor/red/blue). But the CSV puts `to
 id,email,full_name,state,phone,total_token
 019f2145-…,red@smartliferewards.com.au,SLR Red Paid Member,VIC,+61400000004,7
 ```
+
 `row_count` confirms it: **red = 1 row** (1 member, 7 tokens), **blue = 2 rows** (2 members), **visitor = 8 rows** (8 members).
 
-**Why this is critical.** CLAUDE.md §1 / PRD v3.2 define **token** as *"rows/entries in the TPAL CSV per giveaway (chance of winning)"*. The draw runs externally at randomdraws.com/au, which picks a **random row**. With one row per member:
+**Why this is critical.** CLAUDE.md §1 / PRD v3.2 define **token** as _"rows/entries in the TPAL CSV per giveaway (chance of winning)"_. The draw runs externally at randomdraws.com/au, which picks a **random row**. With one row per member:
 
 - **Every member has identical odds**, regardless of tokens.
 - An R1 member ($10, 1 token) and a B10 member ($65, 10 tokens) are **equally likely to win**.
@@ -630,6 +661,7 @@ id,email,full_name,state,phone,total_token
 **Expected:** a member with `total_token = 7` should appear as **7 separate rows** in that tier's CSV (or the export must document exactly how randomdraws.com is configured to weight the `total_token` column — if it can at all).
 
 **Please confirm one of:**
+
 1. The CSV should repeat each member `total_token` times → **fix the exporter**.
 2. randomdraws.com/au is configured to read `total_token` as a **weight** → document it, and this becomes a non-issue.
 
@@ -645,7 +677,8 @@ id,email,full_name,state,phone,total_token
 
 **Captured:** 2026-07-17 · **Endpoint:** `POST /api/v1/memberships/change-tier` · **Repro account:** `019f6f21-04fb-7425-b8eb-022dcbb2783a` (registered fresh — **not** seed)
 
-> **⚠️ SCOPE CORRECTION (read first).** This test used **`POST /memberships/change-tier`**, which the OpenAPI spec labels **"Admin: change user's tier/state"** — an **admin override**, *not* the member upgrade path. The PRD's actual flows are:
+> **⚠️ SCOPE CORRECTION (read first).** This test used **`POST /memberships/change-tier`**, which the OpenAPI spec labels **"Admin: change user's tier/state"** — an **admin override**, _not_ the member upgrade path. The PRD's actual flows are:
+>
 > - **Visitor→Paid** → `POST /stripe/checkout` → pay → **Stripe webhook** creates the new cycle. **← never tested by us**
 > - **Paid→Paid** → `POST /memberships/upgrade` (schedules `pending_upgrade`, applied at renewal). **← never tested by us** (not integrated)
 >
@@ -659,16 +692,16 @@ id,email,full_name,state,phone,total_token
 3. `POST /memberships/change-tier` `{subTierId: "b4"}` → `200 "Tier updated."`, response confirms `subTier.token = 4`.
 4. **Re-read the cycle → UNCHANGED:**
 
-| Field | After Visitor→b4 | Should be (b4) |
-|---|---|---|
-| `membership.tier` | Plus (blue) ✅ | blue |
-| `membership.billing_status` | **active** (no payment made) | ? |
-| `subscription` | `{}` | ? |
-| `current_cycle.total_token` | **1** ← still Visitor's | **4** |
-| `current_cycle.draw_pass` | **-1** ← still Visitor's "infinite" | **4** |
-| cycle | same row, no new cycle created | new cycle |
+| Field                       | After Visitor→b4                    | Should be (b4) |
+| --------------------------- | ----------------------------------- | -------------- |
+| `membership.tier`           | Plus (blue) ✅                      | blue           |
+| `membership.billing_status` | **active** (no payment made)        | ?              |
+| `subscription`              | `{}`                                | ?              |
+| `current_cycle.total_token` | **1** ← still Visitor's             | **4**          |
+| `current_cycle.draw_pass`   | **-1** ← still Visitor's "infinite" | **4**          |
+| cycle                       | same row, no new cycle created      | new cycle      |
 
-**PRD §1 for reference** (describing the *real* upgrade paths, not this admin endpoint): *"Upgrade/downgrade — Visitor→Paid immediate (new cycle now). Paid→Paid scheduled via `pending_upgrade`, applied at next renewal."*
+**PRD §1 for reference** (describing the _real_ upgrade paths, not this admin endpoint): _"Upgrade/downgrade — Visitor→Paid immediate (new cycle now). Paid→Paid scheduled via `pending_upgrade`, applied at next renewal."_
 
 ### Same state as the "seed" blue member
 
@@ -686,9 +719,9 @@ Member `019f329d-f1f7-704a-81f8-fff772a0608a` was reported as "just seed data". 
 ### Questions (not asserting a bug — please confirm intent)
 
 1. **Is `change-tier` meant to re-allocate the cycle at all**, or is cycle allocation exclusively the Stripe webhook's job? If the latter, this is working as designed and only the admin UX/expectations need documenting.
-2. If `change-tier` is *not* a complete upgrade, **what is the supported way for an admin to move a Visitor onto a paid tier** without a real payment? Today it produces membership=blue + `billing_status=active` + a Visitor cycle (`1` token, `draw_pass -1`).
+2. If `change-tier` is _not_ a complete upgrade, **what is the supported way for an admin to move a Visitor onto a paid tier** without a real payment? Today it produces membership=blue + `billing_status=active` + a Visitor cycle (`1` token, `draw_pass -1`).
 3. Confirm `draw_pass = -1` is the intended "infinite" sentinel, and whether a paid member holding it is possible/acceptable.
-4. Confirm whether admin `change-tier` is *meant* to set `billing_status: active` without a payment (`subscription: {}`).
+4. Confirm whether admin `change-tier` is _meant_ to set `billing_status: active` without a payment (`subscription: {}`).
 
 ### Still to be tested by us (the real PRD paths)
 
@@ -709,19 +742,21 @@ Step 2 above is the **first time in this environment the allocator has demonstra
 
 `GET /memberships/tiers` (the config) is **correct** and matches PRD v3.2 exactly. The seeded cycles disagree with it for **both paid tiers**:
 
-| Account | `subTierId` | Config `token` (`/memberships/tiers`) | Engine `current_cycle.total_token` (`/entries/`) | |
-|---|---|---|---|---|
-| `visitor@` | visitor | 1 | 1 | ✅ |
-| `red@` | **r4** | **4** | **7** | ❌ +3 |
-| `blue@` | **b4** | **4** | **15** | ❌ +11 |
+| Account    | `subTierId` | Config `token` (`/memberships/tiers`) | Engine `current_cycle.total_token` (`/entries/`) |        |
+| ---------- | ----------- | ------------------------------------- | ------------------------------------------------ | ------ |
+| `visitor@` | visitor     | 1                                     | 1                                                | ✅     |
+| `red@`     | **r4**      | **4**                                 | **7**                                            | ❌ +3  |
+| `blue@`    | **b4**      | **4**                                 | **15**                                           | ❌ +11 |
 
-Everything *else* about the cycle is right — `draw_pass = 4` ✅, cycle length 28 days (`2026-07-02` → `2026-07-30`) ✅, `entry_status: active` ✅. **Only `total_token` is wrong.**
+Everything _else_ about the cycle is right — `draw_pass = 4` ✅, cycle length 28 days (`2026-07-02` → `2026-07-30`) ✅, `entry_status: active` ✅. **Only `total_token` is wrong.**
 
 **Ruled out:**
+
 - **Not a spin/bonus grant** — `memberships/me.pendingBonusNextCycle = 0`.
 - **Not accumulation across cycles** — `GET /admin/members/{id}` returns **exactly 1 cycle** for `red@`, already holding `total_token: 7` (so it was written wrong at cycle creation, not added to over time).
 
 **Leads:**
+
 - `red@` is on **r4** but received **7** — which is precisely **r7's** configured token value. Looks like the allocator resolved the wrong sub-tier row at cycle creation.
 - `blue@` on **b4** received **15**, which matches **no** sub-tier (b4=4, b7=7, b10=10).
 
@@ -729,25 +764,26 @@ Everything *else* about the cycle is right — `draw_pass = 4` ✅, cycle length
 
 Switched `red@` **r4 → r1** (config token = 1), re-read `/entries/`, then restored **→ r4**:
 
-| Step | `subTierId` | `current_cycle.total_token` |
-|---|---|---|
-| baseline | r4 | 7 |
-| after → **r1** | r1 | **7** (unchanged) |
-| restored → **r4** | r4 | 7 |
+| Step              | `subTierId` | `current_cycle.total_token` |
+| ----------------- | ----------- | --------------------------- |
+| baseline          | r4          | 7                           |
+| after → **r1**    | r1          | **7** (unchanged)           |
+| restored → **r4** | r4          | 7                           |
 
 **Conclusions:**
+
 - ❌ **Additive-mutation theory is disproven** — the value never moved (would have been 8). Earlier tier-switch testing did **not** cause `blue@`'s 15.
 - ✅ **`change-tier` does not touch the live cycle's tokens** — consistent with the PRD (paid→paid applies at next renewal, no proration; token/draw_pass reset on **successful renewal**). Not a bug.
 - ⇒ Both wrong values were therefore **written at cycle creation**.
 
 ### How we know it's the seed script (confirmed by backend 2026-07-17)
 
-| Evidence | Finding |
-|---|---|
-| `GET /billing/status` | `stripe_subscription_id: "sub_seeded_red_123"` / `"sub_seeded_blue_123"` — literal placeholders |
-| `POST /stripe/portal` | `400 No such customer: 'cus_seeded_red_123'` — no real Stripe customer exists |
-| `GET /billing/invoices` | **0 invoices** on both accounts — no payment ever occurred |
-| UUIDv7 timestamps | `red@` user created `05:20:14.585Z`, its cycle `05:20:22.145Z` → **7.56s apart**, and `cycle_id`'s embedded time == `start_at` exactly. A checkout cannot complete that fast — this is a script inserting rows sequentially. |
+| Evidence                | Finding                                                                                                                                                                                                                      |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /billing/status`   | `stripe_subscription_id: "sub_seeded_red_123"` / `"sub_seeded_blue_123"` — literal placeholders                                                                                                                              |
+| `POST /stripe/portal`   | `400 No such customer: 'cus_seeded_red_123'` — no real Stripe customer exists                                                                                                                                                |
+| `GET /billing/invoices` | **0 invoices** on both accounts — no payment ever occurred                                                                                                                                                                   |
+| UUIDv7 timestamps       | `red@` user created `05:20:14.585Z`, its cycle `05:20:22.145Z` → **7.56s apart**, and `cycle_id`'s embedded time == `start_at` exactly. A checkout cannot complete that fast — this is a script inserting rows sequentially. |
 
 ⇒ The **allocator/webhook never ran** for these accounts. The 7 and 15 are hardcoded seed values.
 
@@ -758,6 +794,7 @@ Switched `red@` **r4 → r1** (config token = 1), re-read `/entries/`, then rest
 Still unproven: the **paid** allocation path (cycle created by the Stripe payment webhook), since no real payment has occurred here (0 invoices across all accounts). Confirming r4 ⇒ 4 tokens on a real checkout is the remaining gap for item 4.
 
 **Asks:**
+
 1. **Re-seed `red@` / `blue@` so their cycles read 4 / 4** (match the sub-tier config). Current seed values misrepresent the product in demos/QA and — more importantly — would **mask a real allocator bug** if one exists, since wrong numbers already look "normal".
 2. **Exercise the allocator once**: complete a **Stripe test checkout** (card `4242 4242 4242 4242`) → webhook creates a real cycle → assert `current_cycle.total_token` == the sub-tier's configured `token` (r4 ⇒ **4**). Until this runs once, item 4 is untested.
 3. Confirm renewal **resets** `token` + `draw_pass` from config rather than incrementing (PRD: entries never accumulate across cycles).
@@ -777,6 +814,7 @@ Still unproven: the **paid** allocation path (cycle created by the Stripe paymen
 `POST /api/v1/stripe/checkout` **requires auth** (OpenAPI: no per-op `security` → inherits global `bearerAuth`), and the backend's own `docs/fe_stripe_guide.md` registration flow calls it right after "Review Order". But a freshly-registered paid user **cannot obtain a token**:
 
 **1) Register a paid account → says OTP is NOT required:**
+
 ```json
 POST /api/v1/auth/register
 { "full_name":"FE Test", "email":"<throwaway>", "password":"…", "state":"VIC",
@@ -788,6 +826,7 @@ POST /api/v1/auth/register
 ```
 
 **2) Log in with those exact credentials → 401, demands OTP:**
+
 ```json
 POST /api/v1/auth/login
 { "email":"<same>", "password":"<same>" }
@@ -796,9 +835,10 @@ POST /api/v1/auth/login
         "message": "Email verification is pending. Please verify your OTP to activate your account." }
 ```
 
-**The contradiction:** `requires_otp: false` (and PRD/CLAUDE.md §1: *"OTP email verification is Visitor-only; paid tiers verify via Stripe (no OTP)"*) vs. login refusing to issue a token until OTP is verified. `register` also returns **no token**, so there is no other way to authenticate the new user → **`/stripe/checkout` is unreachable during registration**.
+**The contradiction:** `requires_otp: false` (and PRD/CLAUDE.md §1: _"OTP email verification is Visitor-only; paid tiers verify via Stripe (no OTP)"_) vs. login refusing to issue a token until OTP is verified. `register` also returns **no token**, so there is no other way to authenticate the new user → **`/stripe/checkout` is unreachable during registration**.
 
 **Pick one and we'll wire it:**
+
 1. **Let paid accounts log in unverified** (they verify via Stripe payment, per PRD) — makes `requires_otp:false` truthful; FE then does register → login → checkout.
 2. **Return a session token (or the checkout URL) straight from `register`** when `requires_payment: true` — FE redirects immediately.
 3. **Confirm paid signups really do need OTP** — then fix `register` to return `requires_otp: true`, and FE routes paid users through OTP first (contradicts the PRD, so needs a product decision).
@@ -815,7 +855,7 @@ POST /api/v1/auth/login
 
 ### 1. `pay_id_email` — new field needed on the user profile
 
-Add a `pay_id_email` column + expose it for read/write on `PATCH /users/me` / `GET /auth/me`. Today the frontend renders it from a placeholder (`profile.pay_id_email` is always `null` from the API — see [personal-info-section.tsx](<src/app/member/profile/_components/personal-info-section.tsx>), badged `Placeholder` in the UI). **Please confirm the purpose with the client** — likely a PayID payout email for prize winnings, but unconfirmed. This is the only remaining profile placeholder field (name/phone/dob are all real; see item 4).
+Add a `pay_id_email` column + expose it for read/write on `PATCH /users/me` / `GET /auth/me`. Today the frontend renders it from a placeholder (`profile.pay_id_email` is always `null` from the API — see [personal-info-section.tsx](src/app/member/profile/_components/personal-info-section.tsx), badged `Placeholder` in the UI). **Please confirm the purpose with the client** — likely a PayID payout email for prize winnings, but unconfirmed. This is the only remaining profile placeholder field (name/phone/dob are all real; see item 4).
 
 ### 2. No member-facing change-request endpoint for `email` or `state`
 
@@ -827,7 +867,8 @@ Both fields are **admin-approval-only** per PRD — `state` in particular drives
 
 ### 3. Ronde 3: paid→paid upgrade + cancel not yet wired
 
-`/member/membership`'s "Manage Membership" card shows **"Coming soon"** for both **Change plan (upgrade/downgrade)** and **Cancel membership** for paid members (see [manage-tier.tsx](<src/app/member/membership/_components/manage-tier.tsx>)). These controls are intentionally disabled pending:
+`/member/membership`'s "Manage Membership" card shows **"Coming soon"** for both **Change plan (upgrade/downgrade)** and **Cancel membership** for paid members (see [manage-tier.tsx](src/app/member/membership/_components/manage-tier.tsx)). These controls are intentionally disabled pending:
+
 - `POST /memberships/upgrade` — schedule a `pending_upgrade`, applied at next renewal, no proration, cancelable before it applies (per PRD).
 - `DELETE /memberships/upgrade` — cancel a scheduled pending upgrade.
 - The member-facing cancel-membership endpoint (subscription cancel at period end — distinct from BENY cancel, which is already wired).
@@ -849,15 +890,17 @@ The detail/list GET never returned `is_active`, so the admin edit form couldn't 
 
 ---
 
-# 🆕 SPRINT 4 (Ronde 4) — Admin dashboard modules: Prizes CMS, Safe Hours & Spin Wheel belum ada di backend
+# 🆕 SPRINT 4 (Ronde 4) — Admin dashboard modules: routes are live; re-verified 2026-08-10 with real defects to fix
 
-## Prizes CMS — `GET /public/prizes` + `PUT /admin/prizes` belum ada (404)
+> **Correction (2026-08-10) — read before the subsections below.** Every subsection in this Sprint 4 handoff previously claimed its endpoints were missing / unimplemented / 404. **That was wrong.** The 2026-08-08 probes that produced those 404s were not hitting the versioned route this doc's own base URL requires (`https://api.smartliferewards.com.au/api/v1` — see top of file); the requests actually sent 404'd generically, which reads identically to "route doesn't exist" but isn't. **Re-verified 2026-08-10 against production with a superadmin token, read-only (no writes issued): every route named below exists and is live.** Proof: a control probe against a route that genuinely doesn't exist, `GET /api/v1/admin/zzz-does-not-exist`, correctly returns `404 NOT_FOUND` — the real routes below return `401`/`200`/`500`, never `404`. **Do not re-file any of these as "not implemented" or "404" — that claim is retracted everywhere in this section.** What's left are real bugs (several `500 INTERNAL_ERROR`s inside live handlers) and data-quality issues in the payloads, both filed as concrete asks below.
+
+## Prizes CMS — ✅ live, verified 200 (one data-quality gap: `updated_at` is `null`)
 
 **Captured:** 2026-08-08 · **Sprint:** 4 (Ronde 4), item "Admin dashboard modules & content management (halaman Prizes)" · **Spec:** [2026-08-08-admin-prizes-cms-design.md](superpowers/specs/2026-08-08-admin-prizes-cms-design.md)
 
 Halaman Prizes adalah salah satu dari dua area yang CMS-managed di platform ini (PRD §"Implementation Note: Static vs CMS", yang satu lagi E-book content). Figure-nya berubah setiap kali jumlah paid member melewati stage threshold, jadi kalau di-hardcode berarti re-deploy tiap naik stage.
 
-**Verifikasi 2026-08-08** — kedua route berikut, dan beberapa nama alternatif, semuanya **404**:
+**Verifikasi 2026-08-08 (SALAH — lihat correction box di atas):** kedua route berikut, dan beberapa nama alternatif, sempat dilaporkan **404**:
 
 ```
 GET  /api/v1/prizes            → 404
@@ -867,7 +910,17 @@ PUT  /api/v1/admin/prizes      → 404   (route yang dipakai FE, admin JWT)
 PUT  /api/v1/admin/prize-pool  → 404
 ```
 
-Kontrol probe di host yang sama pada saat bersamaan mengembalikan 401 (`/ebooks/`, `/notifications/`, `/admin/members`) dan 200 (`/public/discounts/`, `/memberships/tiers`) — jadi 404 di atas berarti route-nya memang **belum ada**, bukan artefak auth.
+Kontrol probe di host yang sama pada saat bersamaan mengembalikan 401 (`/ebooks/`, `/notifications/`, `/admin/members`) dan 200 (`/public/discounts/`, `/memberships/tiers`) — waktu itu disimpulkan bahwa 404 di atas berarti route-nya belum ada. **Kesimpulan itu salah** (lihat correction box di atas); laporan asli dipertahankan di sini sebagai sejarah saja.
+
+**Re-verified 2026-08-10 (superadmin token, read-only):**
+
+```
+GET /api/v1/admin/prizes → 200
+```
+
+Mengembalikan semua **9 field konten yang didokumentasikan** (`headline`, `prizes_sublabel`, `current_members`, `odds_label`, `tiers[].tier_group/tier_label/price_label/weekly/monthly`) — cocok dengan kontrak yang diusulkan di bawah. **Satu data-quality gap: `updated_at` balik `null`**, bukan ISO timestamp seperti di contoh kontrak. FE sudah men-tipe `PrizeContent.updated_at` sebagai `string | null` untuk menampung ini.
+
+`PUT /api/v1/admin/prizes` tidak dites di pass 2026-08-10 ini (verifikasi read-only, tidak ada write yang dikirim) — masih perlu konfirmasi full-document-replace (lihat ask di bawah).
 
 ### Kontrak yang diusulkan FE
 
@@ -882,112 +935,174 @@ Response body (snake_case, di-unwrap dari envelope standar `{ success, message, 
 
 ```json
 {
-  "headline": "$2,100",
-  "prizes_sublabel": "@ 22 Prizes • One Month",
-  "current_members": 142,
-  "odds_label": "9 in 10 wins yearly",
-  "tiers": [
-    { "tier_group": "visitor", "tier_label": "Visitor",  "price_label": "Free to join",    "weekly": "$25 Coles Digital Credit",    "monthly": null },
-    { "tier_group": "red",     "tier_label": "SLR RED",  "price_label": "from $10/month",  "weekly": "$25 Coles Credits + $50 Cash",  "monthly": "$300 Bonus Monthly Credit" },
-    { "tier_group": "blue",    "tier_label": "SLR BLUE", "price_label": "from $26/month",  "weekly": "$25 Coles Credits + $150 Cash", "monthly": "$700 Bonus Monthly Credit" }
-  ]
+    "headline": "$2,100",
+    "prizes_sublabel": "@ 22 Prizes • One Month",
+    "current_members": 142,
+    "odds_label": "9 in 10 wins yearly",
+    "tiers": [
+        {
+            "tier_group": "visitor",
+            "tier_label": "Visitor",
+            "price_label": "Free to join",
+            "weekly": "$25 Coles Digital Credit",
+            "monthly": null
+        },
+        {
+            "tier_group": "red",
+            "tier_label": "SLR RED",
+            "price_label": "from $10/month",
+            "weekly": "$25 Coles Credits + $50 Cash",
+            "monthly": "$300 Bonus Monthly Credit"
+        },
+        {
+            "tier_group": "blue",
+            "tier_label": "SLR BLUE",
+            "price_label": "from $26/month",
+            "weekly": "$25 Coles Credits + $150 Cash",
+            "monthly": "$700 Bonus Monthly Credit"
+        }
+    ]
 }
 ```
 
-`PUT` menerima body yang sama dan mengembalikan dokumen yang tersimpan. Tidak ada `current_stage`, `stage_label`, atau `stages` di wire — semuanya di-derive di client dari `current_members` (PRD: *"current_stage is derived from paid_members — do NOT hardcode"*).
+`PUT` menerima body yang sama dan mengembalikan dokumen yang tersimpan. Tidak ada `current_stage`, `stage_label`, atau `stages` di wire — semuanya di-derive di client dari `current_members` (PRD: _"current_stage is derived from paid_members — do NOT hardcode"_).
 
-### Permintaan ke backend
+### Sisa permintaan ke backend (routes sudah live — ini bukan lagi "implement dari nol")
 
-1. Implement kedua route sesuai kontrak di atas: `GET /api/v1/public/prizes` dan `PUT /api/v1/admin/prizes`.
-2. Seed dokumennya dengan nilai Stage 1 dari PRD (contoh JSON di atas — itu memang angka Stage 1 milik PRD), supaya `GET` pertama setelah deploy langsung mengembalikan sesuatu yang bisa dirender.
-3. Konfirmasi `PUT` adalah **full-replace** (bukan merge/patch), dan mengembalikan dokumen yang baru tersimpan (bukan `{success,message}` kosong).
-4. Konfirmasi route admin (`PUT /admin/prizes`) menegakkan role admin dan menjawab 401/403 konsisten dengan `/api/v1/admin/*` lain.
+1. **`updated_at` balik `null`** pada `GET /api/v1/admin/prizes` — seharusnya ISO timestamp (lihat contoh kontrak di atas). Konfirmasi apakah kolom memang belum di-populate saat write, atau read path yang tidak mengembalikannya.
+2. Konfirmasi `PUT /api/v1/admin/prizes` adalah **full-replace** (bukan merge/patch), dan mengembalikan dokumen yang baru tersimpan (bukan `{success,message}` kosong) — belum sempat dites live di pass 2026-08-10 ini (read-only).
+3. Konfirmasi route admin (`PUT /admin/prizes`) menegakkan role admin dan menjawab 401/403 konsisten dengan `/api/v1/admin/*` lain.
+4. Konfirmasi apakah `GET /api/v1/public/prizes` (unauthenticated, dipakai halaman marketing) juga sudah live dengan bentuk yang sama — pass 2026-08-10 hanya menguji `GET /api/v1/admin/prizes` dengan token admin.
 
-**Catatan:** editor admin di frontend (`/dashboard/prizes`) **sudah selesai dibangun** dan sudah nunggu — begitu kedua endpoint di atas menjawab 200, halaman langsung berfungsi tanpa perubahan FE lebih lanjut. `/member/prizes` dan `/prizes` (public) sengaja **belum** di-rewire ke API ini (Phase 2, lihat spec §8) — masih baca mock lokal `src/data/prizes.ts` sampai `GET /public/prizes` beneran 200.
+**Catatan:** editor admin di frontend (`/dashboard/prizes`) sudah selesai dibangun — dan **sudah bisa dipakai sekarang**, `GET /api/v1/admin/prizes` verified 200 2026-08-10. `/member/prizes` dan `/prizes` (public) sengaja **belum** di-rewire ke API ini (Phase 2, lihat spec §8) — masih baca mock lokal `src/data/prizes.ts` sampai `GET /public/prizes` dikonfirmasi live juga.
 
 ---
 
-## Safe Hours (Admin Settings)
+## Safe Hours (Admin Settings) — route live, `GET` currently 500
 
-Endpoint yang dibutuhkan admin editor Safe Hours (verified 404, 2026-08-08):
+Endpoint yang dibutuhkan admin editor Safe Hours.
+
+> **Correction.** Sebelumnya ditulis "verified 404, 2026-08-08" — itu salah, lihat correction box di awal section Sprint 4. **Re-verified 2026-08-10 (superadmin token, read-only):** `GET /api/v1/admin/safe-hours` route **ada dan lolos auth**, tapi menjawab **`500 INTERNAL_ERROR`**, bukan 404. Kontrol probe ke route yang genuinely tidak ada (`GET /api/v1/admin/zzz-does-not-exist`) tetap `404 NOT_FOUND` di host yang sama pada pass ini — jadi 500 di sini membuktikan handler-nya benar-benar dipanggil dan crash di dalam, bukan route yang hilang.
 
 ### GET /api/v1/admin/safe-hours
-Ambil window lockout saat ini. Admin JWT.
+
+Ambil window lockout saat ini. Admin JWT. 🔴 **Status: route live, tapi `500 INTERNAL_ERROR` di production — blocks seluruh admin panel Safe Hours.**
 
 ### PUT /api/v1/admin/safe-hours
-Update window (full-document replace). Admin JWT.
+
+Update window (full-document replace). Admin JWT. Tidak dites di pass 2026-08-10 ini (verifikasi read-only, tidak ada write yang dikirim).
 
 Request/response body:
+
 ```json
 {
-  "weekday": "Fri",
-  "start_hour": 16,
-  "end_hour": 19
+    "weekday": "Fri",
+    "start_hour": 16,
+    "end_hour": 19
 }
 ```
 
 `weekday` salah satu dari `Mon|Tue|Wed|Thu|Fri|Sat|Sun`. `start_hour`/`end_hour` integer 0-23. Tidak ada field timezone — window selalu `Australia/Sydney`, ditangani di kode FE.
 
 **Yang diminta ke tim backend:**
-1. Implement kedua endpoint di atas.
-2. Seed dokumen dengan nilai default saat ini: `{ weekday: "Fri", start_hour: 16, end_hour: 19 }` — sama seperti yang FE pakai sebagai fallback.
-3. Konfirmasi PUT full-replace dan mengembalikan dokumen yang tersimpan.
-4. Konfirmasi route mewajibkan role admin, 401/403 konsisten dengan `/api/v1/admin/*` lainnya.
 
-**Tambahan — belum ada di kontrak sama sekali:** pertimbangkan endpoint publik atau member-authenticated buat *membaca* window saat ini (atau masukkan ke payload session/bootstrap member). Tanpa itu, pengecekan advisory di sisi member (`src/lib/safe-hours.ts` — constant hardcoded) tidak bisa mengikuti window yang diubah admin. Backend tetap jadi otoritas penegakan baik dengan atau tanpa ini (member yang mencoba di luar window versi FE tetap kena 403 dari backend), tapi tombol member bisa disable di jam yang salah sampai constant di kode di-update manual. Ini gap UX-timing, bukan gap keamanan, tapi sebaiknya jadi keputusan sadar bukan kejutan.
+1. **Perbaiki `500 INTERNAL_ERROR` pada `GET /api/v1/admin/safe-hours`** — route ada dan authenticates, tapi crash begitu sampai handler. Ini blocker: FE sekarang fallback ke dokumen seed dengan banner "Couldn't load … — showing defaults. Saving may fail." di halaman admin.
+2. Setelah `GET` jalan, konfirmasi `PUT` full-replace dan mengembalikan dokumen yang tersimpan (bukan `{success,message}` kosong).
+3. Kalau belum ada row tersimpan, seed dokumen dengan nilai default saat ini: `{ weekday: "Fri", start_hour: 16, end_hour: 19 }` — sama seperti yang FE pakai sebagai fallback.
+4. Konfirmasi route mewajibkan role admin, 401/403 konsisten dengan `/api/v1/admin/*` lainnya — belum bisa diverifikasi penuh sampai jalur sukses (200) bisa diamati.
 
-FE admin editor sudah dibangun dan langsung berfungsi begitu endpoint di atas hidup.
+**Tambahan — belum ada di kontrak sama sekali:** pertimbangkan endpoint publik atau member-authenticated buat _membaca_ window saat ini (atau masukkan ke payload session/bootstrap member). Tanpa itu, pengecekan advisory di sisi member (`src/lib/safe-hours.ts` — constant hardcoded) tidak bisa mengikuti window yang diubah admin. Backend tetap jadi otoritas penegakan baik dengan atau tanpa ini (member yang mencoba di luar window versi FE tetap kena 403 dari backend), tapi tombol member bisa disable di jam yang salah sampai constant di kode di-update manual. Ini gap UX-timing, bukan gap keamanan, tapi sebaiknya jadi keputusan sadar bukan kejutan.
+
+FE admin editor sudah dibangun; **saat ini menampilkan banner fallback ke seed data karena `GET` 500** — akan otomatis pakai data live begitu 500 di atas diperbaiki.
 
 ---
 
-## Spin Wheel (Admin Panel)
+## Spin Wheel (Admin Panel) — routes live; history OK, config & tier-filter 500, tier data ambiguous
 
-Endpoint yang dibutuhkan admin panel Spin Wheel (verified 404, 2026-08-08 — dan `GET /admin/spin/config` malah belum ada sama sekali di API Contract, cuma `PUT`):
+Endpoint yang dibutuhkan admin panel Spin Wheel.
+
+> **Correction.** Sebelumnya ditulis "verified 404, 2026-08-08" dan "`GET /admin/spin/config` malah belum ada sama sekali di API Contract" — keduanya salah, lihat correction box di awal section Sprint 4. **Re-verified 2026-08-10 (superadmin token, read-only):** ketiga route di bawah **ada dan live**. Rincian per-route: `history` tanpa filter dan `?moment=` sama-sama 200, `?tier=` 500, dan `spin/config` 500.
 
 ### GET /api/v1/admin/spin/history
-Riwayat spin, filter opsional `?tier=` (salah satu dari `R4|R7|B4|B7|B10`) dan `?moment=` (`registration|renewal`). Admin JWT.
 
-Response body yang diasumsikan FE (belum dikonfirmasi — field names inferred dari tipe `SpinResult` yang sudah ada, tolong konfirmasi atau kasih bentuk aslinya):
+Riwayat spin. **Status: 200, verified 2026-08-10** — keys dan `meta` cocok dengan API Contract (bukan lagi bentuk yang diasumsikan FE di bawah — lihat API Contract untuk daftar field kanonik). Filter opsional:
+
+- `?moment=` — nilai yang valid adalah **`pre_renewal`**, bukan `renewal` seperti yang ditulis sebelumnya di dokumen ini. Verified: `?moment=pre_renewal` → 200; `?moment=renewal` → ditolak `VALIDATION_ERROR`, yang justru mengonfirmasi ejaan `pre_renewal` yang benar. Nilai lain: `registration`.
+- `?tier=` — 🔴 **`500 INTERNAL_ERROR` untuk setiap nilai yang dicoba** (`r4`, `R4`, `Plus`). Panggilan tanpa filter dan dengan `?moment=` sama-sama berhasil, jadi filter tier saja yang rusak. **FE sudah menonaktifkan kontrol filter tier** (`disabled`) dan `page.tsx` tidak lagi mengirim parameter `tier` sama sekali sampai ini diperbaiki.
+
+Bentuk response yang **sebelumnya diasumsikan FE** (belum dikonfirmasi persis — field names inferred dari tipe `SpinResult` yang sudah ada; verifikasi 2026-08-10 hanya mengonfirmasi keys/`meta` cocok dokumen, bukan menyalin payload persis), disimpan di sini untuk referensi:
+
 ```json
 [
-  {
-    "id": "spin_123",
-    "member_name": "Jane Doe",
-    "tier": "R4",
-    "moment": "registration",
-    "result": "win",
-    "discount_cents": 1000,
-    "spun_at": "2026-08-05T09:14:00Z"
-  }
+    {
+        "id": "spin_123",
+        "member_name": "Jane Doe",
+        "tier": "R4",
+        "moment": "registration",
+        "result": "win",
+        "discount_cents": 1000,
+        "spun_at": "2026-08-05T09:14:00Z"
+    }
 ]
 ```
 
-### GET /api/v1/admin/spin/config — BELUM ADA DI KONTRAK, MOHON DITAMBAHKAN
-Ambil status toggle saat ini. Tanpa ini, halaman admin gak punya cara nampilin state toggle yang aktif sebelum diedit. Admin JWT.
+**Data-quality — `tier` pada tiap row ambigu.** Contoh di atas menulis `"tier": "R4"`, tapi row live membawa nama marketing polos tanpa prefix Red/Blue: `Plus`, `Premium`, `Elite`, `Standard`, `Visitor`. `Plus` tidak bisa dibedakan R4 dari B4, dan `Premium` tidak bisa dibedakan R7 dari B7 — tabel admin menampilkan nilai yang tidak bisa ditelusuri balik ke sub-tier. **Ask:** sertakan `sub_tier_id` di samping `tier`, atau kembalikan nama lengkap (`Red Plus`, dst).
+
+**Data-quality — label add-on BENY bocor sebagai tier.** Row live membawa `tier: "Smart Life Rewards Add On - BENY - DAILY"`. BENY adalah add-on **$4/bulan**, bukan tier keanggotaan, dan tidak seharusnya muncul di kolom `tier` sama sekali (label yang sama juga bocor ke `dashboard.members_by_tier` — lihat subsection Admin Dashboard di bawah).
+
+### GET /api/v1/admin/spin/config
+
+Ambil status toggle saat ini. Admin JWT. 🔴 **`500 INTERNAL_ERROR`** — route ada (kontrol probe ke route yang genuinely tidak ada tetap 404 di host yang sama), tapi crash di handler. **Konsekuensi:** tidak bisa diverifikasi apakah response fresh mengembalikan hanya 5 `sub_tier_id` yang spin-eligible (R4/R7/B4/B7/B10) atau semua 8 sub-tier. Logic merge-and-preserve FE (`normalizeSpinConfig`) sengaja ditulis supaya benar untuk kedua kemungkinan, jadi ini tidak memblokir FE — tapi backend perlu tahu field mana yang sebenarnya dikirim begitu 500 ini selesai.
 
 ### PUT /api/v1/admin/spin/config
-Update status enable/disable. Admin JWT.
+
+Update status enable/disable. Admin JWT. Tidak dites di pass 2026-08-10 ini (verifikasi read-only, tidak ada write yang dikirim).
 
 Request/response body:
+
 ```json
 {
-  "enabled": true,
-  "sub_tier_enabled": { "R4": true, "R7": true, "B4": true, "B7": true, "B10": true }
+    "enabled": true,
+    "sub_tier_enabled": { "R4": true, "R7": true, "B4": true, "B7": true, "B10": true }
 }
 ```
 
 **Sengaja TIDAK ada** field `discount_cents`/probabilitas per sub-tier — PRD §5.7 (keputusan PO) eksplisit nunda config itu sampai rilis berikutnya. Kalau response asli backend punya field itu, FE form ini akan mengabaikannya (tidak dirender, tidak dikirim balik).
 
 **Yang diminta ke tim backend:**
-1. Implement `GET /admin/spin/history` dan `GET`+`PUT /admin/spin/config`.
-2. **Tambahkan `GET /admin/spin/config`** ke kontrak — saat ini cuma `PUT` yang terdaftar.
-3. Konfirmasi bentuk `SpinHistoryRow` di atas, atau kasih bentuk aslinya kalau beda.
-4. Konfirmasi apakah `GET .../history` di-paginate server-side atau FE tetap ambil semua baris sekaligus dan paginate di client (asumsi FE saat ini, sama seperti Winners/Ebooks).
-5. Seed `SpinConfig` dengan semua sub-tier `true` (default hari ini, tanpa toggle admin).
-6. `GET` dan `PUT /admin/spin/config` harus rilis bersamaan, bukan `PUT` sendirian — skenario paling mungkin di rilis pertama adalah `PUT` naik duluan tanpa `GET`, yang bikin UI kontradiktif (toggle kelihatan tersimpan, tapi halaman masih nampilin banner "belum live" dan balik ke seed tiap reload karena baca-nya masih gagal).
-7. Konfirmasi `PUT` adalah **full-replace** (bukan merge/patch), dan mengembalikan dokumen yang baru tersimpan (bukan `{success,message}` kosong) — sama seperti yang diminta di subsection Safe Hours di atas.
-8. Konfirmasi route ini menegakkan role admin dan menjawab 401/403 konsisten dengan `/api/v1/admin/*` lain — sama seperti yang diminta di subsection Safe Hours di atas.
+
+1. **Perbaiki `500 INTERNAL_ERROR` pada `GET /api/v1/admin/spin/history?tier=<value>`** — filter tier saja yang gagal; tanpa filter dan `?moment=` keduanya OK.
+2. **Perbaiki `500 INTERNAL_ERROR` pada `GET /api/v1/admin/spin/config`** — route ada dan authenticates, tapi crash begitu sampai handler. Blocks kartu config spin wheel di admin — FE fallback ke dokumen seed dengan banner "Couldn't load … — showing defaults. Saving may fail."
+3. `spin/history.tier`: sertakan `sub_tier_id` atau nama lengkap (`Red Plus`, dst.) — nama marketing polos (`Plus`, `Premium`, dst.) ambigu antar Red/Blue, lihat data-quality note di atas.
+4. Hilangkan label BENY (`"Smart Life Rewards Add On - BENY - DAILY"`) dari `spin/history.tier` — itu add-on, bukan tier.
+5. Konfirmasi `?moment=` hanya menerima `registration|pre_renewal` — dokumen ini sudah diperbaiki mengikuti hasil verifikasi (`renewal` ditolak `VALIDATION_ERROR`); mohon backend konfirmasi ini kontrak final.
+6. Setelah `GET /admin/spin/config` jalan, konfirmasi apakah `sub_tier_enabled` yang dikembalikan hanya 5 sub-tier spin-eligible atau semua 8.
+7. Konfirmasi `PUT /admin/spin/config` adalah **full-replace** (bukan merge/patch), dan mengembalikan dokumen yang baru tersimpan (bukan `{success,message}` kosong) — sama seperti yang diminta di subsection Safe Hours di atas.
+8. Konfirmasi route-route ini menegakkan role admin dan menjawab 401/403 konsisten dengan `/api/v1/admin/*` lain — sama seperti yang diminta di subsection Safe Hours di atas.
+9. Konfirmasi apakah `GET .../history` di-paginate server-side atau FE tetap ambil semua baris sekaligus dan paginate di client (asumsi FE saat ini, sama seperti Winners/Ebooks).
 
 **Tambahan — di luar kontrak sama sekali:** PRD §5.7 juga minta monitoring status kirim email reminder 24 jam sebelum renewal (sent/failed). Tidak ada endpoint untuk ini di mana pun di API Contract, baik di bawah Spin Wheel maupun Notifications. Belum di-scope FE — nunggu endpoint atau konfirmasi ini masuk modul Notifications.
 
-FE admin panel sudah dibangun (toggle + history + filter) dan langsung berfungsi begitu endpoint di atas hidup.
+FE admin panel sudah dibangun (toggle + history + filter) — **history dan `?moment=` filter sudah live**; tier-filter dinonaktifkan dan kartu config menampilkan banner fallback sampai dua 500 di atas diperbaiki.
+
+---
+
+## Admin Dashboard — `members_by_tier` collapses Red/Blue, BENY leaks in as a tier
+
+**Verified 2026-08-10 (superadmin token, read-only):** `GET /api/v1/admin/dashboard` → **200**. Dua data-quality issue di `members_by_tier`:
+
+1. **Red dan Blue collapse jadi satu baris.** Tiap entry cuma membawa nama marketing tanpa group, jadi `Plus`, `Standard`, dan `Premium` masing-masing muncul **dua kali** (sekali untuk Red, sekali untuk Blue) alih-alih satu baris per sub-tier. Halaman `/dashboard` yang sudah ada saat ini sudah workaround dengan membaca `/memberships/stats`, bukan `admin/dashboard.members_by_tier` — ask di bawah akan memungkinkan workaround itu dilepas.
+2. **Label BENY bocor sebagai tier.** Label `"Smart Life Rewards Add On - BENY - DAILY"` yang sama seperti di `spin/history.tier` (lihat subsection Spin Wheel di atas) juga muncul di `members_by_tier`. BENY adalah add-on $4/bulan, bukan tier keanggotaan, dan seharusnya tidak dihitung di sini.
+
+**Yang diminta ke tim backend:**
+
+1. Sertakan `sub_tier_id` (atau grouping eksplisit red/blue) pada tiap baris `members_by_tier` supaya Red dan Blue tidak collapse jadi satu label.
+2. Hilangkan baris BENY dari `members_by_tier` — itu add-on, bukan tier.
+
+---
+
+## Notification Logs (Admin) — `type` di luar enum yang didokumentasikan
+
+**Verified 2026-08-10 (superadmin token, read-only):** `GET /api/v1/admin/notification-logs` → **200** — keys dan `meta` cocok dengan dokumentasi API. Satu data-quality gap: salah satu row live membawa `type: "password_reset"`, yang **bukan** salah satu dari 10 tipe notifikasi yang didokumentasikan di API Contract.
+
+**Yang diminta ke tim backend:** konfirmasi set `type` yang sebenarnya berjalan di production sebelum panel admin Notifications dibangun mengikuti enum yang terdokumentasi — kalau `password_reset` memang tipe yang valid, tambahkan ke dokumentasi API Contract; kalau tidak, ini bug penulisan `type` saat notifikasi reset password dikirim.
