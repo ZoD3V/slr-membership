@@ -64,7 +64,7 @@ function toFormValues(config: SafeHoursConfig): FormValues {
     };
 }
 
-export function SafeHoursClient({ config }: { config: SafeHoursConfig }) {
+export function SafeHoursClient({ config, isPlaceholder }: { config: SafeHoursConfig; isPlaceholder: boolean }) {
     const [isPending, startTransition] = useTransition();
 
     const form = useForm<FormValues>({
@@ -93,12 +93,20 @@ export function SafeHoursClient({ config }: { config: SafeHoursConfig }) {
         <div className='max-w-md space-y-4'>
             <p className='text-slr-muted text-sm'>
                 Currently locked:{' '}
-                <span
-                    className={
-                        config.is_currently_locked ? 'font-semibold text-red-400' : 'font-semibold text-emerald-400'
-                    }>
-                    {config.is_currently_locked ? 'Yes' : 'No'}
-                </span>
+                {isPlaceholder ? (
+                    <span
+                        className='text-slr-dim font-semibold'
+                        title="Couldn't load live data — this value is unknown, not a real reading.">
+                        &mdash;
+                    </span>
+                ) : (
+                    <span
+                        className={
+                            config.is_currently_locked ? 'font-semibold text-red-400' : 'font-semibold text-emerald-400'
+                        }>
+                        {config.is_currently_locked ? 'Yes' : 'No'}
+                    </span>
+                )}
             </p>
 
             <Form {...form}>
@@ -185,6 +193,7 @@ export function SafeHoursClient({ config }: { config: SafeHoursConfig }) {
                                 name='manual_override'
                                 render={({ field }) => (
                                     <FormItem>
+                                        <FormLabel>Override</FormLabel>
                                         <Select value={field.value} onValueChange={field.onChange}>
                                             <FormControl>
                                                 <SelectTrigger className='w-full'>

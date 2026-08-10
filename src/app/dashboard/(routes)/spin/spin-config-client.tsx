@@ -103,6 +103,21 @@ export function SpinConfigClient({ config }: { config: SpinConfig }) {
 
             if (result.ok) {
                 toast.success(result.message);
+                // Re-seed from the saved document, not the submitted values —
+                // the backend may normalise/clamp (e.g. a discount cap), and
+                // without this the form keeps showing a value the server
+                // rejected while isDirty (computed against the new `config`
+                // prop) reports true, making Save look stuck on.
+                setGlobalEnabled(result.data.global_enabled);
+                setRows(Object.fromEntries(ELIGIBLE_SUB_TIERS.map((code) => [code, toEditableRow(result.data, code)])));
+                setDiscountText(
+                    Object.fromEntries(
+                        ELIGIBLE_SUB_TIERS.map((code) => [
+                            code,
+                            String(toEditableRow(result.data, code).spin_discount_cents / 100)
+                        ])
+                    )
+                );
             } else {
                 toast.error(result.message, {
                     description: result.status ? `status ${result.status} · ${result.code ?? 'no code'}` : undefined

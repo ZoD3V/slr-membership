@@ -36,7 +36,7 @@ export default async function SafeHoursPage() {
                 </p>
             ) : null}
 
-            <SafeHoursClient config={config} />
+            <SafeHoursClient config={config} isPlaceholder={isPlaceholder} />
         </DashboardPageShell>
     );
 }

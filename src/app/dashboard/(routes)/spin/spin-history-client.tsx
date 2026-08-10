@@ -10,7 +10,7 @@ import { SUB_TIERS } from '@/constant/tiers';
 import type { SpinHistoryMeta, SpinHistoryRow, SpinMoment, SpinTierId, SubTierCode } from '@/types/member';
 
 import { spinHistoryColumns } from './_components/columns';
-import { History } from 'lucide-react';
+import { History, TriangleAlert } from 'lucide-react';
 
 const ALL_TIER_IDS: SpinTierId[] = ['visitor', 'r1', 'r4', 'r7', 'b1', 'b4', 'b7', 'b10'];
 
@@ -29,12 +29,14 @@ export function SpinHistoryClient({
     rows,
     meta,
     tier,
-    moment
+    moment,
+    historyFailed
 }: {
     rows: SpinHistoryRow[];
     meta: SpinHistoryMeta;
     tier: string;
     moment: string;
+    historyFailed: boolean;
 }) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
@@ -110,13 +112,26 @@ export function SpinHistoryClient({
                 itemsPerPage={meta.per_page}
                 onPageChange={(page) => pushParams({ page })}
                 emptyMessage={
-                    <span className='flex flex-col items-center gap-1'>
-                        <History className='mb-1 size-8 opacity-40' />
-                        <span className='text-foreground text-sm font-semibold'>No spins yet</span>
-                        <span className='max-w-sm text-xs leading-relaxed'>
-                            Spin history will appear here once members start spinning at registration or renewal.
+                    historyFailed ? (
+                        <span className='flex flex-col items-center gap-1'>
+                            <TriangleAlert className='mb-1 size-8 text-amber-400/70' />
+                            <span className='text-foreground text-sm font-semibold'>
+                                Couldn&apos;t load spin history
+                            </span>
+                            <span className='max-w-sm text-xs leading-relaxed'>
+                                The history request failed — this is not a claim that no member has spun. Try reloading
+                                the page.
+                            </span>
                         </span>
-                    </span>
+                    ) : (
+                        <span className='flex flex-col items-center gap-1'>
+                            <History className='mb-1 size-8 opacity-40' />
+                            <span className='text-foreground text-sm font-semibold'>No spins yet</span>
+                            <span className='max-w-sm text-xs leading-relaxed'>
+                                Spin history will appear here once members start spinning at registration or renewal.
+                            </span>
+                        </span>
+                    )
                 }
             />
         </div>

@@ -1,22 +1,24 @@
 import { DashboardPageShell } from '@/app/dashboard/_components/page-shell';
 import Heading from '@/components/ui/heading';
-import { SPIN_ELIGIBLE_SUB_TIERS } from '@/constant/tiers';
+import { SPIN_ELIGIBLE_SUB_TIERS, SUB_TIERS } from '@/constant/tiers';
 import { handleApiAuthError } from '@/lib/api/guard';
 import { getAdminSpinConfig, getAdminSpinHistory } from '@/lib/api/resources/spin-admin';
 import { getAccessToken } from '@/lib/api/server';
-import type { SpinConfig, SpinHistoryMeta, SpinHistoryRow, SpinMoment, SpinTierId, SubTierCode } from '@/types/member';
+import type {
+    SpinConfig,
+    SpinHistoryMeta,
+    SpinHistoryRow,
+    SpinMoment,
+    SpinSubTierConfig,
+    SubTierCode
+} from '@/types/member';
 
 import { SPIN_CONFIG_SEED, SPIN_HISTORY_META_SEED } from './seed';
 import { SpinConfigClient } from './spin-config-client';
 import { SpinHistoryClient } from './spin-history-client';
 
-const TIER_VALUES: SpinTierId[] = ['visitor', 'r1', 'r4', 'r7', 'b1', 'b4', 'b7', 'b10'];
 const MOMENT_VALUES: SpinMoment[] = ['registration', 'pre_renewal'];
 const ELIGIBLE_SUB_TIERS = Array.from(SPIN_ELIGIBLE_SUB_TIERS) as SubTierCode[];
-
-function isSpinTierId(value: string): value is SpinTierId {
-    return (TIER_VALUES as readonly string[]).includes(value);
-}
 
 function isSpinMoment(value: string): value is SpinMoment {
     return (MOMENT_VALUES as readonly string[]).includes(value);
@@ -32,9 +34,22 @@ function normalizeSpinConfig(raw: Partial<SpinConfig> | null | undefined): SpinC
     const merged = ELIGIBLE_SUB_TIERS.map((code) => {
         const id = code.toLowerCase();
         const existing = rawSubTiers.find((t) => t.sub_tier_id === id);
+        if (existing) return existing;
 
-        // Non-null: SPIN_CONFIG_SEED is authored with exactly these 5 ids.
-        return existing ?? SPIN_CONFIG_SEED.sub_tiers.find((t) => t.sub_tier_id === id)!;
+        const seeded = SPIN_CONFIG_SEED.sub_tiers.find((t) => t.sub_tier_id === id);
+        if (seeded) return seeded;
+
+        // Safety net, not expected to trigger: SPIN_ELIGIBLE_SUB_TIERS
+        // (constant/tiers.ts) and SPIN_CONFIG_SEED (./seed) are meant to list
+        // exactly the same five codes. If a code is ever added to one without
+        // the other, don't crash the page on a missing row — render it as a
+        // disabled, zero-discount row instead.
+        return {
+            sub_tier_id: id as SpinSubTierConfig['sub_tier_id'],
+            marketing_name: SUB_TIERS[code].marketingName,
+            has_spin: false,
+            spin_discount_cents: 0
+        };
     });
     const untouched = rawSubTiers.filter(
         (t) => !ELIGIBLE_SUB_TIERS.some((code) => code.toLowerCase() === t.sub_tier_id)
@@ -49,13 +64,16 @@ function normalizeSpinConfig(raw: Partial<SpinConfig> | null | undefined): SpinC
 export default async function SpinPage({
     searchParams
 }: {
-    searchParams: Promise<{ tier?: string; moment?: string; page?: string }>;
+    searchParams: Promise<{ moment?: string; page?: string }>;
 }) {
-    const { tier: rawTier = 'all', moment: rawMoment = 'all', page: rawPage } = await searchParams;
-    // Whitelist before use — an unrecognised value would otherwise be sent to
-    // the backend as a filter while the Select silently falls back to its
-    // placeholder, showing no filter active for a filtered fetch.
-    const tier = rawTier === 'all' || isSpinTierId(rawTier) ? rawTier : 'all';
+    const { moment: rawMoment = 'all', page: rawPage } = await searchParams;
+    // Tier filtering is disabled in SpinHistoryClient (Select is `disabled`)
+    // because `?tier=<any value>` 500s the live endpoint (verified
+    // 2026-08-10). Force 'all' here too so a bookmarked ?tier=... URL can't
+    // make the disabled Select display an active filter that was never
+    // applied. Restore reading `searchParams.tier` once the backend ask in
+    // docs/BACKEND-ISSUES.md is resolved.
+    const tier = 'all';
     const moment = rawMoment === 'all' || isSpinMoment(rawMoment) ? rawMoment : 'all';
     const parsedPage = Number(rawPage);
     const page = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
@@ -66,6 +84,7 @@ export default async function SpinPage({
     let isConfigPlaceholder = false;
     let history: SpinHistoryRow[] = [];
     let historyMeta: SpinHistoryMeta = SPIN_HISTORY_META_SEED;
+    let historyFailed = false;
 
     if (token) {
         const [configResult, historyResult] = await Promise.allSettled([
@@ -100,13 +119,17 @@ export default async function SpinPage({
         if (historyResult.status === 'fulfilled') {
             history = historyResult.value.data;
             historyMeta = historyResult.value.meta;
+        } else {
+            // On failure, history/historyMeta stay at their seeded defaults.
+            // historyFailed tells the table to render a "couldn't load"
+            // notice instead of its normal empty state, so a fetch failure
+            // is never presented as the factual claim "no spins yet".
+            historyFailed = true;
         }
-        // On failure, history/historyMeta stay at their seeded defaults — the
-        // table's own empty state handles it, no honest placeholder exists for
-        // a list of past events.
     } else {
         config = SPIN_CONFIG_SEED;
         isConfigPlaceholder = true;
+        historyFailed = true;
     }
 
     return (
@@ -124,7 +147,13 @@ export default async function SpinPage({
                 ) : null}
 
                 <SpinConfigClient config={config} />
-                <SpinHistoryClient rows={history} meta={historyMeta} tier={tier} moment={moment} />
+                <SpinHistoryClient
+                    rows={history}
+                    meta={historyMeta}
+                    tier={tier}
+                    moment={moment}
+                    historyFailed={historyFailed}
+                />
             </div>
         </DashboardPageShell>
     );

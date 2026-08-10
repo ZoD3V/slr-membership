@@ -30,7 +30,7 @@ export default async function PrizesPage() {
         <DashboardPageShell>
             <Heading
                 title='Prizes'
-                description='Edit the prize pool shown on the Prizes page. Saved changes are not yet reflected on member-facing pages.'
+                description='Edit the prize pool CMS document. Not yet shown on any member-facing page — /prizes and /member/prizes are not wired to this content yet.'
             />
 
             {isPlaceholder ? (
