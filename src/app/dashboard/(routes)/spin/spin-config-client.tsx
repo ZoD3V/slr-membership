@@ -67,9 +67,17 @@ export function SpinConfigClient({ config }: { config: SpinConfig }) {
     const setDiscount = (code: SubTierCode, text: string) => {
         setDiscountText((prev) => ({ ...prev, [code]: text }));
 
-        const dollars = Number(text);
+        // A blank/whitespace field is treated the same as an invalid number
+        // (NaN, negative): keep the last valid cents value rather than
+        // committing $0.00. Number('') === 0 is finite and >= 0, so an empty
+        // string must be excluded explicitly — it doesn't fail the numeric
+        // checks below on its own.
+        const trimmed = text.trim();
+        const dollars = Number(trimmed);
         const cents =
-            Number.isFinite(dollars) && dollars >= 0 ? Math.round(dollars * 100) : rows[code].spin_discount_cents;
+            trimmed !== '' && Number.isFinite(dollars) && dollars >= 0
+                ? Math.round(dollars * 100)
+                : rows[code].spin_discount_cents;
 
         setRows((prev) => ({ ...prev, [code]: { ...prev[code], spin_discount_cents: cents } }));
     };
