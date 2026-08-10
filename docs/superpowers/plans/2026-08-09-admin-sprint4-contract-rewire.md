@@ -10,7 +10,18 @@
 
 ## Global Constraints
 
-- All three endpoints (`/admin/prizes`, `/admin/safe-hours`, `/admin/spin/config`, `/admin/spin/history`) are still 404 live (verified 2026-08-09). Every page keeps the existing seed-fallback pattern: render against seed data with a muted placeholder banner on fetch failure; Save still calls the real endpoint and fails loudly via toast.
+- **All four endpoints are LIVE and were verified against production with a real admin token on 2026-08-10.** Earlier notes in this repo claiming they were 404 came from probes that omitted the `/api/v1` prefix — that claim was wrong; never repeat it in code comments or UI copy. Verified state:
+
+  | Endpoint | Result |
+  | --- | --- |
+  | `GET /api/v1/admin/prizes` | **200** — payload matches the API doc field-for-field, except `updated_at` came back `null` |
+  | `GET /api/v1/admin/spin/history` | **200** — keys and `meta` match the doc exactly; `?moment=pre_renewal` accepted, `?moment=renewal` rejected with `VALIDATION_ERROR` (confirms the `pre_renewal` spelling) |
+  | `GET /api/v1/admin/spin/history?tier=<any value>` | **500 INTERNAL_ERROR** — `r4`, `R4`, and `Plus` all crash the endpoint |
+  | `GET /api/v1/admin/safe-hours` | **500 INTERNAL_ERROR** |
+  | `GET /api/v1/admin/spin/config` | **500 INTERNAL_ERROR** |
+
+- Every page keeps its seed document as a defensive fallback, but the placeholder banner must NOT claim the endpoint is missing. Use the exact copy given per task: `Couldn't load the current <thing> — showing defaults. Saving may fail.` Save still calls the real endpoint and fails loudly via toast.
+- **Never issue a write (PUT/POST/DELETE) against the production API while implementing or verifying this plan.** It holds real member data. Verification is read-only; Save buttons are exercised only by the user, never by an implementer or reviewer.
 - No automated test suite covers these admin CRUD routes today (only `src/lib/prizes.ts`'s pure derivation math has a Vitest suite, and it is untouched by this plan). Verify each task via `npm run type-check`, a scoped `npx eslint`, `npm run build`, and a hand-traced walk of the failure paths in the task report — not TDD. This is a deliberate deviation from this skill's default TDD framing, matching how the Prizes/Safe Hours/Spin panels were originally built this sprint.
 - `npm run lint` is broken in this repo (mis-parses its `next lint` invocation) — use `npx eslint <paths>` instead, never `npm run lint`.
 - `npm run format` reformats the whole repo if run unscoped. Run `npx prettier --write <files you touched>` only, or run it unscoped and `git checkout -- <files you didn't mean to touch>` before committing.
@@ -56,7 +67,9 @@ export interface PrizeContent {
     blue_weekly: string;
     blue_monthly: string;
     odds: string;
-    updated_at: string;
+    // Nullable: the live endpoint returned `null` here on 2026-08-10 even
+    // though the API doc's example shows an ISO string.
+    updated_at: string | null;
 }
 
 export type PrizeContentUpdatePayload = Omit<PrizeContent, 'updated_at'>;
@@ -140,15 +153,15 @@ Replace the full contents of `src/app/dashboard/(routes)/prizes/seed.ts` with:
 import type { PrizeContent } from '@/types/member';
 
 /**
- * Placeholder document the editor falls back to while `GET /api/v1/admin/prizes`
- * is still unimplemented (verified 404 on 2026-08-09).
+ * Defensive fallback the editor renders against when `GET /api/v1/admin/prizes`
+ * cannot be read (network error, or a non-401 API error).
  *
- * Values are the real API doc's own Stage 1 example response, so what an admin
- * sees here matches what the first real GET is expected to return.
+ * The endpoint is live — it answers 401 unauthenticated, verified 2026-08-10 —
+ * so reaching this seed means something went wrong, not that the backend is
+ * missing. Values are the real API doc's own Stage 1 example response.
  *
- * Scoped to this route on purpose — distinct from PrizePool's seed data (if
- * any exists under member/prizes), which is a different, still-unconfirmed
- * document. Delete this file once /api/v1/admin/prizes answers.
+ * Scoped to this route on purpose — distinct from PrizePool's mock in
+ * src/data/prizes.ts, which is a different, still-unconfirmed document.
  */
 export const PRIZE_CONTENT_SEED: PrizeContent = {
     prize_pool_headline: '$2,100',
@@ -160,7 +173,7 @@ export const PRIZE_CONTENT_SEED: PrizeContent = {
     blue_weekly: '1x $250 Gift Card',
     blue_monthly: '1x $1000 Cash Prize',
     odds: '9 in 10 wins yearly',
-    updated_at: '2026-08-09T14:30:00.000Z'
+    updated_at: null
 };
 ```
 
@@ -190,9 +203,9 @@ export default async function PrizesPage() {
         if (!token) isPlaceholder = true;
     } catch (error) {
         handleApiAuthError(error); // 401 → force logout; other errors fall through
-        // The endpoint is still unimplemented, so the editor renders against the
-        // seed document rather than an error card — the form stays usable for
-        // admin walkthroughs. Saving still fails loudly via the action's toast.
+        // The endpoint is live, so reaching here means a real failure (network,
+        // or a 5xx). Render against the seed so the editor stays usable rather
+        // than blanking; saving still fails loudly via the action's toast.
         content = PRIZE_CONTENT_SEED;
         isPlaceholder = true;
     }
@@ -206,7 +219,7 @@ export default async function PrizesPage() {
 
             {isPlaceholder ? (
                 <p className='text-muted-foreground text-sm'>
-                    Showing placeholder figures — the prizes endpoint is not live yet, so saving will not persist.
+                    Couldn&apos;t load the current prize content — showing defaults. Saving may fail.
                 </p>
             ) : null}
 
@@ -551,7 +564,7 @@ git commit -m "fix(prizes): rewire admin CMS to the real /admin/prizes contract"
 - Modify: `src/app/dashboard/(routes)/safe-hours/seed.ts`
 - Modify: `src/app/dashboard/(routes)/safe-hours/safe-hours-client.tsx`
 - Modify: `src/app/dashboard/(routes)/safe-hours/actions.ts`
-- `src/app/dashboard/(routes)/safe-hours/page.tsx` — **not modified**: it imports `SAFE_HOURS_SEED` from `./seed` and passes `config` straight through to `SafeHoursClient`; both names are preserved by this task, so the page needs no change.
+- Modify: `src/app/dashboard/(routes)/safe-hours/page.tsx` (one string + one comment only — see Step 5b)
 
 **Interfaces:**
 - Consumes: nothing from other tasks in this plan.
@@ -624,13 +637,16 @@ Replace the full contents of `src/app/dashboard/(routes)/safe-hours/seed.ts` wit
 import type { SafeHoursConfig } from '@/types/member';
 
 /**
- * Placeholder document the editor falls back to while `GET /api/v1/admin/safe-hours`
- * is still unimplemented (verified 404 on 2026-08-09).
+ * Defensive fallback the editor renders against when `GET /api/v1/admin/safe-hours`
+ * cannot be read.
  *
- * Values are the real API doc's own example response — the default Friday
- * 16:00-19:00 Sydney window, no override active, currently unlocked.
+ * The endpoint exists but answered 500 INTERNAL_ERROR when verified against
+ * production on 2026-08-10, so this fallback is load-bearing right now — see
+ * the Safe Hours entry in docs/BACKEND-ISSUES.md. Values are the real API
+ * doc's own example: the default Friday 16:00-19:00 Sydney window, no override
+ * active, currently unlocked.
  *
- * Scoped to this route. Delete once the endpoint answers.
+ * Scoped to this route.
  */
 export const SAFE_HOURS_SEED: SafeHoursConfig = {
     day_of_week: 'Friday',
@@ -882,6 +898,38 @@ import type { SafeHoursConfig, SafeHoursUpdatePayload } from '@/types/member';
 export async function saveSafeHoursAction(payload: SafeHoursUpdatePayload): Promise<ActionResult<SafeHoursConfig>> {
 ```
 
+- [ ] **Step 5b: Correct the page's placeholder copy**
+
+In `src/app/dashboard/(routes)/safe-hours/page.tsx`, change only the banner string and the comment above the seed assignment. Everything else in the file stays as it is.
+
+Replace this comment:
+
+```tsx
+        // The endpoint is still unimplemented, so the editor renders against the
+        // seed document rather than an error card — the form stays usable for
+        // admin walkthroughs. Saving still fails loudly via the action's toast.
+```
+
+with:
+
+```tsx
+        // The endpoint is live but currently answers 500 (verified 2026-08-10),
+        // so this fallback is load-bearing. Render against the seed rather than
+        // blanking; saving still fails loudly via the action's toast.
+```
+
+Replace this banner:
+
+```tsx
+                    Showing placeholder figures — the safe-hours endpoint is not live yet, so saving will not persist.
+```
+
+with:
+
+```tsx
+                    Couldn&apos;t load the current safe-hours settings — showing defaults. Saving may fail.
+```
+
 - [ ] **Step 6: Verify**
 
 Run: `npm run type-check`
@@ -900,7 +948,7 @@ Manually trace: `grep -rn "Weekday\b" src/` returns nothing (old type fully remo
 ```bash
 git add src/types/member.ts src/lib/api/resources/safe-hours.ts \
     "src/app/dashboard/(routes)/safe-hours/seed.ts" "src/app/dashboard/(routes)/safe-hours/safe-hours-client.tsx" \
-    "src/app/dashboard/(routes)/safe-hours/actions.ts"
+    "src/app/dashboard/(routes)/safe-hours/actions.ts" "src/app/dashboard/(routes)/safe-hours/page.tsx"
 git commit -m "feat(safe-hours): add manual override + active toggle, correct field shapes"
 ```
 
@@ -956,7 +1004,15 @@ export interface SpinHistoryRow {
     user_id: string;
     user_name: string;
     user_email: string;
-    tier: string; // display string from the API, e.g. 'Red Plus'
+    /**
+     * Display string from the API. The doc's example shows 'Red Plus', but the
+     * live endpoint returns bare marketing names ('Plus', 'Premium', 'Elite',
+     * 'Standard', 'Visitor') — so 'Plus' is ambiguous between R4 and B4, and a
+     * BENY add-on label leaks in as if it were a tier. Rendered verbatim
+     * because there is no group field to disambiguate it with; filed in
+     * docs/BACKEND-ISSUES.md.
+     */
+    tier: string;
     moment: SpinMoment;
     result: 'win' | 'lose';
     discount_cents: number;
@@ -1158,12 +1214,16 @@ Replace the full contents of `src/app/dashboard/(routes)/spin/seed.ts` with:
 import type { SpinConfig, SpinHistoryMeta } from '@/types/member';
 
 /**
- * Placeholder documents the panel falls back to while `GET /api/v1/admin/spin/config`
- * and `GET /api/v1/admin/spin/history` are unimplemented (verified 404 on
- * 2026-08-09).
+ * Defensive fallbacks the panel renders against when the spin admin endpoints
+ * cannot be read.
+ *
+ * `GET /api/v1/admin/spin/config` exists but answered 500 INTERNAL_ERROR when
+ * verified against production on 2026-08-10, so SPIN_CONFIG_SEED is
+ * load-bearing right now — see docs/BACKEND-ISSUES.md. `GET /admin/spin/history`
+ * works; SPIN_HISTORY_META_SEED only covers its failure case.
  *
  * All five spin-eligible sub-tiers default to enabled with a $10 discount,
- * matching the real API doc's own r4 example. Delete once the endpoints answer.
+ * matching the real API doc's own r4 example.
  */
 export const SPIN_CONFIG_SEED: SpinConfig = {
     global_enabled: true,
@@ -1406,8 +1466,16 @@ export function SpinHistoryClient({
     return (
         <div className='space-y-4'>
             <div className='flex flex-wrap gap-3'>
-                <Select value={tier} onValueChange={(value) => pushParams({ tier: value })}>
-                    <SelectTrigger className='w-44'>
+                {/* Disabled on purpose: `?tier=<any value>` makes the live
+                    endpoint answer 500 (verified 2026-08-10 with r4, R4 and
+                    Plus). Rendering an enabled control that always errors is
+                    worse than showing it unavailable. Re-enable by deleting
+                    `disabled` and the title once the backend ask in
+                    docs/BACKEND-ISSUES.md is resolved. */}
+                <Select value={tier} onValueChange={(value) => pushParams({ tier: value })} disabled>
+                    <SelectTrigger
+                        className='w-44'
+                        title='Tier filtering is temporarily unavailable — the API errors on this filter.'>
                         <SelectValue placeholder='Tier' />
                     </SelectTrigger>
                     <SelectContent className='dashboard-theme dark'>
@@ -1639,7 +1707,13 @@ export default async function SpinPage({
         const [configResult, historyResult] = await Promise.allSettled([
             getAdminSpinConfig(token),
             getAdminSpinHistory(token, {
-                tier: tier === 'all' ? undefined : tier,
+                // `tier` is deliberately NOT forwarded: `?tier=<any value>`
+                // makes the endpoint answer 500 (verified 2026-08-10), which
+                // would take the whole history table down. The filter control
+                // is disabled in the client for the same reason. A hand-typed
+                // ?tier= in the URL therefore changes nothing rather than
+                // breaking the page. Restore this when the backend ask in
+                // docs/BACKEND-ISSUES.md is resolved.
                 moment: moment === 'all' ? undefined : moment,
                 page,
                 perPage: 20
@@ -1681,8 +1755,7 @@ export default async function SpinPage({
             <div className='space-y-6'>
                 {isConfigPlaceholder ? (
                     <p className='text-muted-foreground text-sm'>
-                        Showing placeholder settings — the spin config endpoint is not live yet, so saving will not
-                        persist.
+                        Couldn&apos;t load the current spin settings — showing defaults. Saving may fail.
                     </p>
                 ) : null}
 
@@ -1737,13 +1810,28 @@ git commit -m "feat(spin): server-paginate history, add per-tier discount, corre
 
 **Interfaces:** none — documentation only, no code.
 
-- [ ] **Step 1: Update the three subsections**
+- [ ] **Step 1: Correct the false "404 / not implemented" claims**
 
-Under the Sprint 4 heading, in the Prizes CMS, Safe Hours, and Spin Wheel subsections, add one line each noting the shape is now confirmed against the 2026-08-09 API doc rather than guessed, so the earlier "shape unconfirmed" caveats no longer apply. In the Spin Wheel subsection specifically, note the one open question the rewire couldn't resolve from the doc alone: whether a fresh `GET /admin/spin/config` returns only the 5 spin-eligible `sub_tier_id`s or all 8 — the FE's merge-and-preserve logic in `spin-config-client.tsx`/`page.tsx` (`normalizeSpinConfig`) is written to be correct either way, so this is a note for backend awareness, not a blocker.
+Search `docs/BACKEND-ISSUES.md` for every claim that the Sprint 4 admin endpoints are missing, unimplemented, or 404 (the Prizes CMS, Safe Hours, and Spin Wheel subsections under the Sprint 4 heading each carry some form of it). Every one of those claims is **wrong** and must be corrected in place: the routes exist and are live. They read as 404 only because the probes that produced them omitted the `/api/v1` prefix. State the correction explicitly — a reader who acted on the old text would waste a sprint waiting for endpoints that already shipped.
 
-- [ ] **Step 2: Commit**
+- [ ] **Step 2: Record the verified state and the real defects**
+
+Under the Sprint 4 heading, replace the per-feature "not live yet" framing with what was actually verified against production on 2026-08-10 using a superadmin token (read-only; no writes were issued). Write these as concrete, reproducible backend asks:
+
+1. **`GET /api/v1/admin/safe-hours` answers 500 INTERNAL_ERROR.** The route exists and authenticates; it fails once it reaches the handler. Blocks the entire Safe Hours admin panel — the FE currently falls back to a seed document.
+2. **`GET /api/v1/admin/spin/config` answers 500 INTERNAL_ERROR.** Same shape of failure; blocks the spin config card the same way.
+3. **`GET /api/v1/admin/spin/history?tier=<value>` answers 500 INTERNAL_ERROR** for every value tried (`r4`, `R4`, `Plus`). The unfiltered call and `?moment=` both work, so the tier filter alone is broken. The FE has disabled the tier filter control and does not forward the parameter until this is fixed.
+4. **`GET /api/v1/admin/spin/history` returns an ambiguous `tier`.** The API doc's example shows `"Red Plus"`, but live rows carry bare marketing names — `Plus`, `Premium`, `Elite`, `Standard`, `Visitor`. `Plus` cannot be resolved to R4 vs B4, and `Premium` cannot be resolved to R7 vs B7, so the admin table shows a value no one can trace back to a sub-tier. Ask for either the sub-tier id alongside it or a fully-qualified name (`Red Plus`).
+5. **A BENY add-on label leaks into tier data.** `spin/history.tier` and `dashboard.members_by_tier` both emit `"Smart Life Rewards Add On - BENY - DAILY"` as though it were a membership tier. BENY is a $4/month add-on, not a tier, and should not appear in either.
+6. **`GET /api/v1/admin/dashboard`'s `members_by_tier` collapses Red and Blue.** It returned duplicate `Plus`, `Standard` and `Premium` rows because only the marketing name is sent, with no group. The existing dashboard page already works around this by reading `/memberships/stats` instead — the ask is to include the sub-tier id so the workaround can be dropped.
+7. **`GET /api/v1/admin/prizes` returns `updated_at: null`** although the doc's example shows an ISO timestamp. The FE types it as `string | null`; confirm whether null is intended or the column is simply not being populated on write.
+8. **`GET /api/v1/admin/notification-logs` emits a `type` outside the documented enum** — `password_reset` appeared in live rows but is not among the 10 documented notification types. Confirm the full real set before the Notifications admin panel is built against the documented enum.
+
+Also note the one question the doc alone couldn't answer: whether a fresh `GET /admin/spin/config` returns only the 5 spin-eligible `sub_tier_id`s or all 8. It currently 500s so this is unverifiable; the FE's merge-and-preserve logic (`normalizeSpinConfig`) is written to be correct either way.
+
+- [ ] **Step 3: Commit**
 
 ```bash
 git add docs/BACKEND-ISSUES.md
-git commit -m "docs(backend-issues): mark Prizes/Safe Hours/Spin shapes as contract-confirmed"
+git commit -m "docs(backend-issues): correct the false 404 claims, file the verified Sprint 4 defects"
 ```
