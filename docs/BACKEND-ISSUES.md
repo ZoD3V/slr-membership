@@ -918,61 +918,45 @@ Kontrol probe di host yang sama pada saat bersamaan mengembalikan 401 (`/ebooks/
 GET /api/v1/admin/prizes → 200
 ```
 
-Mengembalikan semua **9 field konten yang didokumentasikan** (`headline`, `prizes_sublabel`, `current_members`, `odds_label`, `tiers[].tier_group/tier_label/price_label/weekly/monthly`) — cocok dengan kontrak yang diusulkan di bawah. **Satu data-quality gap: `updated_at` balik `null`**, bukan ISO timestamp seperti di contoh kontrak. FE sudah men-tipe `PrizeContent.updated_at` sebagai `string | null` untuk menampung ini.
+Mengembalikan dokumen **flat 9-field** — `prize_pool_headline`, `prize_count`, `stage_label`, `visitor_prize`, `red_weekly`, `red_monthly`, `blue_weekly`, `blue_monthly`, `odds` — plus `updated_at`. **Ini bukan** bentuk nested `tiers[]` yang draft lama dokumen ini pernah menulis di bawah; kontrak di bawah sudah dikoreksi mengikuti bentuk live yang sebenarnya dikembalikan. **Satu data-quality gap: `updated_at` balik `null`**, bukan ISO timestamp. FE sudah men-tipe `PrizeContent.updated_at` sebagai `string | null` untuk menampung ini.
 
 `PUT /api/v1/admin/prizes` tidak dites di pass 2026-08-10 ini (verifikasi read-only, tidak ada write yang dikirim) — masih perlu konfirmasi full-document-replace (lihat ask di bawah).
 
-### Kontrak yang diusulkan FE
+### Kontrak final yang dipakai FE (live, real shape — bukan draft nested lama)
 
 ```
-GET /api/v1/public/prizes     → PrizePool     no auth
-PUT /api/v1/admin/prizes      → PrizePool     admin JWT, full-document replace
+GET /api/v1/admin/prizes      → PrizeContent   admin JWT — verified 200, 2026-08-10
+PUT /api/v1/admin/prizes      → PrizeContent   admin JWT, full-document replace
+GET /api/v1/public/prizes     → ???            no auth — masih 404, belum terkonfirmasi (lihat catatan di bawah)
 ```
 
-`GET` public karena halaman marketing `/prizes` yang tidak login juga konsumsi endpoint yang sama (mengikuti presedan `/api/v1/public/discounts/`). Tidak ada admin-only read terpisah — dashboard admin dan halaman member/public sama-sama baca dari `GET /public/prizes`.
+Ada **admin-only read yang terpisah** dari public read. Draft lama dokumen ini pernah menulis "Tidak ada admin-only read terpisah — dashboard admin dan halaman member/public sama-sama baca dari `GET /public/prizes`"; itu **salah** — branch 2026-08-09 menambahkan `getAdminPrizeContent`, yang baca `GET /api/v1/admin/prizes` langsung dengan token admin, terpisah dari `GET /api/v1/public/prizes`. Yang terakhir ini **tetap 404** seperti sebelumnya — genuinely belum ada / belum terkonfirmasi live, dan bukan endpoint yang sama dengan `/admin/prizes`. `/prizes` (marketing) dan `/member/prizes` masih baca mock lokal `src/data/prizes.ts` sampai `/public/prizes` dikonfirmasi live (Phase 2, di luar scope rewire Sprint 4 ini).
 
-Response body (snake_case, di-unwrap dari envelope standar `{ success, message, data, meta }`):
+Response body admin (snake_case, di-unwrap dari envelope standar `{ success, message, data, meta }`) — flat, bukan nested `tiers[]`:
 
 ```json
 {
-    "headline": "$2,100",
-    "prizes_sublabel": "@ 22 Prizes • One Month",
-    "current_members": 142,
-    "odds_label": "9 in 10 wins yearly",
-    "tiers": [
-        {
-            "tier_group": "visitor",
-            "tier_label": "Visitor",
-            "price_label": "Free to join",
-            "weekly": "$25 Coles Digital Credit",
-            "monthly": null
-        },
-        {
-            "tier_group": "red",
-            "tier_label": "SLR RED",
-            "price_label": "from $10/month",
-            "weekly": "$25 Coles Credits + $50 Cash",
-            "monthly": "$300 Bonus Monthly Credit"
-        },
-        {
-            "tier_group": "blue",
-            "tier_label": "SLR BLUE",
-            "price_label": "from $26/month",
-            "weekly": "$25 Coles Credits + $150 Cash",
-            "monthly": "$700 Bonus Monthly Credit"
-        }
-    ]
+    "prize_pool_headline": "$2,100",
+    "prize_count": "@ 22 Prizes • One Month",
+    "stage_label": "For 100 Members • Stage 1",
+    "visitor_prize": "1x Free Draw Pass Entry",
+    "red_weekly": "1x $100 Gift Card",
+    "red_monthly": "1x $500 Tech Bundle",
+    "blue_weekly": "1x $250 Gift Card",
+    "blue_monthly": "1x $1000 Cash Prize",
+    "odds": "9 in 10 wins yearly",
+    "updated_at": null
 }
 ```
 
-`PUT` menerima body yang sama dan mengembalikan dokumen yang tersimpan. Tidak ada `current_stage`, `stage_label`, atau `stages` di wire — semuanya di-derive di client dari `current_members` (PRD: _"current_stage is derived from paid_members — do NOT hardcode"_).
+`PUT` menerima body yang sama minus `updated_at` (read-only, server-computed) dan mengembalikan dokumen yang tersimpan. Tidak ada `current_stage`, `stages`, `tiers[]`, atau `current_members` di wire sama sekali — draft lama dokumen ini menulis stage figures di-derive dari `current_members`; itu tidak berlaku untuk dokumen admin ini, yang isinya teks polos (`stage_label`, per-tier prize copy) diedit admin langsung, bukan dihitung dari angka member.
 
 ### Sisa permintaan ke backend (routes sudah live — ini bukan lagi "implement dari nol")
 
 1. **`updated_at` balik `null`** pada `GET /api/v1/admin/prizes` — seharusnya ISO timestamp (lihat contoh kontrak di atas). Konfirmasi apakah kolom memang belum di-populate saat write, atau read path yang tidak mengembalikannya.
 2. Konfirmasi `PUT /api/v1/admin/prizes` adalah **full-replace** (bukan merge/patch), dan mengembalikan dokumen yang baru tersimpan (bukan `{success,message}` kosong) — belum sempat dites live di pass 2026-08-10 ini (read-only).
 3. Konfirmasi route admin (`PUT /admin/prizes`) menegakkan role admin dan menjawab 401/403 konsisten dengan `/api/v1/admin/*` lain.
-4. Konfirmasi apakah `GET /api/v1/public/prizes` (unauthenticated, dipakai halaman marketing) juga sudah live dengan bentuk yang sama — pass 2026-08-10 hanya menguji `GET /api/v1/admin/prizes` dengan token admin.
+4. Konfirmasi apakah `GET /api/v1/public/prizes` (unauthenticated, dipakai halaman marketing) sudah live sama sekali, dan bentuk apa yang dikembalikan — endpoint ini tetap 404 di pass 2026-08-10 (read-only, tidak ada write dikirim). Ini adalah route berbeda dari `GET /api/v1/admin/prizes` yang sudah 200 di atas; jangan asumsikan bentuknya sama.
 
 **Catatan:** editor admin di frontend (`/dashboard/prizes`) sudah selesai dibangun — dan **sudah bisa dipakai sekarang**, `GET /api/v1/admin/prizes` verified 200 2026-08-10. `/member/prizes` dan `/prizes` (public) sengaja **belum** di-rewire ke API ini (Phase 2, lihat spec §8) — masih baca mock lokal `src/data/prizes.ts` sampai `GET /public/prizes` dikonfirmasi live juga.
 
@@ -992,23 +976,39 @@ Ambil window lockout saat ini. Admin JWT. 🔴 **Status: route live, tapi `500 I
 
 Update window (full-document replace). Admin JWT. Tidak dites di pass 2026-08-10 ini (verifikasi read-only, tidak ada write yang dikirim).
 
-Request/response body:
+Request body (PUT — full-document replace, minus the two server-computed read-only fields):
 
 ```json
 {
-    "weekday": "Fri",
-    "start_hour": 16,
-    "end_hour": 19
+    "day_of_week": "Friday",
+    "start_time": "16:00",
+    "end_time": "19:00",
+    "is_active": true,
+    "manual_override": "NONE"
 }
 ```
 
-`weekday` salah satu dari `Mon|Tue|Wed|Thu|Fri|Sat|Sun`. `start_hour`/`end_hour` integer 0-23. Tidak ada field timezone — window selalu `Australia/Sydney`, ditangani di kode FE.
+Response body (GET, and PUT echo) adds two read-only fields:
+
+```json
+{
+    "day_of_week": "Friday",
+    "start_time": "16:00",
+    "end_time": "19:00",
+    "is_active": true,
+    "manual_override": "NONE",
+    "is_currently_locked": false,
+    "updated_at": "2026-08-09T14:30:00.000Z"
+}
+```
+
+`day_of_week` adalah nama hari penuh, salah satu dari `Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday` (bukan singkatan 3-huruf seperti draft lama dokumen ini). `start_time`/`end_time` string `HH:MM` 24-jam (bukan integer jam terpisah), `end_time` harus setelah `start_time`. `manual_override` salah satu dari `NONE|FORCE_LOCK|FORCE_UNLOCK`. `is_currently_locked` read-only, dihitung server. Tidak ada field timezone — window selalu `Australia/Sydney`, ditangani di kode FE.
 
 **Yang diminta ke tim backend:**
 
 1. **Perbaiki `500 INTERNAL_ERROR` pada `GET /api/v1/admin/safe-hours`** — route ada dan authenticates, tapi crash begitu sampai handler. Ini blocker: FE sekarang fallback ke dokumen seed dengan banner "Couldn't load … — showing defaults. Saving may fail." di halaman admin.
 2. Setelah `GET` jalan, konfirmasi `PUT` full-replace dan mengembalikan dokumen yang tersimpan (bukan `{success,message}` kosong).
-3. Kalau belum ada row tersimpan, seed dokumen dengan nilai default saat ini: `{ weekday: "Fri", start_hour: 16, end_hour: 19 }` — sama seperti yang FE pakai sebagai fallback.
+3. Kalau belum ada row tersimpan, seed dokumen dengan nilai default saat ini: `{ day_of_week: "Friday", start_time: "16:00", end_time: "19:00", is_active: true, manual_override: "NONE" }` — sama seperti `SAFE_HOURS_SEED` yang FE pakai sebagai fallback (`src/app/dashboard/(routes)/safe-hours/seed.ts`). `is_currently_locked` dan `updated_at` tidak diminta untuk di-seed dengan nilai spesifik — keduanya server-computed, bukan sesuatu yang bisa "diseed" secara jujur dari sisi FE.
 4. Konfirmasi route mewajibkan role admin, 401/403 konsisten dengan `/api/v1/admin/*` lainnya — belum bisa diverifikasi penuh sampai jalur sukses (200) bisa diamati.
 
 **Tambahan — belum ada di kontrak sama sekali:** pertimbangkan endpoint publik atau member-authenticated buat _membaca_ window saat ini (atau masukkan ke payload session/bootstrap member). Tanpa itu, pengecekan advisory di sisi member (`src/lib/safe-hours.ts` — constant hardcoded) tidak bisa mengikuti window yang diubah admin. Backend tetap jadi otoritas penegakan baik dengan atau tanpa ini (member yang mencoba di luar window versi FE tetap kena 403 dari backend), tapi tombol member bisa disable di jam yang salah sampai constant di kode di-update manual. Ini gap UX-timing, bukan gap keamanan, tapi sebaiknya jadi keputusan sadar bukan kejutan.
@@ -1058,16 +1058,22 @@ Ambil status toggle saat ini. Admin JWT. 🔴 **`500 INTERNAL_ERROR`** — route
 
 Update status enable/disable. Admin JWT. Tidak dites di pass 2026-08-10 ini (verifikasi read-only, tidak ada write yang dikirim).
 
-Request/response body:
+Request/response body — full-document replace:
 
 ```json
 {
-    "enabled": true,
-    "sub_tier_enabled": { "R4": true, "R7": true, "B4": true, "B7": true, "B10": true }
+    "global_enabled": true,
+    "sub_tiers": [
+        { "sub_tier_id": "r4", "marketing_name": "Red Plus", "has_spin": true, "spin_discount_cents": 1000 },
+        { "sub_tier_id": "r7", "marketing_name": "Red Premium", "has_spin": true, "spin_discount_cents": 1000 },
+        { "sub_tier_id": "b4", "marketing_name": "Blue Plus", "has_spin": true, "spin_discount_cents": 1000 },
+        { "sub_tier_id": "b7", "marketing_name": "Blue Premium", "has_spin": true, "spin_discount_cents": 1000 },
+        { "sub_tier_id": "b10", "marketing_name": "Blue Elite", "has_spin": true, "spin_discount_cents": 1000 }
+    ]
 }
 ```
 
-**Sengaja TIDAK ada** field `discount_cents`/probabilitas per sub-tier — PRD §5.7 (keputusan PO) eksplisit nunda config itu sampai rilis berikutnya. Kalau response asli backend punya field itu, FE form ini akan mengabaikannya (tidak dirender, tidak dikirim balik).
+**Ada** field `spin_discount_cents` per sub-tier — draft lama dokumen ini pernah menulis bahwa discount/probabilitas per sub-tier sengaja TIDAK ada dan bahwa FE akan mengabaikan field itu; itu tidak lagi berlaku. FE admin form sekarang merender input dolar per sub-tier dan mengirim balik `sub_tiers[].spin_discount_cents` di setiap save (lihat `spin-config-client.tsx`). Field lama `sub_tier_enabled` (map `{ "R4": true, ... }`) juga sudah tidak ada di kontrak — diganti `sub_tiers[]`, array of object per sub-tier di atas.
 
 **Yang diminta ke tim backend:**
 
@@ -1076,10 +1082,10 @@ Request/response body:
 3. `spin/history.tier`: sertakan `sub_tier_id` atau nama lengkap (`Red Plus`, dst.) — nama marketing polos (`Plus`, `Premium`, dst.) ambigu antar Red/Blue, lihat data-quality note di atas.
 4. Hilangkan label BENY (`"Smart Life Rewards Add On - BENY - DAILY"`) dari `spin/history.tier` — itu add-on, bukan tier.
 5. Konfirmasi `?moment=` hanya menerima `registration|pre_renewal` — dokumen ini sudah diperbaiki mengikuti hasil verifikasi (`renewal` ditolak `VALIDATION_ERROR`); mohon backend konfirmasi ini kontrak final.
-6. Setelah `GET /admin/spin/config` jalan, konfirmasi apakah `sub_tier_enabled` yang dikembalikan hanya 5 sub-tier spin-eligible atau semua 8.
+6. Setelah `GET /admin/spin/config` jalan, konfirmasi apakah `sub_tiers[]` yang dikembalikan hanya 5 sub-tier spin-eligible atau semua 8.
 7. Konfirmasi `PUT /admin/spin/config` adalah **full-replace** (bukan merge/patch), dan mengembalikan dokumen yang baru tersimpan (bukan `{success,message}` kosong) — sama seperti yang diminta di subsection Safe Hours di atas.
 8. Konfirmasi route-route ini menegakkan role admin dan menjawab 401/403 konsisten dengan `/api/v1/admin/*` lain — sama seperti yang diminta di subsection Safe Hours di atas.
-9. Konfirmasi apakah `GET .../history` di-paginate server-side atau FE tetap ambil semua baris sekaligus dan paginate di client (asumsi FE saat ini, sama seperti Winners/Ebooks).
+9. Konfirmasi kontrak pagination server-side pada `GET .../history` — **FE sekarang sudah server-paginated** (branch ini yang mengubahnya dari asumsi client-side paging sebelumnya, sama seperti Winners/Ebooks): FE kirim `?page=`/`?per_page=` dan konsumsi `meta.page/per_page/total/total_pages` dari response. Mohon backend konfirmasi nama param dan bentuk `meta` ini final.
 
 **Tambahan — di luar kontrak sama sekali:** PRD §5.7 juga minta monitoring status kirim email reminder 24 jam sebelum renewal (sent/failed). Tidak ada endpoint untuk ini di mana pun di API Contract, baik di bawah Spin Wheel maupun Notifications. Belum di-scope FE — nunggu endpoint atau konfirmasi ini masuk modul Notifications.
 
