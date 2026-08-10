@@ -4,10 +4,11 @@ import { useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { SafeHoursConfig, Weekday } from '@/types/member';
+import { Switch } from '@/components/ui/switch';
+import type { SafeHoursConfig, SafeHoursDay, SafeHoursOverride, SafeHoursUpdatePayload } from '@/types/member';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { saveSafeHoursAction } from './actions';
@@ -16,59 +17,50 @@ import { type Resolver, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
-const WEEKDAYS: { value: Weekday; label: string }[] = [
-    { value: 'Mon', label: 'Monday' },
-    { value: 'Tue', label: 'Tuesday' },
-    { value: 'Wed', label: 'Wednesday' },
-    { value: 'Thu', label: 'Thursday' },
-    { value: 'Fri', label: 'Friday' },
-    { value: 'Sat', label: 'Saturday' },
-    { value: 'Sun', label: 'Sunday' }
+const WEEKDAYS: SafeHoursDay[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+const OVERRIDE_OPTIONS: { value: SafeHoursOverride; label: string; description: string }[] = [
+    { value: 'NONE', label: 'None', description: 'Follow the automatic schedule below.' },
+    {
+        value: 'FORCE_LOCK',
+        label: 'Force lock',
+        description: 'Block sign-up & plan changes right now, regardless of schedule.'
+    },
+    {
+        value: 'FORCE_UNLOCK',
+        label: 'Force unlock',
+        description: 'Force the platform open even during the scheduled window.'
+    }
 ];
 
-// Blank input must be rejected, not coerced to 0 — see prizes-client.tsx's
-// current_members field for the same reasoning applied to a different value.
-const hourField = (label: string) =>
-    z.coerce
-        .string()
-        .trim()
-        .min(1, 'Required')
-        .transform((value, ctx) => {
-            const parsed = Number(value);
+const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
-            if (!Number.isInteger(parsed)) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${label} must be a whole number` });
-
-                return z.NEVER;
-            }
-
-            if (parsed < 0 || parsed > 23) {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${label} must be between 0 and 23` });
-
-                return z.NEVER;
-            }
-
-            return parsed;
-        });
+const timeField = (label: string) => z.string().regex(TIME_PATTERN, `${label} must be HH:MM, 24h`);
 
 const formSchema = z
     .object({
-        weekday: z.enum(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']),
-        start_hour: hourField('Start hour'),
-        end_hour: hourField('End hour')
+        day_of_week: z.enum(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']),
+        start_time: timeField('Start time'),
+        end_time: timeField('End time'),
+        is_active: z.boolean(),
+        manual_override: z.enum(['NONE', 'FORCE_LOCK', 'FORCE_UNLOCK'])
     })
-    .refine((values) => values.end_hour > values.start_hour, {
-        message: 'End hour must be after start hour',
-        path: ['end_hour']
+    // Safe as a plain string compare: both sides are always zero-padded
+    // 'HH:MM', so lexicographic order matches time-of-day order.
+    .refine((values) => values.end_time > values.start_time, {
+        message: 'End time must be after start time',
+        path: ['end_time']
     });
 
 type FormValues = z.infer<typeof formSchema>;
 
 function toFormValues(config: SafeHoursConfig): FormValues {
     return {
-        weekday: config.weekday,
-        start_hour: config.start_hour,
-        end_hour: config.end_hour
+        day_of_week: config.day_of_week,
+        start_time: config.start_time,
+        end_time: config.end_time,
+        is_active: config.is_active,
+        manual_override: config.manual_override
     };
 }
 
@@ -81,8 +73,10 @@ export function SafeHoursClient({ config }: { config: SafeHoursConfig }) {
     });
 
     const onSubmit = (values: FormValues) => {
+        const payload: SafeHoursUpdatePayload = values;
+
         startTransition(async () => {
-            const result = await saveSafeHoursAction(values);
+            const result = await saveSafeHoursAction(payload);
 
             if (result.ok) {
                 toast.success(result.message);
@@ -96,73 +90,131 @@ export function SafeHoursClient({ config }: { config: SafeHoursConfig }) {
     };
 
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className='max-w-md space-y-6'>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Lockout window</CardTitle>
-                    </CardHeader>
-                    <CardContent className='space-y-4'>
-                        <FormField
-                            control={form.control}
-                            name='weekday'
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Day</FormLabel>
-                                    <Select value={field.value} onValueChange={field.onChange}>
-                                        <FormControl>
-                                            <SelectTrigger className='w-full'>
-                                                <SelectValue placeholder='Select day' />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent className='dashboard-theme dark'>
-                                            {WEEKDAYS.map((day) => (
-                                                <SelectItem key={day.value} value={day.value}>
-                                                    {day.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <div className='grid grid-cols-2 gap-4'>
-                            <FormField
-                                control={form.control}
-                                name='start_hour'
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Start hour</FormLabel>
-                                        <FormControl>
-                                            <Input type='number' min={0} max={23} step={1} {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name='end_hour'
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>End hour</FormLabel>
-                                        <FormControl>
-                                            <Input type='number' min={0} max={23} step={1} {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
+        <div className='max-w-md space-y-4'>
+            <p className='text-slr-muted text-sm'>
+                Currently locked:{' '}
+                <span
+                    className={
+                        config.is_currently_locked ? 'font-semibold text-red-400' : 'font-semibold text-emerald-400'
+                    }>
+                    {config.is_currently_locked ? 'Yes' : 'No'}
+                </span>
+            </p>
 
-                <Button type='submit' disabled={isPending}>
-                    {isPending ? <Loader2Icon className='mr-2 h-4 w-4 animate-spin' /> : null}
-                    Save changes
-                </Button>
-            </form>
-        </Form>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Lockout window</CardTitle>
+                        </CardHeader>
+                        <CardContent className='space-y-4'>
+                            <FormField
+                                control={form.control}
+                                name='day_of_week'
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Day</FormLabel>
+                                        <Select value={field.value} onValueChange={field.onChange}>
+                                            <FormControl>
+                                                <SelectTrigger className='w-full'>
+                                                    <SelectValue placeholder='Select day' />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent className='dashboard-theme dark'>
+                                                {WEEKDAYS.map((day) => (
+                                                    <SelectItem key={day} value={day}>
+                                                        {day}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <div className='grid grid-cols-2 gap-4'>
+                                <FormField
+                                    control={form.control}
+                                    name='start_time'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Start time</FormLabel>
+                                            <FormControl>
+                                                <Input type='time' {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name='end_time'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>End time</FormLabel>
+                                            <FormControl>
+                                                <Input type='time' {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                            <FormField
+                                control={form.control}
+                                name='is_active'
+                                render={({ field }) => (
+                                    <FormItem className='flex flex-row items-center justify-between'>
+                                        <FormLabel>Window active</FormLabel>
+                                        <FormControl>
+                                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Manual override</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <FormField
+                                control={form.control}
+                                name='manual_override'
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <Select value={field.value} onValueChange={field.onChange}>
+                                            <FormControl>
+                                                <SelectTrigger className='w-full'>
+                                                    <SelectValue placeholder='Select override' />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent className='dashboard-theme dark'>
+                                                {OVERRIDE_OPTIONS.map((opt) => (
+                                                    <SelectItem key={opt.value} value={opt.value}>
+                                                        {opt.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormDescription>
+                                            {OVERRIDE_OPTIONS.find((opt) => opt.value === field.value)?.description}
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </CardContent>
+                    </Card>
+
+                    <Button type='submit' disabled={isPending}>
+                        {isPending ? <Loader2Icon className='mr-2 h-4 w-4 animate-spin' /> : null}
+                        Save changes
+                    </Button>
+                </form>
+            </Form>
+        </div>
     );
 }

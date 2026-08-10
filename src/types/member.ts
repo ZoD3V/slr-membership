@@ -175,19 +175,27 @@ export interface PrizeContent {
 
 export type PrizeContentUpdatePayload = Omit<PrizeContent, 'updated_at'>;
 
-// ── Safe Hours (PRD §5.8 "Safe Hours Management") ────────────────────────────
-// Admin-edited window during which sign-up/upgrade/downgrade are locked. The
-// member-facing advisory check in src/lib/safe-hours.ts is a separate, static
-// constant — there is no public endpoint for it to read this document from
-// (see docs/superpowers/specs/2026-08-08-admin-safe-hours-design.md §2).
+// ── Safe Hours (real API, 2026-08-09) ─────────────────────────────────────────
+// Admin-edited lockout window during which sign-up/upgrade/downgrade are
+// locked. The member-facing advisory check in src/lib/safe-hours.ts is a
+// separate, independent static constant with its own drift-gap comment —
+// nothing about this document's shape affects that file.
 
-export type Weekday = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
+export type SafeHoursDay = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+
+export type SafeHoursOverride = 'NONE' | 'FORCE_LOCK' | 'FORCE_UNLOCK';
 
 export interface SafeHoursConfig {
-    weekday: Weekday;
-    start_hour: number; // 0-23
-    end_hour: number; // 0-23, strictly greater than start_hour
+    day_of_week: SafeHoursDay;
+    start_time: string; // 'HH:MM', 24h
+    end_time: string; // 'HH:MM', 24h, strictly after start_time
+    is_active: boolean;
+    manual_override: SafeHoursOverride;
+    is_currently_locked: boolean; // read-only, server-computed
+    updated_at: string;
 }
+
+export type SafeHoursUpdatePayload = Omit<SafeHoursConfig, 'is_currently_locked' | 'updated_at'>;
 
 // ── Discounts (PRD §4.4) ─────────────────────────────────────────────────────
 // Basic partner discounts: RED/BLUE only (Visitor sees an upgrade gate). BENY is

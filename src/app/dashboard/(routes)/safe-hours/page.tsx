@@ -19,9 +19,9 @@ export default async function SafeHoursPage() {
         if (!token) isPlaceholder = true;
     } catch (error) {
         handleApiAuthError(error); // 401 → force logout; other errors fall through
-        // The endpoint is still unimplemented, so the editor renders against the
-        // seed document rather than an error card — the form stays usable for
-        // admin walkthroughs. Saving still fails loudly via the action's toast.
+        // The endpoint is live but currently answers 500 (verified 2026-08-10),
+        // so this fallback is load-bearing. Render against the seed rather than
+        // blanking; saving still fails loudly via the action's toast.
         config = SAFE_HOURS_SEED;
         isPlaceholder = true;
     }
@@ -32,7 +32,7 @@ export default async function SafeHoursPage() {
 
             {isPlaceholder ? (
                 <p className='text-muted-foreground text-sm'>
-                    Showing placeholder figures — the safe-hours endpoint is not live yet, so saving will not persist.
+                    Couldn&apos;t load the current safe-hours settings — showing defaults. Saving may fail.
                 </p>
             ) : null}
 

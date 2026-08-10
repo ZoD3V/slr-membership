@@ -6,7 +6,7 @@ import { handleApiAuthError } from '@/lib/api/guard';
 import { updateAdminSafeHours } from '@/lib/api/resources/safe-hours';
 import { getAccessToken } from '@/lib/api/server';
 import { ApiError } from '@/lib/api/types';
-import type { SafeHoursConfig } from '@/types/member';
+import type { SafeHoursConfig, SafeHoursUpdatePayload } from '@/types/member';
 
 export type ActionError = {
     ok: false;
@@ -37,7 +37,7 @@ function toActionError(error: unknown): ActionError {
     return { ok: false, message: 'Something went wrong. Please try again.' };
 }
 
-export async function saveSafeHoursAction(payload: SafeHoursConfig): Promise<ActionResult<SafeHoursConfig>> {
+export async function saveSafeHoursAction(payload: SafeHoursUpdatePayload): Promise<ActionResult<SafeHoursConfig>> {
     const token = await getAccessToken();
     if (!token) return { ok: false, message: 'Not authenticated.' };
 
