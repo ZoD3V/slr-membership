@@ -1,31 +1,38 @@
-import type { SpinConfig, SpinEligibleSubTier, SpinHistoryRow } from '@/types/member';
+import type { SpinConfig, SpinHistoryMeta, SpinHistoryRow, SpinMoment, SpinTierId } from '@/types/member';
 
 import { API } from '../endpoints';
-import { apiFetch } from '../http';
+import { apiFetch, apiFetchPaginated } from '../http';
 
 /**
- * Admin-only spin wheel functions (PRD §5.7). Kept separate from spin.ts, which
- * is the member-facing "check status / execute a spin" module — different
- * audience, different auth, no shared code.
+ * Admin-only spin wheel functions (real API, 2026-08-09). Kept separate from
+ * spin.ts, which is the member-facing "check status / execute a spin" module —
+ * different audience, different auth, no shared code.
  */
 
 export interface SpinHistoryFilters {
-    tier?: SpinEligibleSubTier;
-    moment?: 'registration' | 'renewal';
+    tier?: SpinTierId;
+    moment?: SpinMoment;
+    page?: number;
+    perPage?: number;
 }
 
 function historyQuery(filters?: SpinHistoryFilters): string {
     const params = new URLSearchParams();
     if (filters?.tier) params.set('tier', filters.tier);
     if (filters?.moment) params.set('moment', filters.moment);
+    if (filters?.page) params.set('page', String(filters.page));
+    if (filters?.perPage) params.set('per_page', String(filters.perPage));
 
     const query = params.toString();
 
     return query ? `?${query}` : '';
 }
 
+/** Server-paginated — the API returns `meta.total_pages`, not the full set. */
 export function getAdminSpinHistory(token: string, filters?: SpinHistoryFilters) {
-    return apiFetch<SpinHistoryRow[]>(`${API.admin.spinHistory}${historyQuery(filters)}`, { token });
+    return apiFetchPaginated<SpinHistoryRow[], SpinHistoryMeta>(`${API.admin.spinHistory}${historyQuery(filters)}`, {
+        token
+    });
 }
 
 export function getAdminSpinConfig(token: string) {

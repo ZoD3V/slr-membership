@@ -254,23 +254,54 @@ export interface MemberProfile {
     dob: string | null; // ISO date, "-" in UI when null
 }
 
-// ── Spin Wheel Admin (PRD §5.7 "Spin Wheel Management") ──────────────────────
-// First-release scope only: on/off + history. Discount amount and probability
-// are explicitly deferred by PRD's PO decision — never add fields for them here.
+// ── Spin Wheel Admin (real API, 2026-08-09) ───────────────────────────────────
+// First-release scope: on/off (global + per sub-tier) + per-sub-tier discount +
+// history. constant/tiers.ts's SPIN_ELIGIBLE_SUB_TIERS (SubTierCode-keyed,
+// uppercase) still gates which sub-tiers the config form renders as editable —
+// Visitor/R1/B1 stay permanently ineligible per PRD, regardless of what the
+// wire format (SpinTierId, lowercase, all 8 codes) includes.
 
-export type SpinEligibleSubTier = 'R4' | 'R7' | 'B4' | 'B7' | 'B10';
+export type SpinTierId = 'visitor' | 'r1' | 'r4' | 'r7' | 'b1' | 'b4' | 'b7' | 'b10';
+
+export type SpinMoment = 'registration' | 'pre_renewal';
+
+export interface SpinSubTierConfig {
+    sub_tier_id: SpinTierId;
+    marketing_name: string;
+    has_spin: boolean;
+    spin_discount_cents: number;
+}
 
 export interface SpinConfig {
-    enabled: boolean;
-    sub_tier_enabled: Record<SpinEligibleSubTier, boolean>;
+    global_enabled: boolean;
+    sub_tiers: SpinSubTierConfig[];
 }
 
 export interface SpinHistoryRow {
-    id: string;
-    member_name: string;
-    tier: SubTierCode;
-    moment: 'registration' | 'renewal';
+    spin_id: string;
+    user_id: string;
+    user_name: string;
+    user_email: string;
+    /**
+     * Display string from the API. The doc's example shows 'Red Plus', but the
+     * live endpoint returns bare marketing names ('Plus', 'Premium', 'Elite',
+     * 'Standard', 'Visitor') — so 'Plus' is ambiguous between R4 and B4, and a
+     * BENY add-on label leaks in as if it were a tier. Rendered verbatim
+     * because there is no group field to disambiguate it with; filed in
+     * docs/BACKEND-ISSUES.md.
+     */
+    tier: string;
+    moment: SpinMoment;
     result: 'win' | 'lose';
     discount_cents: number;
-    spun_at: string; // ISO 8601
+    applied: boolean;
+    expires_at: string | null;
+    created_at: string;
+}
+
+export interface SpinHistoryMeta {
+    page: number;
+    per_page: number;
+    total: number;
+    total_pages: number;
 }

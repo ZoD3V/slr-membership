@@ -18,15 +18,8 @@ type ApiFetchOptions = {
     signal?: AbortSignal;
 };
 
-/**
- * Single entry point for hitting the SLR API. Works in Server Components,
- * route handlers, server actions, and the client. Unwraps the `{ success,
- * message, data }` envelope and throws `ApiError` on failure.
- *
- * Build typed resource functions on top of this (see `resources/*`) rather
- * than calling it directly from components.
- */
-export async function apiFetch<T>(path: string, opts: ApiFetchOptions = {}): Promise<T> {
+/** Shared request/parse/error/logging logic for apiFetch and apiFetchPaginated. */
+async function doFetch<T>(path: string, opts: ApiFetchOptions = {}): Promise<ApiEnvelope<T>> {
     const { method = 'GET', body, token, headers, cache, revalidate, tags, signal } = opts;
 
     const next =
@@ -89,5 +82,30 @@ export async function apiFetch<T>(path: string, opts: ApiFetchOptions = {}): Pro
 
     logApi({ method, path, status: res.status, message: json.message, ms, ok: true, data: json.data });
 
-    return json.data;
+    return json;
+}
+
+/**
+ * Single entry point for hitting the SLR API. Works in Server Components,
+ * route handlers, server actions, and the client. Unwraps the `{ success,
+ * message, data }` envelope and throws `ApiError` on failure.
+ *
+ * Build typed resource functions on top of this (see `resources/*`) rather
+ * than calling it directly from components.
+ */
+export async function apiFetch<T>(path: string, opts: ApiFetchOptions = {}): Promise<T> {
+    return (await doFetch<T>(path, opts)).data;
+}
+
+/**
+ * Same as apiFetch, but keeps the envelope's `meta` — for server-paginated
+ * list endpoints that return `{ data: T[], meta: { page, total_pages, ... } }`.
+ */
+export async function apiFetchPaginated<T, M = Record<string, unknown>>(
+    path: string,
+    opts: ApiFetchOptions = {}
+): Promise<{ data: T; meta: M }> {
+    const json = await doFetch<T>(path, opts);
+
+    return { data: json.data, meta: (json.meta ?? {}) as M };
 }

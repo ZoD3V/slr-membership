@@ -6,29 +6,50 @@ import { useRouter } from 'next/navigation';
 
 import { DataTable } from '@/components/data-table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SPIN_ELIGIBLE_SUB_TIERS, SUB_TIERS } from '@/constant/tiers';
-import type { SpinEligibleSubTier, SpinHistoryRow } from '@/types/member';
+import { SUB_TIERS } from '@/constant/tiers';
+import type { SpinHistoryMeta, SpinHistoryRow, SpinMoment, SpinTierId, SubTierCode } from '@/types/member';
 
 import { spinHistoryColumns } from './_components/columns';
 import { History } from 'lucide-react';
 
-// Derived from the authoritative constant (also read by the member-side spin
-// flow) so admin and member eligibility can't silently drift apart.
-const TIER_OPTIONS = Array.from(SPIN_ELIGIBLE_SUB_TIERS) as SpinEligibleSubTier[];
-const MOMENT_OPTIONS = ['registration', 'renewal'] as const;
+const ALL_TIER_IDS: SpinTierId[] = ['visitor', 'r1', 'r4', 'r7', 'b1', 'b4', 'b7', 'b10'];
 
-export function SpinHistoryClient({ rows, tier, moment }: { rows: SpinHistoryRow[]; tier: string; moment: string }) {
+const TIER_OPTIONS: { value: SpinTierId; label: string }[] = ALL_TIER_IDS.map((id) => {
+    const meta = SUB_TIERS[id.toUpperCase() as SubTierCode];
+
+    return { value: id, label: meta ? `${meta.label} · ${meta.marketingName}` : id };
+});
+
+const MOMENT_OPTIONS: { value: SpinMoment; label: string }[] = [
+    { value: 'registration', label: 'Registration' },
+    { value: 'pre_renewal', label: 'Pre-renewal' }
+];
+
+export function SpinHistoryClient({
+    rows,
+    meta,
+    tier,
+    moment
+}: {
+    rows: SpinHistoryRow[];
+    meta: SpinHistoryMeta;
+    tier: string;
+    moment: string;
+}) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
 
-    // Both filters live in the URL so the filtered view is shareable/reloadable,
-    // matching how (routes)/winners/page.tsx keeps its ?giveaway= filter in the
-    // URL rather than component state.
-    const setFilter = (key: 'tier' | 'moment', value: string) => {
+    // All three filters live in the URL so the filtered/paged view is
+    // shareable/reloadable, matching (routes)/winners/page.tsx's ?giveaway=.
+    const pushParams = (next: { tier?: string; moment?: string; page?: number }) => {
+        const nextTier = next.tier ?? tier;
+        const nextMoment = next.moment ?? moment;
+        const nextPage = next.page ?? 1;
+
         const params = new URLSearchParams();
-        if (key === 'tier' ? value !== 'all' : tier !== 'all') params.set('tier', key === 'tier' ? value : tier);
-        if (key === 'moment' ? value !== 'all' : moment !== 'all')
-            params.set('moment', key === 'moment' ? value : moment);
+        if (nextTier !== 'all') params.set('tier', nextTier);
+        if (nextMoment !== 'all') params.set('moment', nextMoment);
+        if (nextPage > 1) params.set('page', String(nextPage));
 
         const query = params.toString();
 
@@ -40,28 +61,36 @@ export function SpinHistoryClient({ rows, tier, moment }: { rows: SpinHistoryRow
     return (
         <div className='space-y-4'>
             <div className='flex flex-wrap gap-3'>
-                <Select value={tier} onValueChange={(value) => setFilter('tier', value)}>
-                    <SelectTrigger className='w-40'>
+                {/* Disabled on purpose: `?tier=<any value>` makes the live
+                    endpoint answer 500 (verified 2026-08-10 with r4, R4 and
+                    Plus). Rendering an enabled control that always errors is
+                    worse than showing it unavailable. Re-enable by deleting
+                    `disabled` and the title once the backend ask in
+                    docs/BACKEND-ISSUES.md is resolved. */}
+                <Select value={tier} onValueChange={(value) => pushParams({ tier: value })} disabled>
+                    <SelectTrigger
+                        className='w-44'
+                        title='Tier filtering is temporarily unavailable — the API errors on this filter.'>
                         <SelectValue placeholder='Tier' />
                     </SelectTrigger>
                     <SelectContent className='dashboard-theme dark'>
                         <SelectItem value='all'>All tiers</SelectItem>
-                        {TIER_OPTIONS.map((code) => (
-                            <SelectItem key={code} value={code}>
-                                {SUB_TIERS[code].label} · {SUB_TIERS[code].marketingName}
+                        {TIER_OPTIONS.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
                             </SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
-                <Select value={moment} onValueChange={(value) => setFilter('moment', value)}>
+                <Select value={moment} onValueChange={(value) => pushParams({ moment: value })}>
                     <SelectTrigger className='w-44'>
                         <SelectValue placeholder='Moment' />
                     </SelectTrigger>
                     <SelectContent className='dashboard-theme dark'>
-                        <SelectItem value='all'>Registration + renewal</SelectItem>
-                        {MOMENT_OPTIONS.map((value) => (
-                            <SelectItem key={value} value={value}>
-                                {value === 'registration' ? 'Registration' : 'Renewal'}
+                        <SelectItem value='all'>Registration + pre-renewal</SelectItem>
+                        {MOMENT_OPTIONS.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
                             </SelectItem>
                         ))}
                     </SelectContent>
@@ -69,11 +98,17 @@ export function SpinHistoryClient({ rows, tier, moment }: { rows: SpinHistoryRow
             </div>
 
             <DataTable
-                searchKey='member_name'
+                searchKey='user_name'
+                isSearch={false}
                 columns={spinHistoryColumns}
                 data={rows}
                 isLoading={isPending}
+                serverSide
                 alwaysShowPagination
+                currentPage={meta.page}
+                totalItems={meta.total}
+                itemsPerPage={meta.per_page}
+                onPageChange={(page) => pushParams({ page })}
                 emptyMessage={
                     <span className='flex flex-col items-center gap-1'>
                         <History className='mb-1 size-8 opacity-40' />
