@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/sidebar';
 
 import {
+    Bell,
     BookOpen,
     ClipboardList,
     Clock,
@@ -42,6 +43,7 @@ const ITEMS: NavItem[] = [
     { title: 'Winners', href: '/dashboard/winners', icon: Trophy },
     { title: 'Prizes', href: '/dashboard/prizes', icon: Sparkles },
     { title: 'Safe Hours', href: '/dashboard/safe-hours', icon: Clock },
+    { title: 'Notifications', href: '/dashboard/notifications', icon: Bell },
     { title: 'Spin Wheel', href: '/dashboard/spin', icon: Dices },
     { title: 'TPAL Exports', href: '/dashboard/draw-exports', icon: FileSpreadsheet },
     { title: 'Discounts', href: '/dashboard/discounts', icon: Ticket },
