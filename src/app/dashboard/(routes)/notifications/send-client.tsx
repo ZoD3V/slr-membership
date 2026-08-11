@@ -115,11 +115,13 @@ export function SendClient({
     };
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className='text-base'>Send a notification manually</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-6'>
+        <div className='mx-auto w-full max-w-4xl px-4 py-6'>
+            <div className='rounded-xl border border-white/10 bg-white/5 p-6'>
+                <Card className='border-0 bg-transparent shadow-none'>
+                    <CardHeader className='px-0 pt-0'>
+                        <CardTitle className='text-base'>Send a notification manually</CardTitle>
+                    </CardHeader>
+                    <CardContent className='space-y-6 px-0 pb-0'>
                 {templatesArePlaceholders ? (
                     <p className='text-muted-foreground flex items-start gap-2 text-sm'>
                         <TriangleAlert className='mt-0.5 size-4 shrink-0 text-amber-400/70' />
@@ -237,5 +239,7 @@ export function SendClient({
                 </AlertDialogContent>
             </AlertDialog>
         </Card>
+            </div>
+        </div>
     );
 }

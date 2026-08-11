@@ -90,7 +90,7 @@ export function SafeHoursClient({ config, isPlaceholder }: { config: SafeHoursCo
     };
 
     return (
-        <div className='max-w-md space-y-4'>
+        <div className='mx-auto w-full max-w-4xl space-y-4'>
             <p className='text-slr-muted text-sm'>
                 Currently locked:{' '}
                 {isPlaceholder ? (
@@ -111,112 +111,114 @@ export function SafeHoursClient({ config, isPlaceholder }: { config: SafeHoursCo
 
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Lockout window</CardTitle>
-                        </CardHeader>
-                        <CardContent className='space-y-4'>
-                            <FormField
-                                control={form.control}
-                                name='day_of_week'
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Day</FormLabel>
-                                        <Select value={field.value} onValueChange={field.onChange}>
-                                            <FormControl>
-                                                <SelectTrigger className='w-full'>
-                                                    <SelectValue placeholder='Select day' />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent className='dashboard-theme dark'>
-                                                {WEEKDAYS.map((day) => (
-                                                    <SelectItem key={day} value={day}>
-                                                        {day}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <div className='grid grid-cols-2 gap-4'>
+                    <div className='grid gap-6 md:grid-cols-2'>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Lockout window</CardTitle>
+                            </CardHeader>
+                            <CardContent className='space-y-4'>
                                 <FormField
                                     control={form.control}
-                                    name='start_time'
+                                    name='day_of_week'
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Start time</FormLabel>
-                                            <FormControl>
-                                                <Input type='time' {...field} />
-                                            </FormControl>
+                                            <FormLabel>Day</FormLabel>
+                                            <Select value={field.value} onValueChange={field.onChange}>
+                                                <FormControl>
+                                                    <SelectTrigger className='w-full'>
+                                                        <SelectValue placeholder='Select day' />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent className='dashboard-theme dark'>
+                                                    {WEEKDAYS.map((day) => (
+                                                        <SelectItem key={day} value={day}>
+                                                            {day}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
+                                <div className='grid grid-cols-2 gap-4'>
+                                    <FormField
+                                        control={form.control}
+                                        name='start_time'
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Start time</FormLabel>
+                                                <FormControl>
+                                                    <Input type='time' {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name='end_time'
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>End time</FormLabel>
+                                                <FormControl>
+                                                    <Input type='time' {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
                                 <FormField
                                     control={form.control}
-                                    name='end_time'
+                                    name='is_active'
                                     render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>End time</FormLabel>
+                                        <FormItem className='flex flex-row items-center justify-between'>
+                                            <FormLabel>Window active</FormLabel>
                                             <FormControl>
-                                                <Input type='time' {...field} />
+                                                <Switch checked={field.value} onCheckedChange={field.onChange} />
                                             </FormControl>
-                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
-                            </div>
-                            <FormField
-                                control={form.control}
-                                name='is_active'
-                                render={({ field }) => (
-                                    <FormItem className='flex flex-row items-center justify-between'>
-                                        <FormLabel>Window active</FormLabel>
-                                        <FormControl>
-                                            <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
-                        </CardContent>
-                    </Card>
+                            </CardContent>
+                        </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Manual override</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <FormField
-                                control={form.control}
-                                name='manual_override'
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Override</FormLabel>
-                                        <Select value={field.value} onValueChange={field.onChange}>
-                                            <FormControl>
-                                                <SelectTrigger className='w-full'>
-                                                    <SelectValue placeholder='Select override' />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent className='dashboard-theme dark'>
-                                                {OVERRIDE_OPTIONS.map((opt) => (
-                                                    <SelectItem key={opt.value} value={opt.value}>
-                                                        {opt.label}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormDescription>
-                                            {OVERRIDE_OPTIONS.find((opt) => opt.value === field.value)?.description}
-                                        </FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </CardContent>
-                    </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Manual override</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <FormField
+                                    control={form.control}
+                                    name='manual_override'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Override</FormLabel>
+                                            <Select value={field.value} onValueChange={field.onChange}>
+                                                <FormControl>
+                                                    <SelectTrigger className='w-full'>
+                                                        <SelectValue placeholder='Select override' />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent className='dashboard-theme dark'>
+                                                    {OVERRIDE_OPTIONS.map((opt) => (
+                                                        <SelectItem key={opt.value} value={opt.value}>
+                                                            {opt.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormDescription>
+                                                {OVERRIDE_OPTIONS.find((opt) => opt.value === field.value)?.description}
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </CardContent>
+                        </Card>
+                    </div>
 
                     <Button type='submit' disabled={isPending}>
                         {isPending ? <Loader2Icon className='mr-2 h-4 w-4 animate-spin' /> : null}
