@@ -77,7 +77,7 @@ export function SpinHistoryClient({
                     </SelectContent>
                 </Select>
                 <Select value={moment} onValueChange={(value) => pushParams({ moment: value })}>
-                    <SelectTrigger className='w-44'>
+                    <SelectTrigger className='w-56'>
                         <SelectValue placeholder='Moment' />
                     </SelectTrigger>
                     <SelectContent className='dashboard-theme dark'>
@@ -101,7 +101,7 @@ export function SpinHistoryClient({
                 alwaysShowPagination
                 currentPage={meta.page}
                 totalItems={meta.total}
-                itemsPerPage={meta.per_page}
+                itemsPerPage={10}
                 onPageChange={(page) => pushParams({ page })}
                 emptyMessage={
                     historyFailed ? (

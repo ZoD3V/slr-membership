@@ -143,71 +143,69 @@ export function SpinConfigClient({ config }: { config: SpinConfig }) {
     };
 
     return (
-        <div className='mx-auto w-full max-w-4xl px-4 py-6'>
-            <div className='rounded-xl border border-white/10 bg-white/5 p-6'>
-                <Card className='border-0 bg-transparent shadow-none'>
-                    <CardHeader className='px-0 pt-0'>
-                        <CardTitle>Availability</CardTitle>
-                    </CardHeader>
-                    <CardContent className='space-y-4 px-0 pb-0'>
-                        <div className='flex items-center justify-between'>
-                            <Label htmlFor='spin-enabled'>Spin wheel enabled (all tiers)</Label>
-                            <Switch id='spin-enabled' checked={globalEnabled} onCheckedChange={setGlobalEnabled} />
-                        </div>
+        <div className='mx-auto w-full max-w-4xl py-6'>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Availability</CardTitle>
+                </CardHeader>
+                <CardContent className='space-y-4'>
+                    <div className='flex items-center justify-between'>
+                        <Label htmlFor='spin-enabled'>Spin wheel enabled (all tiers)</Label>
+                        <Switch id='spin-enabled' checked={globalEnabled} onCheckedChange={setGlobalEnabled} />
+                    </div>
 
-                        <fieldset className='min-w-0 space-y-4 border-t pt-4'>
-                            <legend className='text-sm font-semibold'>Per sub-tier</legend>
-                            {ELIGIBLE_SUB_TIERS.map((code) => {
-                                const error = discountError(code);
+                    <fieldset className='min-w-0 space-y-4 border-t pt-4'>
+                        <legend className='text-sm font-semibold'>Per sub-tier</legend>
+                        {ELIGIBLE_SUB_TIERS.map((code) => {
+                            const error = discountError(code);
 
-                                return (
-                                    <div key={code}>
-                                        <div className='flex items-center justify-between gap-4'>
-                                            <Label htmlFor={`spin-tier-${code}`} className='min-w-0 flex-1'>
-                                                {SUB_TIERS[code].label} · {SUB_TIERS[code].marketingName}
-                                            </Label>
-                                            <div className='flex items-center gap-2'>
-                                                <span className='text-slr-dim text-xs'>$</span>
-                                                <Input
-                                                    aria-label={`${SUB_TIERS[code].marketingName} discount, dollars`}
-                                                    aria-invalid={error !== ''}
-                                                    aria-describedby={error ? `spin-tier-${code}-error` : undefined}
-                                                    type='number'
-                                                    min={0}
-                                                    step='0.01'
-                                                    className='h-8 w-20'
-                                                    value={discountText[code]}
-                                                    onChange={(e) => setDiscount(code, e.target.value)}
-                                                />
-                                                <Switch
-                                                    id={`spin-tier-${code}`}
-                                                    checked={rows[code].has_spin}
-                                                    onCheckedChange={(checked) => setHasSpin(code, checked)}
-                                                />
-                                            </div>
+                            return (
+                                <div key={code}>
+                                    <div className='flex items-center justify-between gap-4'>
+                                        <Label htmlFor={`spin-tier-${code}`} className='min-w-0 flex-1'>
+                                            {SUB_TIERS[code].label} · {SUB_TIERS[code].marketingName}
+                                        </Label>
+                                        <div className='flex items-center gap-2'>
+                                            <span className='text-slr-dim text-xs'>$</span>
+                                            <Input
+                                                aria-label={`${SUB_TIERS[code].marketingName} discount, dollars`}
+                                                aria-invalid={error !== ''}
+                                                aria-describedby={error ? `spin-tier-${code}-error` : undefined}
+                                                type='number'
+                                                min={0}
+                                                step='0.01'
+                                                className='h-8 w-20'
+                                                value={discountText[code]}
+                                                onChange={(e) => setDiscount(code, e.target.value)}
+                                            />
+                                            <Switch
+                                                id={`spin-tier-${code}`}
+                                                checked={rows[code].has_spin}
+                                                onCheckedChange={(checked) => setHasSpin(code, checked)}
+                                            />
                                         </div>
-                                        {/* Always occupies a line so a row that becomes
+                                    </div>
+                                    {/* Always occupies a line so a row that becomes
                                             invalid doesn't grow and shove the rows below
                                             it down while the admin is still typing. */}
-                                        <p
-                                            id={`spin-tier-${code}-error`}
-                                            className='text-destructive-foreground min-h-5 text-right text-xs'>
-                                            {error}
-                                        </p>
-                                    </div>
-                                );
-                            })}
-                        </fieldset>
+                                    <p
+                                        id={`spin-tier-${code}-error`}
+                                        className='text-destructive-foreground min-h-5 text-right text-xs'>
+                                        {error}
+                                    </p>
+                                </div>
+                            );
+                        })}
+                    </fieldset>
 
-                        <div className='flex justify-end border-t border-white/10 pt-6'>
-                            <Button onClick={handleSave} disabled={isPending || !isDirty}>
-                                {isPending ? <Loader2Icon className='mr-2 h-4 w-4 animate-spin' /> : null}
-                                Save changes
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+                    <div className='flex justify-end border-t border-white/10 pt-6'>
+                        <Button onClick={handleSave} disabled={isPending || !isDirty}>
+                            {isPending ? <Loader2Icon className='mr-2 h-4 w-4 animate-spin' /> : null}
+                            Save changes
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     );
 }

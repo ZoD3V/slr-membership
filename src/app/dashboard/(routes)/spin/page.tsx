@@ -96,7 +96,7 @@ export default async function SpinPage({
                 tier: tier === 'all' ? undefined : tier,
                 moment: moment === 'all' ? undefined : moment,
                 page,
-                perPage: 20
+                perPage: 10
             })
         ]);
 

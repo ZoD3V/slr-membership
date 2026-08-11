@@ -87,7 +87,7 @@ export default async function NotificationsPage({
 
     return (
         <DashboardPageShell>
-            <div className='mx-auto w-full max-w-4xl'>
+            <div className='mx-auto w-full'>
                 <Heading
                     title='Notifications'
                     description='Email and SMS templates, delivery history, and manual sends.'
