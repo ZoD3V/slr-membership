@@ -10,6 +10,7 @@ import type { NotificationLogMeta, NotificationLogRow, NotificationTemplate } fr
 import { KNOWN_NOTIFICATION_TYPES } from '@/types/member';
 
 import { NOTIFICATION_LOGS_PER_PAGE, NOTIFICATION_LOG_META_SEED, NOTIFICATION_TEMPLATES_SEED } from './seed';
+import { TemplatesClient } from './templates-client';
 
 const TABS = ['templates', 'logs', 'send'] as const;
 type TabValue = (typeof TABS)[number];
@@ -99,7 +100,7 @@ export default async function NotificationsPage({
                 </TabsList>
 
                 <TabsContent value='templates'>
-                    <div>Templates tab — implemented in Task 3.</div>
+                    <TemplatesClient templates={templates} isPlaceholder={isTemplatesPlaceholder} />
                 </TabsContent>
                 <TabsContent value='logs'>
                     <div>Logs tab — implemented in Task 4.</div>
