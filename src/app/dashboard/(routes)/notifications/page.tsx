@@ -87,8 +87,11 @@ export default async function NotificationsPage({
 
     return (
         <DashboardPageShell>
-            <div className='mx-auto w-full max-w-4xl px-4'>
-                <Heading title='Notifications' description='Email and SMS templates, delivery history, and manual sends.' />
+            <div className='mx-auto w-full max-w-4xl'>
+                <Heading
+                    title='Notifications'
+                    description='Email and SMS templates, delivery history, and manual sends.'
+                />
             </div>
 
             <Tabs value={tab} className='space-y-6'>
