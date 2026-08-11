@@ -365,11 +365,20 @@ export interface NotificationSendResult {
     skipped: number;
 }
 
-/** One row of the manual-send recipient picker. Deliberately excludes every
- *  other admin member field — the list row carries draw_pass, which must
- *  never reach any UI. */
+/** One row of the manual-send recipient picker. Deliberately excludes
+ *  draw_pass, which must never reach any UI — but keeps `status`, so an admin
+ *  can see they are about to email a suspended or deactivated account. */
 export interface RecipientOption {
     user_id: string;
     name: string;
     email: string;
+    status: string;
+}
+
+export interface RecipientSearchResult {
+    rows: RecipientOption[];
+    page: number;
+    per_page: number;
+    total: number;
+    total_pages: number;
 }

@@ -25,8 +25,9 @@ export function TemplatesClient({
                 <p className='text-muted-foreground flex items-start gap-2 text-sm'>
                     <TriangleAlert className='mt-0.5 size-4 shrink-0 text-amber-400/70' />
                     <span>
-                        Couldn&apos;t load the notification templates — showing placeholders. Saving will fail until the
-                        endpoint recovers.
+                        Couldn&apos;t load the notification templates — the cards below are placeholders, not what the
+                        server holds. The editor still opens so the form can be reviewed, but a save is very likely to
+                        fail.
                     </span>
                 </p>
             ) : null}
@@ -55,10 +56,9 @@ export function TemplatesClient({
                                 size='sm'
                                 variant='outline'
                                 onClick={() => setEditing(template)}
-                                disabled={isPlaceholder}
                                 title={
                                     isPlaceholder
-                                        ? 'Editing is unavailable while the templates endpoint is failing.'
+                                        ? 'This is a placeholder — the editor opens, but saving will very likely fail.'
                                         : undefined
                                 }>
                                 <Pencil className='size-3.5' />

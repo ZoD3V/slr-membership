@@ -125,15 +125,20 @@ function FormMessage({ className, ...props }: React.ComponentProps<'p'>) {
     const { error, formMessageId } = useFormField();
     const body = error ? String(error?.message) : props.children;
 
-    if (!body) {
-        return null;
-    }
-
+    // Rendered even when empty, holding one line of height. Returning null
+    // instead made a field grow the moment it became invalid, which pushed its
+    // grid-row siblings out of alignment and shifted every field below it —
+    // the layout jumped while the user was still typing.
+    //
+    // It stays out of the accessibility tree when empty: FormControl only puts
+    // formMessageId in aria-describedby while `error` is set.
+    //
+    // Escape hatch: pass `min-h-0` to opt a specific field out.
     return (
         <p
             data-slot='form-message'
             id={formMessageId}
-            className={cn('text-destructive-foreground text-sm', className)}
+            className={cn('text-destructive-foreground min-h-5 text-sm', className)}
             {...props}>
             {body}
         </p>

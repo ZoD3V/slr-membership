@@ -56,3 +56,7 @@ export const NOTIFICATION_LOGS_PER_PAGE = 20;
  * export async functions, so a plain const there is a build error.
  */
 export const MAX_SEND_RECIPIENTS = 100;
+
+/** Page size for the recipient picker. Kept well under MAX_SEND_RECIPIENTS so
+ *  a single page can never look like "everyone you may select". */
+export const RECIPIENT_PAGE_SIZE = 10;

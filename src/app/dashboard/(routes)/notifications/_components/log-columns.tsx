@@ -18,7 +18,14 @@ function formatSentAt(value: string) {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value || '—';
 
-    return date.toLocaleString('en-AU', { dateStyle: 'medium', timeStyle: 'short' });
+    // Pinned locale and time zone: without them the server renders in UTC and
+    // the browser re-renders in the viewer's zone, which hydrates mismatched.
+    // AEST is the platform's operating zone.
+    return date.toLocaleString('en-AU', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+        timeZone: 'Australia/Sydney'
+    });
 }
 
 export function buildLogColumns(onResend: (row: NotificationLogRow) => void): Column[] {

@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { handleApiAuthError } from '@/lib/api/guard';
-import { getAdminMembers } from '@/lib/api/resources/admin';
+import { getAdminMembersPaginated } from '@/lib/api/resources/admin';
 import { sendNotifications, updateNotificationTemplate } from '@/lib/api/resources/notifications-admin';
 import { getAccessToken } from '@/lib/api/server';
 import { ApiError } from '@/lib/api/types';
@@ -12,10 +12,10 @@ import type {
     NotificationSendResult,
     NotificationTemplate,
     NotificationTemplateUpdatePayload,
-    RecipientOption
+    RecipientSearchResult
 } from '@/types/member';
 
-import { MAX_SEND_RECIPIENTS } from './seed';
+import { MAX_SEND_RECIPIENTS, RECIPIENT_PAGE_SIZE } from './seed';
 
 export type ActionError = {
     ok: false;
@@ -63,25 +63,41 @@ export async function saveNotificationTemplateAction(
     }
 }
 
-export async function searchRecipientsAction(search: string): Promise<ActionResult<RecipientOption[]>> {
+/** One page of the picker. Paged server-side: the platform has thousands of
+ *  members, so returning only the first page and calling it the total would
+ *  make everyone past it unreachable. */
+export async function searchRecipientsAction(search: string, page = 1): Promise<ActionResult<RecipientSearchResult>> {
     const token = await getAccessToken();
     if (!token) return { ok: false, message: 'Not authenticated.' };
 
     try {
-        const members = await getAdminMembers(token, {
+        const { data: members, meta } = await getAdminMembersPaginated(token, {
             search: search.trim() || undefined,
-            perPage: MAX_SEND_RECIPIENTS
+            page,
+            perPage: RECIPIENT_PAGE_SIZE
         });
 
-        // Deliberately drops every field except identity and contact — the
-        // list row carries draw_pass, which must never reach any UI.
-        const data = members.map((m) => ({
+        // Projects away draw_pass, which must never reach any UI. `status` is
+        // kept on purpose — an admin about to email a suspended account
+        // should be able to see that.
+        const rows = members.map((m) => ({
             user_id: m.user_id,
             name: m.full_name,
-            email: m.email
+            email: m.email,
+            status: m.status
         }));
 
-        return { ok: true, data, message: 'OK' };
+        return {
+            ok: true,
+            data: {
+                rows,
+                page: meta.page ?? page,
+                per_page: meta.per_page ?? RECIPIENT_PAGE_SIZE,
+                total: meta.total ?? rows.length,
+                total_pages: meta.total_pages ?? 1
+            },
+            message: 'OK'
+        };
     } catch (error) {
         return toActionError(error);
     }

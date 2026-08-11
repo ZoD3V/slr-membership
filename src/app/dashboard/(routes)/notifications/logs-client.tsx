@@ -55,6 +55,9 @@ export function LogsClient({
         () =>
             buildLogColumns((row) => {
                 const params = new URLSearchParams({ tab: 'send', user_id: row.user_id });
+                // Carry the address the log row already knows, so the Send tab
+                // can name the recipient instead of showing a bare id.
+                if (row.email) params.set('email', row.email);
                 if (row.template_id) params.set('template_id', row.template_id);
 
                 startTransition(() => {
@@ -103,7 +106,9 @@ export function LogsClient({
                 data={rows}
                 isLoading={isPending}
                 serverSide
-                alwaysShowPagination
+                // Suppressed on failure: a "Total: 0 entries" footer would
+                // assert the very count the empty state disclaims.
+                alwaysShowPagination={!logsFailed}
                 nowrap
                 currentPage={meta.page}
                 totalItems={meta.total}

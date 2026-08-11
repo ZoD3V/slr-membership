@@ -1,7 +1,7 @@
 import { cache } from 'react';
 
 import { API } from '../endpoints';
-import { apiFetch } from '../http';
+import { apiFetch, apiFetchPaginated } from '../http';
 
 // ── DTOs ──────────────────────────────────────────────────────────────────────
 
@@ -153,6 +153,13 @@ export const getAdminDashboardMetrics = cache((token: string) => {
     return apiFetch<AdminDashboardMetrics>(API.admin.dashboard, { token, cache: 'no-store' });
 });
 
+export interface AdminMemberListMeta {
+    page: number;
+    per_page: number;
+    total: number;
+    total_pages: number;
+}
+
 export interface AdminMemberQuery {
     /** Parent tier group. The list row carries only a marketing name ('Plus'),
      *  so filtering per group is how the caller recovers which group a row is in. */
@@ -178,6 +185,26 @@ export const getAdminMembers = cache((token: string, query: AdminMemberQuery = {
         cache: 'no-store'
     });
 });
+
+/**
+ * Same request as getAdminMembers, but keeps `meta` so a caller can page
+ * server-side instead of pretending the first page is the whole platform.
+ * Verified live 2026-08-11: `meta` is `{page, per_page, total, total_pages}`.
+ */
+export function getAdminMembersPaginated(token: string, query: AdminMemberQuery = {}) {
+    const params = new URLSearchParams();
+    if (query.tier) params.set('tier', query.tier);
+    if (query.page) params.set('page', String(query.page));
+    if (query.perPage) params.set('per_page', String(query.perPage));
+    if (query.search) params.set('search', query.search);
+
+    const qs = params.toString();
+
+    return apiFetchPaginated<AdminMemberListItem[], AdminMemberListMeta>(`${API.admin.members}${qs ? `?${qs}` : ''}`, {
+        token,
+        cache: 'no-store'
+    });
+}
 
 /** Server-enforced ceiling: per_page above this returns 400 VALIDATION_ERROR. */
 const MAX_PER_PAGE = 100;

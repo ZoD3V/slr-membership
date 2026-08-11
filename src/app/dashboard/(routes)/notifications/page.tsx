@@ -32,6 +32,7 @@ export default async function NotificationsPage({
         status?: string;
         page?: string;
         user_id?: string;
+        email?: string;
         template_id?: string;
     }>;
 }) {
@@ -110,7 +111,9 @@ export default async function NotificationsPage({
                 <TabsContent value='send'>
                     <SendClient
                         templates={templates}
+                        templatesArePlaceholders={isTemplatesPlaceholder}
                         prefillUserId={params.user_id}
+                        prefillEmail={params.email}
                         prefillTemplateId={params.template_id}
                     />
                 </TabsContent>

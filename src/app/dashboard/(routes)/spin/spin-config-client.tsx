@@ -64,6 +64,17 @@ export function SpinConfigClient({ config }: { config: SpinConfig }) {
         setRows((prev) => ({ ...prev, [code]: { ...prev[code], has_spin } }));
     };
 
+    const discountError = (code: SubTierCode): string => {
+        const trimmed = discountText[code].trim();
+        if (trimmed === '') return 'Enter an amount — the last saved value is being kept.';
+
+        const dollars = Number(trimmed);
+        if (!Number.isFinite(dollars)) return 'Enter a number.';
+        if (dollars < 0) return 'Discount cannot be negative.';
+
+        return '';
+    };
+
     const setDiscount = (code: SubTierCode, text: string) => {
         setDiscountText((prev) => ({ ...prev, [code]: text }));
 
@@ -139,30 +150,46 @@ export function SpinConfigClient({ config }: { config: SpinConfig }) {
 
                 <fieldset className='min-w-0 space-y-4 border-t pt-4'>
                     <legend className='text-sm font-semibold'>Per sub-tier</legend>
-                    {ELIGIBLE_SUB_TIERS.map((code) => (
-                        <div key={code} className='flex items-center justify-between gap-4'>
-                            <Label htmlFor={`spin-tier-${code}`} className='min-w-0 flex-1'>
-                                {SUB_TIERS[code].label} · {SUB_TIERS[code].marketingName}
-                            </Label>
-                            <div className='flex items-center gap-2'>
-                                <span className='text-slr-dim text-xs'>$</span>
-                                <Input
-                                    aria-label={`${SUB_TIERS[code].marketingName} discount, dollars`}
-                                    type='number'
-                                    min={0}
-                                    step='0.01'
-                                    className='h-8 w-20'
-                                    value={discountText[code]}
-                                    onChange={(e) => setDiscount(code, e.target.value)}
-                                />
-                                <Switch
-                                    id={`spin-tier-${code}`}
-                                    checked={rows[code].has_spin}
-                                    onCheckedChange={(checked) => setHasSpin(code, checked)}
-                                />
+                    {ELIGIBLE_SUB_TIERS.map((code) => {
+                        const error = discountError(code);
+
+                        return (
+                            <div key={code}>
+                                <div className='flex items-center justify-between gap-4'>
+                                    <Label htmlFor={`spin-tier-${code}`} className='min-w-0 flex-1'>
+                                        {SUB_TIERS[code].label} · {SUB_TIERS[code].marketingName}
+                                    </Label>
+                                    <div className='flex items-center gap-2'>
+                                        <span className='text-slr-dim text-xs'>$</span>
+                                        <Input
+                                            aria-label={`${SUB_TIERS[code].marketingName} discount, dollars`}
+                                            aria-invalid={error !== ''}
+                                            aria-describedby={error ? `spin-tier-${code}-error` : undefined}
+                                            type='number'
+                                            min={0}
+                                            step='0.01'
+                                            className='h-8 w-20'
+                                            value={discountText[code]}
+                                            onChange={(e) => setDiscount(code, e.target.value)}
+                                        />
+                                        <Switch
+                                            id={`spin-tier-${code}`}
+                                            checked={rows[code].has_spin}
+                                            onCheckedChange={(checked) => setHasSpin(code, checked)}
+                                        />
+                                    </div>
+                                </div>
+                                {/* Always occupies a line so a row that becomes
+                                    invalid doesn't grow and shove the rows below
+                                    it down while the admin is still typing. */}
+                                <p
+                                    id={`spin-tier-${code}-error`}
+                                    className='text-destructive-foreground min-h-5 text-right text-xs'>
+                                    {error}
+                                </p>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </fieldset>
 
                 <Button onClick={handleSave} disabled={isPending || !isDirty}>

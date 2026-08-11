@@ -14,11 +14,19 @@ import {
     DialogTitle
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 import type { RecipientOption } from '@/types/member';
 
 import { searchRecipientsAction } from '../actions';
-import { MAX_SEND_RECIPIENTS } from '../seed';
+import { MAX_SEND_RECIPIENTS, RECIPIENT_PAGE_SIZE } from '../seed';
 import { Search } from 'lucide-react';
+
+const STATUS_STYLE: Record<string, string> = {
+    active: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400',
+    pending_payment: 'border-sky-500/40 bg-sky-500/10 text-sky-300',
+    suspended: 'border-amber-500/40 bg-amber-500/10 text-amber-400',
+    deactivated: 'border-slate-500/40 bg-slate-500/10 text-slate-300'
+};
 
 export function RecipientPickerDialog({
     open,
@@ -32,7 +40,9 @@ export function RecipientPickerDialog({
     onConfirm: (next: RecipientOption[]) => void;
 }) {
     const [search, setSearch] = useState('');
+    const [page, setPage] = useState(1);
     const [rows, setRows] = useState<RecipientOption[]>([]);
+    const [total, setTotal] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [draft, setDraft] = useState<RecipientOption[]>(selected);
@@ -49,14 +59,16 @@ export function RecipientPickerDialog({
         setIsLoading(true);
 
         const timer = setTimeout(async () => {
-            const res = await searchRecipientsAction(search);
+            const res = await searchRecipientsAction(search, page);
             if (!active) return;
 
             if (res.ok) {
-                setRows(res.data);
+                setRows(res.data.rows);
+                setTotal(res.data.total);
                 setError(null);
             } else {
                 setRows([]);
+                setTotal(0);
                 setError(res.message);
             }
 
@@ -67,7 +79,7 @@ export function RecipientPickerDialog({
             active = false;
             clearTimeout(timer);
         };
-    }, [open, search]);
+    }, [open, search, page]);
 
     const draftIds = useMemo(() => new Set(draft.map((d) => d.user_id)), [draft]);
     const isFull = draft.length >= MAX_SEND_RECIPIENTS;
@@ -75,9 +87,20 @@ export function RecipientPickerDialog({
     const columns: Column[] = useMemo(() => {
         const toggle = (row: RecipientOption) => {
             setDraft((current) => {
-                if (current.some((c) => c.user_id === row.user_id)) {
+                const existing = current.find((c) => c.user_id === row.user_id);
+
+                // Re-selecting a row that is already picked replaces it rather
+                // than removing it when the held copy is a placeholder — a
+                // resend seeds a chip from a bare user_id with no email, and
+                // clicking the real row must repair it, not drop it.
+                if (existing) {
+                    if (!existing.email && row.email) {
+                        return current.map((c) => (c.user_id === row.user_id ? row : c));
+                    }
+
                     return current.filter((c) => c.user_id !== row.user_id);
                 }
+
                 if (current.length >= MAX_SEND_RECIPIENTS) return current;
 
                 return [...current, row];
@@ -103,7 +126,20 @@ export function RecipientPickerDialog({
                 }
             },
             { key: 'name', label: 'Name', render: (row) => <span className='font-medium text-white'>{row.name}</span> },
-            { key: 'email', label: 'Email' }
+            { key: 'email', label: 'Email' },
+            {
+                key: 'status',
+                label: 'Status',
+                render: (row) => (
+                    <span
+                        className={cn(
+                            'rounded-md border px-2 py-0.5 text-xs font-semibold uppercase',
+                            STATUS_STYLE[row.status] ?? 'border-slr-navy-border bg-slr-navy-card text-slr-dim'
+                        )}>
+                        {row.status || '—'}
+                    </span>
+                )
+            }
         ];
     }, [draftIds, isFull]);
 
@@ -123,7 +159,10 @@ export function RecipientPickerDialog({
                     <Input
                         placeholder='Search name or email...'
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={(e) => {
+                            setSearch(e.target.value);
+                            setPage(1);
+                        }}
                         className='pl-10'
                     />
                 </div>
@@ -135,7 +174,11 @@ export function RecipientPickerDialog({
                         columns={columns}
                         data={rows}
                         isLoading={isLoading}
-                        itemsPerPage={10}
+                        serverSide
+                        currentPage={page}
+                        totalItems={total}
+                        itemsPerPage={RECIPIENT_PAGE_SIZE}
+                        onPageChange={setPage}
                         emptyMessage={error ?? 'No members matched this search.'}
                     />
                 </div>
