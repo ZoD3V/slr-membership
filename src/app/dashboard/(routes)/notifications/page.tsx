@@ -11,6 +11,7 @@ import { KNOWN_NOTIFICATION_TYPES } from '@/types/member';
 
 import { LogsClient } from './logs-client';
 import { NOTIFICATION_LOGS_PER_PAGE, NOTIFICATION_LOG_META_SEED, NOTIFICATION_TEMPLATES_SEED } from './seed';
+import { SendClient } from './send-client';
 import { TemplatesClient } from './templates-client';
 
 const TABS = ['templates', 'logs', 'send'] as const;
@@ -107,7 +108,11 @@ export default async function NotificationsPage({
                     <LogsClient rows={logs} meta={logsMeta} type={type} status={status} logsFailed={logsFailed} />
                 </TabsContent>
                 <TabsContent value='send'>
-                    <div>Send tab — implemented in Task 5.</div>
+                    <SendClient
+                        templates={templates}
+                        prefillUserId={params.user_id}
+                        prefillTemplateId={params.template_id}
+                    />
                 </TabsContent>
             </Tabs>
         </DashboardPageShell>
