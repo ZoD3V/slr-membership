@@ -45,7 +45,14 @@ export const API = {
         safeHours: '/api/v1/admin/safe-hours',
         spinHistory: '/api/v1/admin/spin/history',
         spinConfig: '/api/v1/admin/spin/config',
-        prizes: '/api/v1/admin/prizes'
+        prizes: '/api/v1/admin/prizes',
+        // Renamed by the backend between 2026-08-10 and 2026-08-11 (was
+        // /admin/notification-templates and /admin/notification-logs). Both
+        // GETs answer 500 as of 2026-08-11 — see docs/BACKEND-ISSUES.md.
+        notificationTemplates: '/api/v1/admin/notifications/templates',
+        notificationTemplateDetail: (templateId: string) => `/api/v1/admin/notifications/templates/${templateId}`,
+        notificationLogs: '/api/v1/admin/notifications/logs',
+        notificationsSend: '/api/v1/admin/notifications/send'
     },
     discounts: {
         list: '/api/v1/discounts/',

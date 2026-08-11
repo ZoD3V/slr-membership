@@ -305,3 +305,71 @@ export interface SpinHistoryMeta {
     total: number;
     total_pages: number;
 }
+
+/* --- Admin notifications (real contract, OpenAPI 2026-08-11) --- */
+
+export type NotificationChannel = 'email' | 'sms';
+export type NotificationLogStatus = 'sent' | 'failed' | 'pending';
+
+// The API types `type` as a bare string with no enum. These are the three
+// values production has actually emitted across 44 log rows; unknown values
+// must still render rather than being dropped.
+export const KNOWN_NOTIFICATION_TYPES = ['welcome', 'otp', 'password_reset'] as const;
+export type KnownNotificationType = (typeof KNOWN_NOTIFICATION_TYPES)[number];
+
+export interface NotificationTemplate {
+    // `id`, not `template_id` — only the PUT path parameter uses that name.
+    id: string;
+    type: string;
+    channel: string;
+    subject: string;
+    body: string;
+    is_active: boolean;
+    updated_at: string;
+}
+
+export interface NotificationTemplateUpdatePayload {
+    subject: string;
+    body: string;
+    is_active: boolean;
+}
+
+export interface NotificationLogRow {
+    id: string;
+    user_id: string;
+    email: string;
+    channel: string;
+    type: string;
+    template_id: string | null;
+    status: string;
+    provider: string;
+    error: string | null;
+    sent_at: string;
+}
+
+export interface NotificationLogMeta {
+    page: number;
+    per_page: number;
+    total: number;
+    total_pages: number;
+}
+
+export interface NotificationSendPayload {
+    user_ids: string[];
+    template_id: string;
+    channel: NotificationChannel;
+}
+
+export interface NotificationSendResult {
+    queued: number;
+    skipped: number;
+}
+
+/** One row of the manual-send recipient picker. Deliberately excludes every
+ *  other admin member field — the list row carries draw_pass, which must
+ *  never reach any UI. */
+export interface RecipientOption {
+    user_id: string;
+    name: string;
+    email: string;
+}
