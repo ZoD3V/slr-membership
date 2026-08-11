@@ -77,7 +77,11 @@ export function SendClient({
     // list (deleted, or the list itself failed to load). Don't leave the
     // Select showing an id it can't resolve.
     const selectedTemplate = templates.find((t) => t.id === templateId) ?? null;
-    const hasUnresolvedTemplate = templateId !== '' && selectedTemplate === null;
+    // Distinguish "the list loaded and is genuinely empty" from "the list
+    // failed to load" — the live endpoint answers 200 with [] today, which
+    // would otherwise render as a Select with no options and no explanation.
+    const hasNoTemplates = !templatesArePlaceholders && templates.length === 0;
+    const hasUnresolvedTemplate = templateId !== '' && selectedTemplate === null && !hasNoTemplates;
     // Placeholder templates carry seed ids that exist nowhere on the server.
     // Sending one would post a bogus template_id while telling the admin real
     // members are about to be emailed.
@@ -122,6 +126,14 @@ export function SendClient({
                         <span>
                             Sending is unavailable — the template list couldn&apos;t be loaded, so the options below are
                             placeholders and don&apos;t exist on the server.
+                        </span>
+                    </p>
+                ) : hasNoTemplates ? (
+                    <p className='text-muted-foreground flex items-start gap-2 text-sm'>
+                        <TriangleAlert className='mt-0.5 size-4 shrink-0 text-amber-400/70' />
+                        <span>
+                            Sending is unavailable — the platform has no notification templates, and the send API
+                            requires a template id. Add one before sending.
                         </span>
                     </p>
                 ) : null}

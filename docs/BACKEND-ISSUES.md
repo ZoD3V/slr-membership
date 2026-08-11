@@ -7,6 +7,28 @@ Endpoints that return errors or behave against the PRD, found while integrating 
 - **Captured:** 2026-07-08 · **Re-verified:** 2026-07-17 · **Giveaways module:** 2026-08-03
 - **Envelope:** every response is `{ success, message, data, meta }`.
 
+> ## ✅ Status re-verified 2026-08-11 05:20 UTC (production, superadmin, read-only)
+>
+> Backend melaporkan perbaikan; hasil probe ulang:
+>
+> | Endpoint | Sebelumnya | Sekarang | |
+> | --- | --- | --- | --- |
+> | `GET /admin/notifications/templates` | 500 | **200** | ✅ tapi `data: []` — kosong |
+> | `GET /admin/notifications/logs` | 500 | **200** | ✅ 44 baris, `template_id` sudah ada |
+> | `GET /admin/safe-hours` | 500 | **200** | ✅ `updated_at: null` |
+> | `GET /admin/spin/config` | 500 | **200** | ✅ mengirim **9** sub_tiers |
+> | `GET /admin/spin/history?tier=` | 500 | **200** | ✅ diskriminasi sub-tier benar |
+> | `GET /public/prizes` | 404 | **404** | 🔴 belum dibuat |
+>
+> **Empat isu baru yang muncul setelah perbaikan:**
+>
+> 1. 🔴 **`notifications/templates` mengembalikan array kosong.** Endpointnya sehat, tapi platform belum punya satu pun template. Konsekuensinya `POST /admin/notifications/send` **tidak bisa dipakai sama sekali** — ia mewajibkan `template_id` dan tidak ada id yang bisa dipilih. Mohon di-seed minimal tiga template yang benar-benar dikirim sistem: `welcome`, `otp`, `password_reset`.
+> 2. 🟡 **`notifications/logs.template_id` ada tapi `null` di 44 dari 44 baris.** Field-nya sudah ditambahkan sesuai permintaan — terima kasih — tapi belum pernah terisi, jadi resend tetap tidak bisa memilihkan template secara otomatis. Mohon diisi saat pengiriman.
+> 3. 🟡 **`safe-hours.updated_at` = `null`**, padahal skema OpenAPI-nya mendeklarasikan `string` non-nullable. FE sudah melonggarkan tipenya jadi `string | null`; mohon skema atau datanya diselaraskan.
+> 4. 🟡 **`spin/config.sub_tiers` berisi 9 entri, termasuk `{"sub_tier_id":"beny","marketing_name":"Smart Life Rewards Add On - BENY - DAILY"}`.** BENY add-on bocor lagi sebagai sub-tier — masalah yang sama seperti di `spin/history.tier` dan `dashboard.members_by_tier`. FE membawa entri tak dikenal apa adanya saat menyimpan supaya tidak menghapusnya, tapi mohon dikeluarkan dari dokumen config.
+>
+> Juga masih terbuka dari sebelumnya: `notifications/logs` belum punya `subject`, `email` masih hasil join (bukan snapshot), `type` belum punya enum di spec, dan tidak ada filter `channel`.
+
 > **Reading order.** Newest handoff: **[BACKEND-ISSUES-SPRINT3-GIVEAWAYS.md](BACKEND-ISSUES-SPRINT3-GIVEAWAYS.md)** (modul giveaways, 2026-08-03), plus the **Sprint 4 (Ronde 4)** section near the end of this file — that's the active handoff (Prizes CMS, Safe Hours & Spin Wheel admin endpoints — **all live**, re-verified 2026-08-10; the earlier "404 / belum ada" claims in that section were probe artifacts and have been corrected in place — see real defects: several routes 500, plus data-quality gaps in tier labels and `updated_at`). The **Sprint 3 (Ronde 3)** section directly below is the previous sprint (Giveaway, Stripe, pembayaran). Sprint 2 follows it (CLEAR — no blockers).
 
 ---

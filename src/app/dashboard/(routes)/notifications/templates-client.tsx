@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { NotificationTemplate } from '@/types/member';
 
 import { TemplateEditDialog } from './_components/template-edit-dialog';
-import { Pencil, TriangleAlert } from 'lucide-react';
+import { MailX, Pencil, TriangleAlert } from 'lucide-react';
 
 export function TemplatesClient({
     templates,
@@ -30,6 +30,18 @@ export function TemplatesClient({
                         fail.
                     </span>
                 </p>
+            ) : null}
+
+            {!isPlaceholder && templates.length === 0 ? (
+                <div className='border-slr-navy-border flex flex-col items-center gap-2 rounded-lg border border-dashed p-10 text-center'>
+                    <MailX className='size-8 opacity-40' />
+                    <p className='text-foreground text-sm font-semibold'>No templates configured</p>
+                    <p className='text-muted-foreground max-w-md text-xs leading-relaxed'>
+                        The endpoint loaded successfully and returned an empty list, so the platform currently has no
+                        notification templates to edit. Manual sends need at least one, since the send API requires a
+                        template id.
+                    </p>
+                </div>
             ) : null}
 
             <div className='grid gap-4 lg:grid-cols-2'>

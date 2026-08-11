@@ -192,7 +192,9 @@ export interface SafeHoursConfig {
     is_active: boolean;
     manual_override: SafeHoursOverride;
     is_currently_locked: boolean; // read-only, server-computed
-    updated_at: string;
+    // The live endpoint answers `null` here (verified 2026-08-11), even though
+    // its OpenAPI schema declares a plain string.
+    updated_at: string | null;
 }
 
 export type SafeHoursUpdatePayload = Omit<SafeHoursConfig, 'is_currently_locked' | 'updated_at'>;
@@ -266,7 +268,15 @@ export type SpinTierId = 'visitor' | 'r1' | 'r4' | 'r7' | 'b1' | 'b4' | 'b7' | '
 export type SpinMoment = 'registration' | 'pre_renewal';
 
 export interface SpinSubTierConfig {
-    sub_tier_id: SpinTierId;
+    /**
+     * Widened past SpinTierId on purpose: the live endpoint returns a ninth
+     * row with `sub_tier_id: 'beny'` and the BENY product name as its
+     * marketing_name (verified 2026-08-11). BENY is a $4/mo add-on, not a
+     * tier — filed in docs/BACKEND-ISSUES.md. Typing this as SpinTierId would
+     * have claimed a shape the API does not honour; the config form carries
+     * unknown ids through a save untouched rather than dropping them.
+     */
+    sub_tier_id: SpinTierId | (string & {});
     marketing_name: string;
     has_spin: boolean;
     spin_discount_cents: number;
