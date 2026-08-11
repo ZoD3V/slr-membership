@@ -9,6 +9,7 @@ import { getAccessToken } from '@/lib/api/server';
 import type { NotificationLogMeta, NotificationLogRow, NotificationTemplate } from '@/types/member';
 import { KNOWN_NOTIFICATION_TYPES } from '@/types/member';
 
+import { LogsClient } from './logs-client';
 import { NOTIFICATION_LOGS_PER_PAGE, NOTIFICATION_LOG_META_SEED, NOTIFICATION_TEMPLATES_SEED } from './seed';
 import { TemplatesClient } from './templates-client';
 
@@ -103,7 +104,7 @@ export default async function NotificationsPage({
                     <TemplatesClient templates={templates} isPlaceholder={isTemplatesPlaceholder} />
                 </TabsContent>
                 <TabsContent value='logs'>
-                    <div>Logs tab — implemented in Task 4.</div>
+                    <LogsClient rows={logs} meta={logsMeta} type={type} status={status} logsFailed={logsFailed} />
                 </TabsContent>
                 <TabsContent value='send'>
                     <div>Send tab — implemented in Task 5.</div>
