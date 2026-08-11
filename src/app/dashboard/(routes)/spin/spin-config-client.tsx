@@ -64,13 +64,18 @@ export function SpinConfigClient({ config }: { config: SpinConfig }) {
         setRows((prev) => ({ ...prev, [code]: { ...prev[code], has_spin } }));
     };
 
+    // Mirrors setDiscount exactly: whenever the text is unusable, the committed
+    // cents stay at their last valid value, so the message must name that value
+    // rather than implying the field is simply blank.
     const discountError = (code: SubTierCode): string => {
         const trimmed = discountText[code].trim();
-        if (trimmed === '') return 'Enter an amount — the last saved value is being kept.';
+        const kept = `$${(rows[code].spin_discount_cents / 100).toFixed(2)}`;
+
+        if (trimmed === '') return `Blank — ${kept} will be saved.`;
 
         const dollars = Number(trimmed);
-        if (!Number.isFinite(dollars)) return 'Enter a number.';
-        if (dollars < 0) return 'Discount cannot be negative.';
+        if (!Number.isFinite(dollars)) return `Not a number — ${kept} will be saved.`;
+        if (dollars < 0) return `Can't be negative — ${kept} will be saved.`;
 
         return '';
     };

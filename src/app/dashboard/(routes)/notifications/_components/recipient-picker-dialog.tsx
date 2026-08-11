@@ -66,6 +66,20 @@ export function RecipientPickerDialog({
                 setRows(res.data.rows);
                 setTotal(res.data.total);
                 setError(null);
+
+                // Repair any placeholder already in the draft. A resend seeds a
+                // recipient from a log row that may carry no email; as soon as
+                // a page contains that member, fill in the real record. Doing
+                // it here rather than on click keeps the checkbox a plain
+                // toggle — repairing on click made the first click look dead.
+                setDraft((current) =>
+                    current.map((entry) => {
+                        if (entry.email) return entry;
+                        const match = res.data.rows.find((r) => r.user_id === entry.user_id);
+
+                        return match ?? entry;
+                    })
+                );
             } else {
                 setRows([]);
                 setTotal(0);
@@ -87,20 +101,9 @@ export function RecipientPickerDialog({
     const columns: Column[] = useMemo(() => {
         const toggle = (row: RecipientOption) => {
             setDraft((current) => {
-                const existing = current.find((c) => c.user_id === row.user_id);
-
-                // Re-selecting a row that is already picked replaces it rather
-                // than removing it when the held copy is a placeholder — a
-                // resend seeds a chip from a bare user_id with no email, and
-                // clicking the real row must repair it, not drop it.
-                if (existing) {
-                    if (!existing.email && row.email) {
-                        return current.map((c) => (c.user_id === row.user_id ? row : c));
-                    }
-
+                if (current.some((c) => c.user_id === row.user_id)) {
                     return current.filter((c) => c.user_id !== row.user_id);
                 }
-
                 if (current.length >= MAX_SEND_RECIPIENTS) return current;
 
                 return [...current, row];
