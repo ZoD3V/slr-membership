@@ -28,13 +28,15 @@ export default async function SafeHoursPage() {
 
     return (
         <DashboardPageShell>
-            <Heading title='Safe Hours' description='Configure the sign-up and plan-change lockout window.' />
+            <div className='mx-auto w-full max-w-4xl px-4'>
+                <Heading title='Safe Hours' description='Configure the sign-up and plan-change lockout window.' />
 
-            {isPlaceholder ? (
-                <p className='text-muted-foreground text-sm'>
-                    Couldn&apos;t load the current safe-hours settings — showing defaults. Saving may fail.
-                </p>
-            ) : null}
+                {isPlaceholder ? (
+                    <p className='text-muted-foreground mt-2 text-sm'>
+                        Couldn&apos;t load the current safe-hours settings — showing defaults. Saving may fail.
+                    </p>
+                ) : null}
+            </div>
 
             <SafeHoursClient config={config} isPlaceholder={isPlaceholder} />
         </DashboardPageShell>

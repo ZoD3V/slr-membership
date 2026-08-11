@@ -28,16 +28,18 @@ export default async function PrizesPage() {
 
     return (
         <DashboardPageShell>
-            <Heading
-                title='Prizes'
-                description='Edit the prize pool CMS document. Not yet shown on any member-facing page — /prizes and /member/prizes are not wired to this content yet.'
-            />
+            <div className='mx-auto w-full max-w-4xl px-4'>
+                <Heading
+                    title='Prizes'
+                    description='Edit the prize pool CMS document. Not yet shown on any member-facing page — /prizes and /member/prizes are not wired to this content yet.'
+                />
 
-            {isPlaceholder ? (
-                <p className='text-muted-foreground text-sm'>
-                    Couldn&apos;t load the current prize content — showing defaults. Saving may fail.
-                </p>
-            ) : null}
+                {isPlaceholder ? (
+                    <p className='text-muted-foreground mt-2 text-sm'>
+                        Couldn&apos;t load the current prize content — showing defaults. Saving may fail.
+                    </p>
+                ) : null}
+            </div>
 
             <PrizesClient content={content} />
         </DashboardPageShell>

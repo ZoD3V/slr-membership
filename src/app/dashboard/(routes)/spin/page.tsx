@@ -131,27 +131,27 @@ export default async function SpinPage({
 
     return (
         <DashboardPageShell>
-            <Heading
-                title='Spin Wheel'
-                description='Availability, per-tier discount and spin history for the registration and renewal wheel.'
-            />
+            <div className='mx-auto w-full max-w-4xl px-4'>
+                <Heading
+                    title='Spin Wheel'
+                    description='Availability, per-tier discount and spin history for the registration and renewal wheel.'
+                />
 
-            <div className='space-y-6'>
                 {isConfigPlaceholder ? (
-                    <p className='text-muted-foreground text-sm'>
+                    <p className='text-muted-foreground mt-2 text-sm'>
                         Couldn&apos;t load the current spin settings — showing defaults. Saving may fail.
                     </p>
                 ) : null}
-
-                <SpinConfigClient config={config} />
-                <SpinHistoryClient
-                    rows={history}
-                    meta={historyMeta}
-                    tier={tier}
-                    moment={moment}
-                    historyFailed={historyFailed}
-                />
             </div>
+
+            <SpinConfigClient config={config} />
+            <SpinHistoryClient
+                rows={history}
+                meta={historyMeta}
+                tier={tier}
+                moment={moment}
+                historyFailed={historyFailed}
+            />
         </DashboardPageShell>
     );
 }
