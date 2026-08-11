@@ -10,6 +10,7 @@ import type {
     SpinHistoryRow,
     SpinMoment,
     SpinSubTierConfig,
+    SpinTierId,
     SubTierCode
 } from '@/types/member';
 
@@ -18,10 +19,15 @@ import { SpinConfigClient } from './spin-config-client';
 import { SpinHistoryClient } from './spin-history-client';
 
 const MOMENT_VALUES: SpinMoment[] = ['registration', 'pre_renewal'];
+const TIER_VALUES: SpinTierId[] = ['visitor', 'r1', 'r4', 'r7', 'b1', 'b4', 'b7', 'b10'];
 const ELIGIBLE_SUB_TIERS = Array.from(SPIN_ELIGIBLE_SUB_TIERS) as SubTierCode[];
 
 function isSpinMoment(value: string): value is SpinMoment {
     return (MOMENT_VALUES as readonly string[]).includes(value);
+}
+
+function isSpinTierId(value: string): value is SpinTierId {
+    return (TIER_VALUES as readonly string[]).includes(value);
 }
 
 // GET /admin/spin/config's exact set of sub_tier_ids on a fresh response isn't
@@ -64,16 +70,13 @@ function normalizeSpinConfig(raw: Partial<SpinConfig> | null | undefined): SpinC
 export default async function SpinPage({
     searchParams
 }: {
-    searchParams: Promise<{ moment?: string; page?: string }>;
+    searchParams: Promise<{ tier?: string; moment?: string; page?: string }>;
 }) {
-    const { moment: rawMoment = 'all', page: rawPage } = await searchParams;
-    // Tier filtering is disabled in SpinHistoryClient (Select is `disabled`)
-    // because `?tier=<any value>` 500s the live endpoint (verified
-    // 2026-08-10). Force 'all' here too so a bookmarked ?tier=... URL can't
-    // make the disabled Select display an active filter that was never
-    // applied. Restore reading `searchParams.tier` once the backend ask in
-    // docs/BACKEND-ISSUES.md is resolved.
-    const tier = 'all';
+    const { tier: rawTier = 'all', moment: rawMoment = 'all', page: rawPage } = await searchParams;
+    // An unrecognised ?tier= must not be forwarded: the endpoint answers 200
+    // with an empty list for garbage rather than a validation error, which
+    // would read as "no spins" for a typo.
+    const tier = rawTier === 'all' || isSpinTierId(rawTier) ? rawTier : 'all';
     const moment = rawMoment === 'all' || isSpinMoment(rawMoment) ? rawMoment : 'all';
     const parsedPage = Number(rawPage);
     const page = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
@@ -90,13 +93,7 @@ export default async function SpinPage({
         const [configResult, historyResult] = await Promise.allSettled([
             getAdminSpinConfig(token),
             getAdminSpinHistory(token, {
-                // `tier` is deliberately NOT forwarded: `?tier=<any value>`
-                // makes the endpoint answer 500 (verified 2026-08-10), which
-                // would take the whole history table down. The filter control
-                // is disabled in the client for the same reason. A hand-typed
-                // ?tier= in the URL therefore changes nothing rather than
-                // breaking the page. Restore this when the backend ask in
-                // docs/BACKEND-ISSUES.md is resolved.
+                tier: tier === 'all' ? undefined : tier,
                 moment: moment === 'all' ? undefined : moment,
                 page,
                 perPage: 20

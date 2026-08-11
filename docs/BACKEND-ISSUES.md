@@ -1017,7 +1017,7 @@ FE admin editor sudah dibangun; **saat ini menampilkan banner fallback ke seed d
 
 ---
 
-## Spin Wheel (Admin Panel) — routes live; history OK, config & tier-filter 500, tier data ambiguous
+## Spin Wheel (Admin Panel) — routes live; history + tier filter OK, config 500, tier data ambiguous
 
 Endpoint yang dibutuhkan admin panel Spin Wheel.
 
@@ -1028,7 +1028,10 @@ Endpoint yang dibutuhkan admin panel Spin Wheel.
 Riwayat spin. **Status: 200, verified 2026-08-10** — keys dan `meta` cocok dengan API Contract (bukan lagi bentuk yang diasumsikan FE di bawah — lihat API Contract untuk daftar field kanonik). Filter opsional:
 
 - `?moment=` — nilai yang valid adalah **`pre_renewal`**, bukan `renewal` seperti yang ditulis sebelumnya di dokumen ini. Verified: `?moment=pre_renewal` → 200; `?moment=renewal` → ditolak `VALIDATION_ERROR`, yang justru mengonfirmasi ejaan `pre_renewal` yang benar. Nilai lain: `registration`.
-- `?tier=` — 🔴 **`500 INTERNAL_ERROR` untuk setiap nilai yang dicoba** (`r4`, `R4`, `Plus`). Panggilan tanpa filter dan dengan `?moment=` sama-sama berhasil, jadi filter tier saja yang rusak. **FE sudah menonaktifkan kontrol filter tier** (`disabled`) dan `page.tsx` tidak lagi mengirim parameter `tier` sama sekali sampai ini diperbaiki.
+- `?tier=` — ✅ **RESOLVED 2026-08-11.** Sebelumnya `500 INTERNAL_ERROR` untuk setiap nilai (`r4`, `R4`, `Plus`); sekarang 200 dan mendiskriminasi sub-tier dengan benar. Verified across all seven ids: `r1`→1, `r4`→1, `r7`→7, `b1`→2, `b4`→4, `b7`→4, `b10`→10 baris. Juga menerima marketing name (`Plus`→5 = r4+b4) dan kode tier (`RED`/`red`→9). **FE sudah mengaktifkan kembali kontrol filter tier** dan mengirim parameter `tier` lagi.
+  - 🟡 **Masih terbuka:** nilai yang tidak dikenal (`?tier=xyz`) dijawab `200 { data: [] }`, bukan `VALIDATION_ERROR` — admin yang salah ketik akan melihat "tidak ada data". FE memvalidasi terhadap tujuh id yang dikenal sebelum meneruskan, tapi mohon backend menolaknya dengan 400.
+  - 🟡 **Masih terbuka:** di spec, `tier` masih `{"type": "string"}` polos tanpa enum, padahal perilaku aslinya menerima empat bentuk. Mohon diberi enum.
+  - 🟡 **Masih terbuka:** **response body** tetap mengirim marketing name telanjang (`"tier": "Plus"`), jadi baris hasil filter tetap tidak bisa dibaca sebagai RED atau BLUE. Lihat permintaan `sub_tier_id` di bawah.
 
 Bentuk response yang **sebelumnya diasumsikan FE** (belum dikonfirmasi persis — field names inferred dari tipe `SpinResult` yang sudah ada; verifikasi 2026-08-10 hanya mengonfirmasi keys/`meta` cocok dokumen, bukan menyalin payload persis), disimpan di sini untuk referensi:
 
@@ -1077,7 +1080,7 @@ Request/response body — full-document replace:
 
 **Yang diminta ke tim backend:**
 
-1. **Perbaiki `500 INTERNAL_ERROR` pada `GET /api/v1/admin/spin/history?tier=<value>`** — filter tier saja yang gagal; tanpa filter dan `?moment=` keduanya OK.
+1. ~~**Perbaiki `500 INTERNAL_ERROR` pada `GET /api/v1/admin/spin/history?tier=<value>`**~~ — ✅ **RESOLVED 2026-08-11**, verified across all seven sub-tier ids. Tersisa dua permintaan kecil: tolak nilai tak dikenal dengan `VALIDATION_ERROR` (sekarang 200 kosong), dan beri enum pada param `tier` di OpenAPI spec.
 2. **Perbaiki `500 INTERNAL_ERROR` pada `GET /api/v1/admin/spin/config`** — route ada dan authenticates, tapi crash begitu sampai handler. Blocks kartu config spin wheel di admin — FE fallback ke dokumen seed dengan banner "Couldn't load … — showing defaults. Saving may fail."
 3. `spin/history.tier`: sertakan `sub_tier_id` atau nama lengkap (`Red Plus`, dst.) — nama marketing polos (`Plus`, `Premium`, dst.) ambigu antar Red/Blue, lihat data-quality note di atas.
 4. Hilangkan label BENY (`"Smart Life Rewards Add On - BENY - DAILY"`) dari `spin/history.tier` — itu add-on, bukan tier.

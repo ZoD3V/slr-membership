@@ -63,16 +63,8 @@ export function SpinHistoryClient({
     return (
         <div className='space-y-4'>
             <div className='flex flex-wrap gap-3'>
-                {/* Disabled on purpose: `?tier=<any value>` makes the live
-                    endpoint answer 500 (verified 2026-08-10 with r4, R4 and
-                    Plus). Rendering an enabled control that always errors is
-                    worse than showing it unavailable. Re-enable by deleting
-                    `disabled` and the title once the backend ask in
-                    docs/BACKEND-ISSUES.md is resolved. */}
-                <Select value={tier} onValueChange={(value) => pushParams({ tier: value })} disabled>
-                    <SelectTrigger
-                        className='w-44'
-                        title='Tier filtering is temporarily unavailable — the API errors on this filter.'>
+                <Select value={tier} onValueChange={(value) => pushParams({ tier: value })}>
+                    <SelectTrigger className='w-44'>
                         <SelectValue placeholder='Tier' />
                     </SelectTrigger>
                     <SelectContent className='dashboard-theme dark'>
