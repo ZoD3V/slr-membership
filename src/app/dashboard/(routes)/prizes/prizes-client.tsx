@@ -70,7 +70,7 @@ export function PrizesClient({ content }: { content: PrizeContent }) {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className='mx-auto flex w-full max-w-4xl flex-col gap-6 py-6'>
+            <form onSubmit={form.handleSubmit(onSubmit)} className='mx-auto flex w-full flex-col gap-6 py-6'>
                 <div className='flex flex-col gap-6'>
                     <Card>
                         <CardHeader>

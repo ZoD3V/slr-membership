@@ -90,7 +90,7 @@ export function SafeHoursClient({ config, isPlaceholder }: { config: SafeHoursCo
     };
 
     return (
-        <div className='mx-auto w-full max-w-4xl space-y-4'>
+        <div className='mx-auto w-full space-y-4'>
             <p className='text-slr-muted text-sm'>
                 Currently locked:{' '}
                 {isPlaceholder ? (

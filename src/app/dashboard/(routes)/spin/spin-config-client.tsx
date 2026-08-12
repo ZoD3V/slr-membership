@@ -143,7 +143,7 @@ export function SpinConfigClient({ config }: { config: SpinConfig }) {
     };
 
     return (
-        <div className='mx-auto w-full max-w-4xl py-6'>
+        <div className='mx-auto w-full py-6'>
             <Card>
                 <CardHeader>
                     <CardTitle>Availability</CardTitle>

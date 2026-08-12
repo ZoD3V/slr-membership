@@ -28,7 +28,7 @@ export default async function PrizesPage() {
 
     return (
         <DashboardPageShell>
-            <div className='mx-auto w-full max-w-4xl'>
+            <div className='mx-auto w-full'>
                 <Heading
                     title='Prizes'
                     description='Edit the prize pool CMS document. Not yet shown on any member-facing page — /prizes and /member/prizes are not wired to this content yet.'

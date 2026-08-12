@@ -131,7 +131,7 @@ export default async function SpinPage({
 
     return (
         <DashboardPageShell>
-            <div className='mx-auto w-full max-w-4xl'>
+            <div className='mx-auto w-full'>
                 <Heading
                     title='Spin Wheel'
                     description='Availability, per-tier discount and spin history for the registration and renewal wheel.'

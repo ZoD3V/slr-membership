@@ -28,7 +28,7 @@ export default async function SafeHoursPage() {
 
     return (
         <DashboardPageShell>
-            <div className='mx-auto w-full max-w-4xl'>
+            <div className='mx-auto w-full'>
                 <Heading title='Safe Hours' description='Configure the sign-up and plan-change lockout window.' />
 
                 {isPlaceholder ? (

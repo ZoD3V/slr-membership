@@ -115,7 +115,7 @@ export function SendClient({
     };
 
     return (
-        <div className='mx-auto w-full max-w-4xl px-4 py-6'>
+        <div className='mx-auto w-full py-6'>
             <div className='rounded-xl border border-white/10 bg-white/5 p-6'>
                 <Card className='border-0 bg-transparent shadow-none'>
                     <CardHeader className='px-0 pt-0'>
