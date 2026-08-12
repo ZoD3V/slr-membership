@@ -11,6 +11,11 @@ const MOMENT_LABEL: Record<string, string> = {
     pre_renewal: 'Pre-renewal'
 };
 
+// BENY is a separate add-on, never spin-eligible (constant/tiers.ts
+// SPIN_ELIGIBLE_SUB_TIERS excludes it) — a row carrying it is a backend
+// tier-join bug, not a real spin-eligible tier. Never render the BENY name.
+const KNOWN_TIER_LABELS = new Set(['Visitor', 'Standard', 'Plus', 'Premium', 'Elite']);
+
 export const spinHistoryColumns: Column[] = [
     {
         key: 'user_name',
@@ -27,7 +32,11 @@ export const spinHistoryColumns: Column[] = [
         // Already a display string from the API (e.g. 'Red Plus') — no code
         // lookup needed, unlike the old guessed shape.
         label: 'Tier',
-        render: (row) => <span className='text-sm'>{row.tier}</span>
+        render: (row) => (
+            <span className='text-sm'>
+                {KNOWN_TIER_LABELS.has(row.tier) ? row.tier : <span className='text-slr-dim'>Unspecified</span>}
+            </span>
+        )
     },
     {
         key: 'moment',
