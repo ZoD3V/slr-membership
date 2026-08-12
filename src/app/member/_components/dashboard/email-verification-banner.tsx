@@ -22,6 +22,8 @@ export function EmailVerificationBanner() {
             if (result.ok) {
                 setSent(true);
                 toast.success(result.message);
+            } else if (result.rateLimited) {
+                toast.warning(result.message);
             } else {
                 toast.error(result.message);
             }

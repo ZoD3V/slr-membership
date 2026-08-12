@@ -4,7 +4,9 @@ import { getCurrentMember } from '@/data/member-dashboard';
 import { resendVerification } from '@/lib/api/resources/auth';
 import { ApiError, apiErrorMessage } from '@/lib/api/types';
 
-export type ResendVerificationResult = { ok: true; message: string } | { ok: false; message: string };
+export type ResendVerificationResult =
+    | { ok: true; message: string }
+    | { ok: false; message: string; rateLimited: boolean };
 
 /**
  * Looks the member's own email up server-side rather than trusting a client
@@ -12,20 +14,20 @@ export type ResendVerificationResult = { ok: true; message: string } | { ok: fal
  */
 export async function resendVerificationEmailAction(): Promise<ResendVerificationResult> {
     const member = await getCurrentMember();
-    if (!member.email) return { ok: false, message: 'Could not find your email on this account.' };
+    if (!member.email) return { ok: false, message: 'Could not find your email on this account.', rateLimited: false };
 
     try {
         const result = await resendVerification(member.email);
 
         return { ok: true, message: result.message };
     } catch (error) {
-        // Repeated resends currently 500 instead of a clean 429 (verified live
-        // 2026-08-12, see BACKEND-ISSUES.md) — the cause is an unhandled
-        // backend error, not confirmed to be time-based, so this stays a
-        // generic retry message rather than claiming a rate limit we can't verify.
+        // Repeated resends now answer a proper 429 RATE_LIMITED (fixed by the
+        // backend, re-verified live 2026-08-12 — was a 500 earlier the same
+        // day) — apiErrorMessage() already surfaces its message as-is.
         return {
             ok: false,
-            message: error instanceof ApiError ? apiErrorMessage(error) : 'Could not resend the verification email.'
+            message: error instanceof ApiError ? apiErrorMessage(error) : 'Could not resend the verification email.',
+            rateLimited: error instanceof ApiError && error.status === 429
         };
     }
 }

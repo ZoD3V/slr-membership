@@ -6,11 +6,13 @@ import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { verifyEmail } from '@/lib/api/resources/auth';
-import { ApiError } from '@/lib/api/types';
+import { Input } from '@/components/ui/input';
+import { resendVerification, verifyEmail } from '@/lib/api/resources/auth';
+import { ApiError, apiErrorMessage } from '@/lib/api/types';
 import { goldButtonStyle } from '@/lib/styles';
 
 import { CheckCircle2, Loader2Icon, TriangleAlert } from 'lucide-react';
+import { toast } from 'sonner';
 
 const glassStyle: React.CSSProperties = {
     background: 'linear-gradient(117.58deg, rgba(215, 237, 237, 0.16) -47.79%, rgba(204, 235, 235, 0) 100%)',
@@ -24,6 +26,12 @@ type Status = 'loading' | 'success' | 'error';
 const VerifyEmailPanel = ({ token }: { token: string }) => {
     const [status, setStatus] = useState<Status>(token ? 'loading' : 'error');
     const [errorMessage, setErrorMessage] = useState('This link is missing its token.');
+    // A broken/expired link may be opened on a device where the member was
+    // never signed in, so resend can't read the email from a session — it
+    // has to be typed here. The API takes a bare email, no auth required.
+    const [resendEmail, setResendEmail] = useState('');
+    const [resendPending, setResendPending] = useState(false);
+    const [resendSent, setResendSent] = useState(false);
 
     useEffect(() => {
         if (!token) return;
@@ -36,14 +44,11 @@ const VerifyEmailPanel = ({ token }: { token: string }) => {
                 if (!cancelled) setStatus('success');
             } catch (err) {
                 if (cancelled) return;
-                // The backend's error path currently 500s for both an expired
-                // and an invalid token instead of a distinct 400/404 (verified
-                // live 2026-08-12, see BACKEND-ISSUES.md) — one generic message
-                // for now rather than guessing which case it is.
+                // Backend now answers a proper 400 with a specific message
+                // (fixed 2026-08-12, was a generic 500 earlier the same day)
+                // — surface it as-is instead of a guessed generic string.
                 setErrorMessage(
-                    err instanceof ApiError
-                        ? 'This verification link is invalid or has expired.'
-                        : 'Could not verify your email. Please try again.'
+                    err instanceof ApiError ? apiErrorMessage(err) : 'Could not verify your email. Please try again.'
                 );
                 setStatus('error');
             }
@@ -55,6 +60,20 @@ const VerifyEmailPanel = ({ token }: { token: string }) => {
             cancelled = true;
         };
     }, [token]);
+
+    const onResendSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setResendPending(true);
+        try {
+            const result = await resendVerification(resendEmail);
+            setResendSent(true);
+            toast.success(result.message);
+        } catch (err) {
+            toast.error(err instanceof ApiError ? apiErrorMessage(err) : 'Could not resend the verification email.');
+        } finally {
+            setResendPending(false);
+        }
+    };
 
     if (status === 'loading') {
         return (
@@ -103,8 +122,37 @@ const VerifyEmailPanel = ({ token }: { token: string }) => {
                     Verification failed
                 </h3>
                 <p className='text-slr-muted mt-2 text-sm'>{errorMessage}</p>
-                <Link href='/member' className='mt-6 inline-block text-xs font-semibold text-[#FFDC75] hover:underline'>
-                    Back to dashboard
+
+                {resendSent ? (
+                    <p className='mt-6 text-sm text-emerald-400'>A new verification link has been sent.</p>
+                ) : (
+                    <form onSubmit={onResendSubmit} className='mt-6 flex flex-col gap-2 text-left'>
+                        <label htmlFor='resend-email' className='text-slr-muted text-xs'>
+                            Get a new link sent to your email
+                        </label>
+                        <div className='flex gap-2'>
+                            <Input
+                                id='resend-email'
+                                type='email'
+                                required
+                                value={resendEmail}
+                                onChange={(e) => setResendEmail(e.target.value)}
+                                placeholder='you@example.com'
+                                className='h-10 border-white/10 bg-white/5 text-white placeholder:text-white/40'
+                            />
+                            <Button
+                                type='submit'
+                                disabled={resendPending}
+                                style={goldButtonStyle}
+                                className='h-10 shrink-0 rounded-lg px-4 text-xs font-bold uppercase'>
+                                {resendPending ? 'Sending…' : 'Resend link'}
+                            </Button>
+                        </div>
+                    </form>
+                )}
+
+                <Link href='/' className='mt-6 inline-block text-xs font-semibold text-[#FFDC75] hover:underline'>
+                    Back to Home
                 </Link>
             </CardContent>
         </Card>

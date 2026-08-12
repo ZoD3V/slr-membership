@@ -14,9 +14,10 @@ export const API = {
         resetPassword: '/api/v1/auth/reset-password',
         changePassword: '/api/v1/auth/change-password',
         // Link-based email verification for paid tiers (Visitor uses OTP above
-        // instead). Shipped by the backend 2026-08-12; both unauthenticated
-        // (security: [] in the OpenAPI doc) — verify-email still 500s on an
-        // invalid/expired token instead of a clean 400, see BACKEND-ISSUES.md.
+        // instead). Shipped by the backend 2026-08-12, unauthenticated
+        // (security: [] in the OpenAPI doc). Error paths (invalid token,
+        // resend rate-limit) 500'd earlier the same day — both confirmed
+        // fixed to proper 400/429 as of the same evening.
         verifyEmail: '/api/v1/auth/verify-email',
         resendVerification: '/api/v1/auth/resend-verification'
     },
