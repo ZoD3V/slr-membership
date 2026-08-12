@@ -43,12 +43,12 @@ export const NOTIFICATION_TEMPLATES_SEED: NotificationTemplate[] = [
 
 export const NOTIFICATION_LOG_META_SEED: NotificationLogMeta = {
     page: 1,
-    per_page: 20,
+    per_page: 10,
     total: 0,
     total_pages: 0
 };
 
-export const NOTIFICATION_LOGS_PER_PAGE = 20;
+export const NOTIFICATION_LOGS_PER_PAGE = 10;
 
 /**
  * The API caps a manual send at 100 recipients per request.

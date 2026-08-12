@@ -78,9 +78,13 @@ export function TemplatesClient({
                             </Button>
                         </CardHeader>
                         <CardContent>
-                            <pre className='text-muted-foreground max-h-32 overflow-hidden text-xs whitespace-pre-wrap'>
-                                {template.body}
-                            </pre>
+                            <div
+                                className='text-muted-foreground pointer-events-none max-h-32 overflow-hidden text-xs **:max-w-full'
+                                // Admin-authored template content, not user input — safe to render.
+                                // Clipped + non-interactive so a stray link/button in the markup
+                                // can't be clicked from the card preview.
+                                dangerouslySetInnerHTML={{ __html: template.body }}
+                            />
                         </CardContent>
                     </Card>
                 ))}
