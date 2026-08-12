@@ -25,13 +25,13 @@ export default [
             }
         }
     },
-    pluginJs.configs.recommended, // ? https://github.com/eslint/eslint
-    importPlugin.flatConfigs.recommended, // ? https://github.com/import-js/eslint-plugin-import
-    ...tseslint.configs.recommended, // ? https://github.com/typescript-eslint/typescript-eslint
-    pluginPromise.configs['flat/recommended'], // ? https://github.com/eslint-community/eslint-plugin-promise
-    pluginReact.configs.flat.recommended, // ? https://github.com/jsx-eslint/eslint-plugin-react
-    pluginReact.configs.flat['jsx-runtime'], // ? https://github.com/jsx-eslint/eslint-plugin-react
-    eslintConfigPrettier, // ? https://github.com/prettier/eslint-config-prettier
+    pluginJs.configs.recommended,
+    importPlugin.flatConfigs.recommended,
+    ...tseslint.configs.recommended,
+    pluginPromise.configs['flat/recommended'],
+    pluginReact.configs.flat.recommended,
+    pluginReact.configs.flat['jsx-runtime'],
+    eslintConfigPrettier,
     {
         rules: {
             'no-unused-vars': 'off',
@@ -44,7 +44,6 @@ export default [
             '@typescript-eslint/no-unused-expressions': 'off',
             'import/no-unresolved': 'off',
             'import/no-named-as-default': 'off',
-            // ! TO COMPILE SHADCN EXAMPLES, PLEASE REMOVE AS NEEDED
             '@typescript-eslint/no-explicit-any': 'off',
             '@typescript-eslint/no-empty-object-type': 'off',
             '@typescript-eslint/ban-ts-comment': 'off',
@@ -56,11 +55,6 @@ export default [
             'import/no-named-as-default-member': 'off'
         }
     },
-    // ! ===================== DISCLAIMER =====================
-    // ! There is no official solution available for new ESLint 9 flat config structure for NextJS
-    // ! The solution is taken from the community and may not be the best practice, use it at your own risk
-    // ? Ref: https://github.com/vercel/next.js/discussions/49337?sort=top#discussioncomment-5998603
-    // ! ======================================================
     {
         plugins: {
             '@next/next': nextPlugin
@@ -69,7 +63,6 @@ export default [
             ...nextPlugin.configs.recommended.rules,
             ...nextPlugin.configs['core-web-vitals'].rules,
             '@next/next/no-img-element': 'off',
-            // ! TO COMPILE SHADCN EXAMPLES, PLEASE REMOVE AS NEEDED
             '@next/next/no-html-link-for-pages': 'off'
         }
     },

@@ -1,8 +1,6 @@
-import { DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { logoutAction } from '@/lib/logout-action';
+import { DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 
 import { UserInfo } from './user-info';
-import { LogOut } from 'lucide-react';
 
 interface UserMenuContentProps {
     user: any;

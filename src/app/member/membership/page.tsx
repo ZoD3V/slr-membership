@@ -6,7 +6,7 @@ import { SUB_TIERS } from '@/constant/tiers';
 import { getCurrentMember } from '@/data/member-dashboard';
 import { getMemberProfile } from '@/data/profile';
 import { handleApiAuthError } from '@/lib/api/guard';
-import { type BenyStatusResponse, type BenyStatusValue, getBenyStatus } from '@/lib/api/resources/beny';
+import { type BenyStatusValue, getBenyStatus } from '@/lib/api/resources/beny';
 import {
     type BillingInvoice,
     type BillingStatus,
@@ -17,11 +17,11 @@ import { type MembershipRecord, getMyMembership } from '@/lib/api/resources/memb
 import { getAccessToken } from '@/lib/api/server';
 import { formatAud, formatShortDate, subTierCodeOf, tierGroupOf } from '@/lib/member';
 
+import { CancelledMembershipBanner } from '../_components/dashboard/cancelled-membership-banner';
 import { GraceBanner } from './_components/grace-banner';
 import { ManageBillingButton } from './_components/manage-billing-button';
 import { ManageTier } from './_components/manage-tier';
 import { TierCard } from './_components/tier-card';
-import { CancelledMembershipBanner } from '../_components/dashboard/cancelled-membership-banner';
 import { CircleAlert, CreditCard, ExternalLink, ReceiptText } from 'lucide-react';
 
 export const metadata: Metadata = { title: 'Membership · SLR Member', robots: { index: false } };
@@ -63,8 +63,7 @@ export default async function MembershipPage() {
             benyStatus = y.value.beny_status ?? 'inactive';
             benyCancelledAt = y.value.cancelled_at ?? null;
             benyExpiresAt = y.value.expires_at ?? null;
-        }
-        else handleApiAuthError(y.reason);
+        } else handleApiAuthError(y.reason);
     }
 
     const subTier = subTierCodeOf(membership?.subTierId ?? member.sub_tier);

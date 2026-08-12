@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { ImageUploadField } from '@/components/common/image-upload-field';
 import { PdfUploadField } from '@/components/common/pdf-upload-field';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import Heading from '@/components/ui/heading';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

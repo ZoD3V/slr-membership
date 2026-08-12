@@ -4,7 +4,7 @@ import { useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { type ListError, ListErrorCard } from '@/components/common/list-error-card';
+import { type ListError } from '@/components/common/list-error-card';
 import { DataTable } from '@/components/data-table';
 
 import { discountsColumns } from './_components/columns';

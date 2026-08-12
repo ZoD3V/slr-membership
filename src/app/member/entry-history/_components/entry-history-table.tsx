@@ -1,8 +1,6 @@
 import { EntryStatusBadge } from '@/components/common/entry-status-badge';
 import { TierBadge } from '@/components/common/tier-badge';
-import { SUB_TIERS } from '@/constant/tiers';
 import type { EntryCycle } from '@/lib/api/resources/entries';
-import { cn } from '@/lib/utils';
 import type { SubTierCode } from '@/types/member';
 
 function tokenText(value: number, prefix = ''): string {

@@ -9,14 +9,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import useDialogState from '@/hooks/use-dialog-state';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 import { SignOutDialog } from '../sign-out-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 import { UserInfo } from './user-info';
-import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles } from 'lucide-react';
+import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from 'lucide-react';
 
 export function NavUser({ user }) {
     const isMobile = useIsMobile();

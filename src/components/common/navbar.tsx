@@ -12,7 +12,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { logoutAction } from '@/lib/logout-action';
 import { goldButtonStyle } from '@/lib/styles';
 import { cn } from '@/lib/utils';
-import { Button, Transition } from '@headlessui/react';
+import { Transition } from '@headlessui/react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import {

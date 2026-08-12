@@ -1,5 +1,5 @@
 'use client';
-import React, { JSX, useState } from 'react';
+import { JSX, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { type ListError, ListErrorCard } from '@/components/common/list-error-card';
+import { type ListError } from '@/components/common/list-error-card';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { DataTable } from '@/components/data-table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -13,7 +13,7 @@ import { formatDateTime } from '@/lib/member';
 import { benyColumnsFor } from './_components/columns';
 import { type BenyTab, DEFAULT_BENY_TAB, TABS, isTabSupported } from './_components/tabs';
 import { activateBenyAction, deactivateBenyAction, getBenySubscriptionsAction } from './actions';
-import { Construction, UserCheck, UserMinus } from 'lucide-react';
+import { UserCheck, UserMinus } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ITEMS_PER_PAGE = 10;
@@ -241,10 +241,9 @@ export function BenyClient({
                 destructive
                 isLoading={isPending}
                 handleConfirm={confirmDeactivate}
-                desc={`This records that ${deactivateTarget?.name}'s BENY access has already been revoked in the BENY portal, and moves them to Cancelled. It does not revoke anything itself — do that in the BENY portal first, and only after their paid access has ended.`}
-            >
+                desc={`This records that ${deactivateTarget?.name}'s BENY access has already been revoked in the BENY portal, and moves them to Cancelled. It does not revoke anything itself — do that in the BENY portal first, and only after their paid access has ended.`}>
                 <div className='mt-4 space-y-2 text-start'>
-                    <label htmlFor='reason' className='text-xs font-semibold text-muted-foreground uppercase'>
+                    <label htmlFor='reason' className='text-muted-foreground text-xs font-semibold uppercase'>
                         Deactivation Reason
                     </label>
                     <Select value={deactivationReason} onValueChange={setDeactivationReason}>

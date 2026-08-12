@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { type ListError, ListErrorCard } from '@/components/common/list-error-card';
+import { type ListError } from '@/components/common/list-error-card';
 import { DataTable } from '@/components/data-table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -35,8 +35,8 @@ export function GiveawaysClient({ rows, listError }: { rows: GiveawayRow[]; list
 
     const filteredRows = useMemo(() => {
         if (statusFilter === 'all') return rows;
-        
-return rows.filter((row) => row.status === statusFilter);
+
+        return rows.filter((row) => row.status === statusFilter);
     }, [rows, statusFilter]);
 
     const handleEdit = (row: GiveawayRow) => router.push(`/dashboard/giveaways/${row.id}`);

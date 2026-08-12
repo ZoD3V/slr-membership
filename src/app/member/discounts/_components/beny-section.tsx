@@ -6,7 +6,6 @@ import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { BENY_CATEGORIES } from '@/data/discounts';
 import { type BenyStatusValue, isBenyCancelled, isBenyWindingDown } from '@/lib/api/resources/beny';
-import { formatShortDate } from '@/lib/member';
 import { goldButtonStyle, inputClassName } from '@/lib/styles';
 import { cn } from '@/lib/utils';
 import type { MemberProfile } from '@/types/member';
@@ -26,7 +25,7 @@ function formatExpiryLongDate(iso: string | null | undefined): string {
     if (!iso) return '-';
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '-';
-    
+
     const day = d.toLocaleString('en-US', { day: 'numeric', timeZone: 'Australia/Sydney' });
     const month = d.toLocaleString('en-US', { month: 'long', timeZone: 'Australia/Sydney' });
     const year = d.toLocaleString('en-US', { year: 'numeric', timeZone: 'Australia/Sydney' });
