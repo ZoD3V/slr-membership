@@ -132,12 +132,15 @@ export interface GiveawayDetail extends Giveaway {
 }
 
 // ── Prizes (PRD §"Sistem Stage Prize Pool") ──────────────────────────────────
-// Informational, CMS-editable page. Every field below is a plain text/number
-// the admin edits per stage — no system logic. Prize pool figures are marketing
-// language; actual draws happen externally at TPAL. Stage figures (label,
-// current stage, thresholds) are derived from `current_members` in `@/lib/prizes`
-// rather than stored — see that module for the derivation.
+// Informational, CMS-editable page. Every field is plain text the admin types
+// per stage — no system logic, no live member count exposed by the API (the
+// old `current_members`-driven progress bar this used to model was never a
+// real endpoint; deleted in the 2026-08-12 rewire onto the real flat contract
+// below, which admin and member both read).
 
+/** Per-tier-group display row, derived client-side from `PrizeContent` — not
+ *  an API shape itself. `tier_label`/`price_label` come from constant/tiers.ts;
+ *  `weekly`/`monthly` are the matching CMS fields off `PrizeContent`. */
 export interface PrizeTierBreakdown {
     tier_group: TierGroup;
     tier_label: string; // e.g. 'SLR RED'
@@ -146,18 +149,8 @@ export interface PrizeTierBreakdown {
     monthly: string | null; // monthly bonus copy, or null when none
 }
 
-export interface PrizePool {
-    headline: string; // CMS text, e.g. '$2,100'
-    prizes_sublabel: string; // e.g. '@ 22 Prizes • One Month'
-    current_members: number; // paid members, typed by admin (PRD §3.2 "total members")
-    odds_label: string; // e.g. '9 in 10 wins yearly'
-    tiers: PrizeTierBreakdown[];
-}
-
-// ── Admin Prize Content (real API, 2026-08-09) ───────────────────────────────
-// Flat CMS document returned by GET/PUT /admin/prizes. Distinct from PrizePool
-// above, which models a still-unconfirmed public/member document on a
-// different, still-404 endpoint (Phase 2, not touched by this rewire).
+// Flat CMS document returned by GET/PUT /admin/prizes and member-readable
+// GET /prizes (real API, 2026-08-09 admin / 2026-08-12 member).
 export interface PrizeContent {
     prize_pool_headline: string;
     prize_count: string;

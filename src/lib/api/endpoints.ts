@@ -91,7 +91,11 @@ export const API = {
         read: (id: string) => `/api/v1/notifications/${id}/read`
     },
     prizes: {
-        public: '/api/v1/public/prizes'
+        // Requires a Bearer token (401 unauthenticated, verified 2026-08-12) —
+        // not actually public despite the old assumed path. `/public/prizes`
+        // stays 404; this is the real member-facing document, same flat shape
+        // as admin.prizes below.
+        member: '/api/v1/prizes'
     },
     users: {
         me: '/api/v1/users/me',

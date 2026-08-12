@@ -1,30 +1,18 @@
-import { cache } from 'react';
-
-import type { PrizeContent, PrizeContentUpdatePayload, PrizePool } from '@/types/member';
+import type { PrizeContent, PrizeContentUpdatePayload } from '@/types/member';
 
 import { API } from '../endpoints';
 import { apiFetch } from '../http';
 
 /**
- * The stage prize pool document (PRD §"Stage Prize Pool System").
- *
- * Reads from the public endpoint (`GET /api/v1/public/prizes`), which is still
- * unconfirmed live — verified 404 as of 2026-08-10, distinct from the admin
- * CMS endpoint below (`GET /api/v1/admin/prizes`, verified 200). Cached for 5
- * minutes on the assumption the eventual figures change infrequently.
- *
- * Currently has zero callers: the marketing page at src/app/(home)/(routes)/prizes
- * is fully static, and src/app/member/prizes reads the local mock in
- * @/data/prizes instead. Kept in place for the Phase 2 rewire once
- * /public/prizes is confirmed live (see docs/BACKEND-ISSUES.md) — deliberately
- * not wired up or deleted yet.
- *
- * Untouched by the 2026-08-09 contract rewire — this is a different, still-
- * unconfirmed document on a different endpoint from the admin CMS below.
+ * The member-facing prize pool document (PRD §"Stage Prize Pool System") — the
+ * same flat CMS document as the admin editor below, on the member-readable
+ * `GET /api/v1/prizes` (Bearer-gated, verified 200 live 2026-08-12; the old
+ * assumed `/public/prizes` path stays 404). Not wrapped in `cache()`: it needs
+ * the caller's own token, so it can't be shared across members within a request.
  */
-export const getPrizePool = cache(() => {
-    return apiFetch<PrizePool>(API.prizes.public, { revalidate: 300 });
-});
+export function getPrizePool(token: string) {
+    return apiFetch<PrizeContent>(API.prizes.member, { token });
+}
 
 /**
  * The admin-editable Prizes CMS document (real API, 2026-08-09). Admin-gated

@@ -1,22 +1,64 @@
 import type { Metadata } from 'next';
 
+import EmptyState from '@/components/common/empty-state';
+import { SUB_TIERS, TIER_VISUALS } from '@/constant/tiers';
 import { getCurrentMember } from '@/data/member-dashboard';
-import { getPrizePool } from '@/data/prizes';
+import { handleApiAuthError } from '@/lib/api/guard';
+import { getPrizePool } from '@/lib/api/resources/prizes';
+import { getAccessToken } from '@/lib/api/server';
 import { tierGroupOf } from '@/lib/member';
-import { activeStage, stageLabel } from '@/lib/prizes';
+import type { PrizeContent, PrizeTierBreakdown, TierGroup } from '@/types/member';
 
 import { PrizeTierCard } from './_components/prize-tier-card';
-import { StageTracker } from './_components/stage-tracker';
-import { Sparkles } from 'lucide-react';
+import { CircleAlert, Sparkles } from 'lucide-react';
 
 export const metadata: Metadata = {
     title: 'Prizes · SLR Member'
 };
 
+const TIER_ORDER: TierGroup[] = ['visitor', 'red', 'blue'];
+
+// Marketing price line per tier group, e.g. 'from $10/month' — sourced from
+// the cheapest sub-tier in the group rather than typed by the CMS, since
+// PrizeContent carries no price field (pricing is a system fact, not copy).
+function priceLabel(group: TierGroup): string {
+    if (group === 'visitor') return 'Free to join';
+
+    const cents = Math.min(
+        ...Object.values(SUB_TIERS)
+            .filter((tier) => tier.group === group)
+            .map((tier) => tier.price_cents)
+    );
+
+    return `from $${cents / 100}/month`;
+}
+
+function toTierBreakdown(content: PrizeContent): PrizeTierBreakdown[] {
+    return TIER_ORDER.map((group) => ({
+        tier_group: group,
+        tier_label: group === 'visitor' ? 'Visitor' : `SLR ${TIER_VISUALS[group].label}`,
+        price_label: priceLabel(group),
+        weekly:
+            group === 'visitor' ? content.visitor_prize : group === 'red' ? content.red_weekly : content.blue_weekly,
+        monthly: group === 'visitor' ? null : group === 'red' ? content.red_monthly : content.blue_monthly
+    }));
+}
+
 export default async function PrizesPage() {
-    const [pool, member] = await Promise.all([getPrizePool(), getCurrentMember()]);
+    const [token, member] = await Promise.all([getAccessToken(), getCurrentMember()]);
     const memberGroup = tierGroupOf(member.sub_tier);
-    const stage = activeStage(pool.current_members);
+
+    let content: PrizeContent | null = null;
+    let failed = !token;
+
+    if (token) {
+        try {
+            content = await getPrizePool(token);
+        } catch (error) {
+            handleApiAuthError(error); // expired session → force logout
+            failed = true;
+        }
+    }
 
     return (
         <div className='mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 md:px-6 md:py-8'>
@@ -27,42 +69,56 @@ export default async function PrizesPage() {
                 </p>
             </header>
 
-            {/* Prize pool hero */}
-            <section className='slr-section-bg border-slr-navy-border relative overflow-hidden rounded-2xl border p-6 text-center md:p-10'>
-                <p className='text-slr-gold-label text-xs font-semibold tracking-widest uppercase md:text-sm'>
-                    {stageLabel(stage)}
-                </p>
-                <p className='font-bebas-neue mt-2 leading-none'>
-                    <span className='text-gradient-gold text-6xl md:text-8xl'>{pool.headline}</span>
-                </p>
-                <p className='text-slr-muted mt-1 text-sm md:text-base'>{pool.prizes_sublabel}</p>
-                <div className='border-slr-gold-label/30 bg-gold-tint mt-4 inline-flex items-center gap-2 rounded-full border px-4 py-1.5'>
-                    <Sparkles className='text-slr-gold-label size-4' />
-                    <span className='text-sm font-semibold text-white'>{pool.odds_label}</span>
-                </div>
-            </section>
+            {failed || !content ? (
+                <EmptyState
+                    icon={CircleAlert}
+                    title='Prizes Unavailable'
+                    description='We couldn’t load the current prize pool right now. Please try again shortly.'
+                />
+            ) : (
+                <>
+                    {/* Prize pool hero */}
+                    <section className='slr-section-bg border-slr-navy-border relative overflow-hidden rounded-2xl border p-6 text-center md:p-10'>
+                        <p className='text-slr-gold-label text-xs font-semibold tracking-widest uppercase md:text-sm'>
+                            {content.stage_label}
+                        </p>
+                        <p className='font-bebas-neue mt-2 leading-none'>
+                            <span className='text-gradient-gold text-6xl md:text-8xl'>
+                                {content.prize_pool_headline}
+                            </span>
+                        </p>
+                        <p className='text-slr-muted mt-1 text-sm md:text-base'>{content.prize_count}</p>
+                        <div className='border-slr-gold-label/30 bg-gold-tint mt-4 inline-flex items-center gap-2 rounded-full border px-4 py-1.5'>
+                            <Sparkles className='text-slr-gold-label size-4' />
+                            <span className='text-sm font-semibold text-white'>{content.odds}</span>
+                        </div>
+                    </section>
 
-            <StageTracker pool={pool} />
+                    {/* Prize breakdown by tier */}
+                    <section>
+                        <div className='mb-3 flex flex-wrap items-center justify-between gap-2'>
+                            <h2 className='font-bebas-neue text-xl tracking-wide text-white uppercase md:text-2xl'>
+                                Prize Breakdown
+                            </h2>
+                            <span className='text-slr-dim text-xs'>Your tier is highlighted</span>
+                        </div>
+                        <div className='grid gap-4 md:grid-cols-3'>
+                            {toTierBreakdown(content).map((tier) => (
+                                <PrizeTierCard
+                                    key={tier.tier_group}
+                                    tier={tier}
+                                    isYours={tier.tier_group === memberGroup}
+                                />
+                            ))}
+                        </div>
+                    </section>
 
-            {/* Prize breakdown by tier — member's tier highlighted */}
-            <section>
-                <div className='mb-3 flex flex-wrap items-center justify-between gap-2'>
-                    <h2 className='font-bebas-neue text-xl tracking-wide text-white uppercase md:text-2xl'>
-                        Prize Breakdown
-                    </h2>
-                    <span className='text-slr-dim text-xs'>Your tier is highlighted</span>
-                </div>
-                <div className='grid gap-4 md:grid-cols-3'>
-                    {pool.tiers.map((tier) => (
-                        <PrizeTierCard key={tier.tier_group} tier={tier} isYours={tier.tier_group === memberGroup} />
-                    ))}
-                </div>
-            </section>
-
-            <p className='text-slr-dim mx-auto max-w-2xl text-center text-xs leading-relaxed'>
-                Prize pool figures are indicative and updated by SLR each membership stage. All prizes are drawn
-                externally at randomdraws.com.au under TPAL certification.
-            </p>
+                    <p className='text-slr-dim mx-auto max-w-2xl text-center text-xs leading-relaxed'>
+                        Prize pool figures are indicative and updated by SLR each membership stage. All prizes are drawn
+                        externally at randomdraws.com.au under TPAL certification.
+                    </p>
+                </>
+            )}
         </div>
     );
 }
