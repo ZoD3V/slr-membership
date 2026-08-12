@@ -85,6 +85,14 @@ export interface MeResult {
     pending_upgrade: PendingUpgrade | null;
     referral_code: string | null;
     requires_payment?: boolean;
+    email_verified_at: string | null;
+}
+
+export interface VerifyEmailResult {
+    verified: boolean;
+    already_verified?: boolean;
+    user_id: string;
+    email_verified_at: string;
 }
 
 // ─── Resource functions ──────────────────────────────────────────────────────
@@ -132,5 +140,20 @@ export async function resetPassword(resetToken: string, newPassword: string) {
     return apiFetch<null>(API.auth.resetPassword, {
         method: 'POST',
         body: { reset_token: resetToken, new_password: newPassword }
+    });
+}
+
+/** Confirm the emailed verification link (paid tiers — Visitor uses OTP instead). */
+export async function verifyEmail(token: string) {
+    return apiFetch<VerifyEmailResult>(`${API.auth.verifyEmail}?token=${encodeURIComponent(token)}`, {
+        cache: 'no-store'
+    });
+}
+
+/** Ask the backend to re-send the verification link (rate-limited server-side). */
+export async function resendVerification(email: string) {
+    return apiFetch<{ sent: boolean; message: string }>(API.auth.resendVerification, {
+        method: 'POST',
+        body: { email }
     });
 }

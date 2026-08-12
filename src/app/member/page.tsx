@@ -21,7 +21,9 @@ import {
 } from '@/lib/member';
 import type { DrawStatus, MembershipSummary, UpcomingGiveaway } from '@/types/member';
 
+import { CancelledMembershipBanner } from './_components/dashboard/cancelled-membership-banner';
 import { DrawStatusCard } from './_components/dashboard/draw-status-card';
+import { EmailVerificationBanner } from './_components/dashboard/email-verification-banner';
 import { FeaturedDiscounts } from './_components/dashboard/featured-discounts';
 import { Greeting } from './_components/dashboard/greeting';
 import { MembershipSummaryCard } from './_components/dashboard/membership-summary-card';
@@ -29,7 +31,6 @@ import { QuickActions } from './_components/dashboard/quick-actions';
 import { RenewalSpinCard } from './_components/dashboard/renewal-spin-card';
 import { UpcomingGiveaways } from './_components/dashboard/upcoming-giveaways';
 import { VisitorUpgradeBanner } from './_components/dashboard/visitor-upgrade-banner';
-import { CancelledMembershipBanner } from './_components/dashboard/cancelled-membership-banner';
 import { CircleAlert, Gift } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -54,8 +55,8 @@ export default async function MemberDashboardPage() {
               spinEligible ? getSpinStatus(token) : Promise.resolve(null),
               (async () => {
                   const { getBillingStatus } = await import('@/lib/api/resources/billing');
-                  
-return getBillingStatus(token);
+
+                  return getBillingStatus(token);
               })()
           ])
         : [];
@@ -155,7 +156,7 @@ return getBillingStatus(token);
     const isCancelled = summary.billing_status === 'canceled';
 
     const drawEyebrow = giveawayDraw ? 'Current Draw' : 'Current Cycle';
-    const drawDateWord = isVisitor || isCancelled ? 'Ends' : (giveawayDraw ? 'Draws' : 'Renews');
+    const drawDateWord = isVisitor || isCancelled ? 'Ends' : giveawayDraw ? 'Draws' : 'Renews';
 
     // Featured partner offers — ONLY discounts flagged is_featured, capped. Empty → hidden.
     const featuredDiscounts: Discount[] = publicDiscounts
@@ -195,6 +196,8 @@ return getBillingStatus(token);
             <Greeting member={member} />
 
             {isVisitor ? <VisitorUpgradeBanner /> : null}
+
+            {!isVisitor && !member.email_verified_at ? <EmailVerificationBanner /> : null}
 
             {!isVisitor && billing?.cancel_at_period_end && cycle?.end_at ? (
                 <CancelledMembershipBanner accessEndsAt={cycle.end_at} />

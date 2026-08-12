@@ -14,8 +14,12 @@ export type BillingStatus = 'active' | 'past_due' | 'canceled';
 
 export interface CurrentMember {
     name: string;
+    email: string;
     sub_tier: SubTierCode;
     state: string; // AU state code, e.g. 'NSW'
+    // Visitor never has this set (OTP-verified at signup, no post-payment
+    // email-link flow) — only meaningful for RED/BLUE.
+    email_verified_at: string | null;
 }
 
 export interface MembershipSummary {

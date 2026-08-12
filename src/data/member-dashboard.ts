@@ -25,8 +25,10 @@ export async function getCurrentMember(): Promise<CurrentMember> {
 
             return {
                 name: me.full_name || identity.name || 'Member',
+                email: me.email || identity.email || '',
                 sub_tier: subTierCodeOf(me.sub_tier ?? undefined),
-                state: me.state || identity.state || '-'
+                state: me.state || identity.state || '-',
+                email_verified_at: me.email_verified_at
             };
         } catch (error) {
             handleApiAuthError(error); // expired session → force logout; otherwise fall through
@@ -35,7 +37,9 @@ export async function getCurrentMember(): Promise<CurrentMember> {
 
     return {
         name: identity.name ?? 'Member',
+        email: identity.email ?? '',
         sub_tier: identity.sub_tier ?? 'VISITOR',
-        state: identity.state ?? '-'
+        state: identity.state ?? '-',
+        email_verified_at: null
     };
 }
