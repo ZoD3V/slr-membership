@@ -91,11 +91,13 @@ export const API = {
         read: (id: string) => `/api/v1/notifications/${id}/read`
     },
     prizes: {
-        // Requires a Bearer token (401 unauthenticated, verified 2026-08-12) —
-        // not actually public despite the old assumed path. `/public/prizes`
-        // stays 404; this is the real member-facing document, same flat shape
-        // as admin.prizes below.
-        member: '/api/v1/prizes'
+        // OpenAPI docs (checked 2026-08-12 against docsx-2s3crt3-199/json)
+        // mark this `security: none`, but live still 401s without a Bearer
+        // token — spec bug, not ours; keep sending the token. Path matches
+        // the doc's trailing slash. `/public/prizes` (the old assumed path)
+        // stays 404; this is the real member-facing document, same flat
+        // shape as admin.prizes below.
+        member: '/api/v1/prizes/'
     },
     users: {
         me: '/api/v1/users/me',
