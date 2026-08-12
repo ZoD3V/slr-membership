@@ -1,5 +1,28 @@
 import type { NextAuthConfig } from 'next-auth';
 
+// The NextAuth session cookie outlives the backend accessToken embedded in it
+// (30-day default vs. the API's 1-hour token) — checking only `!!auth?.user`
+// treats an hours-stale session as logged in, bounces the user onto a
+// protected page, and only catches the dead token after a data fetch 401s.
+// Decoding `exp` here (no signature check needed — the backend enforces the
+// real check on every request) lets the redirect happen straight to sign-in
+// instead of flashing the destination page's skeleton first.
+function isAccessTokenExpired(token: string | undefined): boolean {
+    if (!token) return true;
+
+    const payload = token.split('.')[1];
+    if (!payload) return true;
+
+    try {
+        const base64 = payload.replace(/-/g, '+').replace(/_/g, '/').padEnd(payload.length + ((4 - (payload.length % 4)) % 4), '=');
+        const { exp } = JSON.parse(atob(base64)) as { exp?: number };
+
+        return typeof exp !== 'number' || exp * 1000 <= Date.now();
+    } catch {
+        return true;
+    }
+}
+
 export const authConfig = {
     trustHost: true,
     pages: {
@@ -7,7 +30,8 @@ export const authConfig = {
     },
     callbacks: {
         authorized({ auth, request: { nextUrl } }) {
-            const isLoggedIn = !!auth?.user;
+            const accessToken = (auth?.user as { accessToken?: string } | undefined)?.accessToken;
+            const isLoggedIn = !!auth?.user && !isAccessTokenExpired(accessToken);
             const { pathname } = nextUrl;
 
             const role = ((auth?.user as { role?: string })?.role ?? '').toLowerCase();
