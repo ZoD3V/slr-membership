@@ -18,6 +18,17 @@ import { toast } from 'sonner';
 // flow) so admin and member eligibility can't silently drift apart.
 const ELIGIBLE_SUB_TIERS = Array.from(SPIN_ELIGIBLE_SUB_TIERS) as SubTierCode[];
 
+// marketingName alone is ambiguous — 'Plus' is both R4 and B4 (confirmed via
+// /membership/tiers: Standard = r1|b1, Plus = r4|b4, Premium = r7|b7). Prefix
+// the parent tier so the row reads "R4 · Red Plus", not two identical "Plus"
+// rows with no way to tell which is which.
+function fullTierLabel(code: SubTierCode): string {
+    const { group, marketingName } = SUB_TIERS[code];
+    const groupLabel = group === 'red' ? 'Red' : group === 'blue' ? 'Blue' : 'Visitor';
+
+    return `${groupLabel} ${marketingName}`;
+}
+
 function findSubTier(config: SpinConfig, code: SubTierCode): SpinSubTierConfig | undefined {
     return config.sub_tiers.find((t) => t.sub_tier_id === code.toLowerCase());
 }
@@ -163,12 +174,12 @@ export function SpinConfigClient({ config }: { config: SpinConfig }) {
                                 <div key={code}>
                                     <div className='flex items-center justify-between gap-4'>
                                         <Label htmlFor={`spin-tier-${code}`} className='min-w-0 flex-1'>
-                                            {SUB_TIERS[code].label} · {SUB_TIERS[code].marketingName}
+                                            {SUB_TIERS[code].label} · {fullTierLabel(code)}
                                         </Label>
                                         <div className='flex items-center gap-2'>
                                             <span className='text-slr-dim text-xs'>$</span>
                                             <Input
-                                                aria-label={`${SUB_TIERS[code].marketingName} discount, dollars`}
+                                                aria-label={`${fullTierLabel(code)} discount, dollars`}
                                                 aria-invalid={error !== ''}
                                                 aria-describedby={error ? `spin-tier-${code}-error` : undefined}
                                                 type='number'
