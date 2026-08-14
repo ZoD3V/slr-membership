@@ -136,10 +136,10 @@ export async function changePassword(
 }
 
 /** Confirm a password reset with the token from the emailed link. */
-export async function resetPassword(resetToken: string, newPassword: string) {
+export async function resetPassword(resetToken: string, newPassword: string, confirmPassword: string) {
     return apiFetch<null>(API.auth.resetPassword, {
         method: 'POST',
-        body: { reset_token: resetToken, new_password: newPassword }
+        body: { reset_token: resetToken, new_password: newPassword, confirm_password: confirmPassword }
     });
 }
 

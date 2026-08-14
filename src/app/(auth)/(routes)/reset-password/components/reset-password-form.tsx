@@ -49,7 +49,7 @@ const ResetPasswordForm = ({ token }: { token: string }) => {
         setError(null);
         setPending(true);
         try {
-            await resetPassword(token, password);
+            await resetPassword(token, password, confirm);
             setDone(true);
         } catch (err) {
             toast.error(err instanceof ApiError ? err.message : 'Could not reset your password. Please try again.');
