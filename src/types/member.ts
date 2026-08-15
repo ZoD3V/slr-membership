@@ -59,28 +59,6 @@ export interface UpcomingGiveaway {
     locked: boolean; // true when the giveaway tier is above the member's (upgrade required)
 }
 
-// ── Notifications (member bell panel) ────────────────────────────────────────
-
-export type NotificationType =
-    | 'draw_win'
-    | 'draw_result'
-    | 'renewal'
-    | 'spin'
-    | 'referral'
-    | 'tier_change'
-    | 'beny'
-    | 'system';
-
-export interface MemberNotification {
-    id: string;
-    type: NotificationType;
-    title: string;
-    body: string;
-    created_at: string; // ISO
-    read_at: string | null; // null = unread
-    href?: string; // optional navigation target on click
-}
-
 export interface MemberDashboard {
     member: CurrentMember;
     summary: MembershipSummary;

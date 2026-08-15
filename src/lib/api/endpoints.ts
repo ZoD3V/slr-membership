@@ -93,10 +93,6 @@ export const API = {
     entries: {
         history: '/api/v1/entries/'
     },
-    notifications: {
-        list: '/api/v1/notifications/',
-        read: (id: string) => `/api/v1/notifications/${id}/read`
-    },
     prizes: {
         // OpenAPI docs (checked 2026-08-12 against docsx-2s3crt3-199/json)
         // mark this `security: none`, but live still 401s without a Bearer
