@@ -93,6 +93,7 @@ export default async function MembershipPage() {
                     nextRenewalIso={billing?.next_renewal_at ?? null}
                     scheduledChange={membership?.pending_upgrade ?? null}
                     billingStatus={billing?.billing_status ?? membership?.billingStatus ?? null}
+                    cancelAtPeriodEnd={Boolean(billing?.cancel_at_period_end)}
                 />
             </TierCard>
 

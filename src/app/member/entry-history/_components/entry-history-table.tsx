@@ -7,6 +7,17 @@ function tokenText(value: number, prefix = ''): string {
     return value > 0 ? `${prefix}${value}` : '-';
 }
 
+// Cycles are ordered newest-first (current_cycle, then history[]), so the
+// previous cycle for row `i` is the next entry in the array. No dedicated
+// API field tracks tier changes — derive it from consecutive `tier` values.
+function tierChangeLabel(entries: EntryCycle[], index: number): string | null {
+    const prevTier = entries[index + 1]?.tier;
+    const currentTier = entries[index]?.tier;
+    if (!prevTier || !currentTier || prevTier.toLowerCase() === currentTier.toLowerCase()) return null;
+
+    return `Changed from ${prevTier.toUpperCase()}`;
+}
+
 // Past-cycle rows from the API can omit start_at/end_at entirely (seen after a
 // plan swap mid-checkout) — never let a missing/invalid date crash the page.
 function formatDateRange(startStr: string | null | undefined, endStr: string | null | undefined): string {
@@ -55,6 +66,11 @@ export function EntryHistoryTable({ entries }: { entries: EntryCycle[] }) {
                                             size='sm'
                                         />
                                     </div>
+                                    {tierChangeLabel(entries, index) && (
+                                        <p className='text-slr-gold-label mt-1 text-[10px] uppercase'>
+                                            {tierChangeLabel(entries, index)}
+                                        </p>
+                                    )}
                                 </td>
                                 <td className='px-4 py-3 text-right text-white/90 tabular-nums'>
                                     {tokenText(e.base_token)}
@@ -91,6 +107,11 @@ export function EntryHistoryTable({ entries }: { entries: EntryCycle[] }) {
                                 subTier={((e.tier?.toUpperCase() || 'VISITOR') as SubTierCode) || 'VISITOR'}
                                 size='sm'
                             />
+                            {tierChangeLabel(entries, index) && (
+                                <span className='text-slr-gold-label text-[10px] uppercase'>
+                                    {tierChangeLabel(entries, index)}
+                                </span>
+                            )}
                         </div>
 
                         <div className='mt-3 grid grid-cols-3 gap-2 border-t border-white/5 pt-3 text-center'>

@@ -182,12 +182,12 @@ Jika salah satu di atas ternyata sudah berubah (misal Referral sudah live), cata
 
 | No | Langkah Pengujian | Hasil yang Diharapkan | Status |
 |---|---|---|:---:|
-| 1 | Buka `/member/profile`. | Header: avatar (inisial), nama, tier badge, state. Personal Info section, Security section, Support Links section. | |
-| 2 | Cek ada/tidaknya toggle 2FA. | TIDAK ADA toggle 2FA (deprioritized, di luar scope 4-round pertama). | |
-| 3 | Cek ada/tidaknya membership card dengan QR code. | Sesuai Known Gaps — kemungkinan belum dibangun. Catat status aktualnya. | |
-| 4 | Di Security section, ganti password. | Berhasil, bisa login dengan password baru. | |
-| 5 | Cek Support Links. | FAQ, giveaway rules, T&C, privacy policy, contact — semua link valid. | |
-| 6 | Cek billing history / invoice (di `/member/membership`, bukan di profile). | Invoice TIDAK men-generate PDF sendiri — link "View" mengarah ke Stripe `hosted_invoice_url`. Jika URL tidak tersedia, hanya tampil status Paid + tanggal + jumlah tanpa tombol download. | |
+| 1 | Buka `/member/profile`. | Header: avatar (inisial), nama, tier badge, state. Personal Info section, Security section, Support Links section. | ✅ Pass |
+| 2 | Cek ada/tidaknya toggle 2FA. | TIDAK ADA toggle 2FA (deprioritized, di luar scope 4-round pertama). | ✅ Pass — tidak ada toggle 2FA di mana pun. |
+| 3 | Cek ada/tidaknya membership card dengan QR code. | Sesuai Known Gaps — kemungkinan belum dibangun. Catat status aktualnya. | 🚧 Known Gap dikonfirmasi masih gap — tidak ada membership card/QR code di `/member/profile`. |
+| 4 | Di Security section, ganti password. | Berhasil, bisa login dengan password baru. | ✅ Pass — akun `spintest-20260815-01@careney.com`. "Password updated" muncul, login ulang dengan password baru berhasil ke `/member`. |
+| 5 | Cek Support Links. | FAQ, giveaway rules, T&C, privacy policy, contact — semua link valid. | ✅ Pass — kelima link (`/faq`, `/giveaway-rules`, `/terms`, `/privacy`, `/contact`) dicek langsung, semua render halaman dengan title benar, tidak ada 404. |
+| 6 | Cek billing history / invoice (di `/member/membership`, bukan di profile). | Invoice TIDAK men-generate PDF sendiri — link "View" mengarah ke Stripe `hosted_invoice_url`. Jika URL tidak tersedia, hanya tampil status Paid + tanggal + jumlah tanpa tombol download. | ✅ Pass — link "View" mengarah ke `invoice.stripe.com/i/...` (hosted asli, `target='_blank'`). Kode (`membership/page.tsx:162-172`) fallback ke `-` (bukan tombol) kalau `hosted_invoice_url` null — sesuai spec. |
 
 ---
 
@@ -197,12 +197,12 @@ Jika salah satu di atas ternyata sudah berubah (misal Referral sudah live), cata
 
 | No | Langkah Pengujian | Hasil yang Diharapkan | Status |
 |---|---|---|:---:|
-| 1 | Buka `/member/entry-history`. | Current Cycle Card: rentang tanggal cycle, tier saat ini, base token, referral bonus (jika ada), total active token, status "Entry active"/"Entry inactive". | |
-| 2 | Cek kolom draw_pass di mana pun di halaman ini. | TIDAK PERNAH ditampilkan — hanya status "Entry active"/"Entry inactive". | |
-| 3 | Cek tabel riwayat cycle sebelumnya. | Urut terbaru dulu. Kolom: Cycle, Tier, Base Token, Referral Bonus, Total Token, Status. | |
-| 4 | Cari baris di mana user upgrade/downgrade tier di tengah histori. | Ada label kecil di kolom tier menandakan perubahan (mis. "R1 (upgraded to R4)"). | |
-| 5 | Gunakan filter status (jika tersedia). | Filter by status/cycle range bekerja. | |
-| 6 | Cek konsistensi total token di sini vs entry count di dashboard (`/member`) dan giveaways (`/member/giveaways`). | Angka harus konsisten di ketiga tempat. | |
+| 1 | Buka `/member/entry-history`. | Current Cycle Card: rentang tanggal cycle, tier saat ini, base token, referral bonus (jika ada), total active token, status "Entry active"/"Entry inactive". | ✅ Pass — ⚠️ implementasi beda dari wording spec: bukan "card" terpisah, current cycle jadi baris pertama di tabel unified yang sama dengan histori (`entry-history-table.tsx`). Semua data ada: rentang tanggal, tier, base token (7), referral (-), total (7), status "Active". Bukan bug, cuma treatment UI berbeda. |
+| 2 | Cek kolom draw_pass di mana pun di halaman ini. | TIDAK PERNAH ditampilkan — hanya status "Entry active"/"Entry inactive". | ✅ Pass — cuma "Entry Status: Active", tidak ada angka draw_pass. |
+| 3 | Cek tabel riwayat cycle sebelumnya. | Urut terbaru dulu. Kolom: Cycle, Tier, Base Token, Referral Bonus, Total Token, Status. | ⚠️ Kolom persis sesuai (Cycle/Tier/Base/Referral/Total/Entry Status). Urutan tidak bisa dites — semua akun test baru berumur <28 hari, belum ada cycle ke-2. Kode (`page.tsx:29-36`) menaruh `current_cycle` duluan lalu `data.history` apa adanya dari API, tidak ada sort eksplisit di FE — asumsikan API sudah urutkan terbaru dulu, belum diverifikasi. |
+| 4 | Cari baris di mana user upgrade/downgrade tier di tengah histori. | Ada label kecil di kolom tier menandakan perubahan (mis. "R1 (upgraded to R4)"). | ✅ **FIXED (2026-08-15)** — `entry-history-table.tsx` sekarang punya `tierChangeLabel()`: bandingkan `tier` baris ini vs baris berikutnya (cycle lebih lama, array urut terbaru dulu), tampil label gold kecil "Changed from {TIER}" di bawah TierBadge (desktop + mobile) kalau beda. Tidak perlu field baru dari backend — `tier` sudah ada di tiap row `EntryCycle`. Type-check pass. Tidak bisa live-test (butuh akun dengan histori upgrade 2+ cycle, belum ada di data test). |
+| 5 | Gunakan filter status (jika tersedia). | Filter by status/cycle range bekerja. | N/A — tidak ada filter UI di kode sama sekali (dicek `entry-history-table.tsx` & `page.tsx`), sesuai kualifikasi "(jika tersedia)" di langkah ini. |
+| 6 | Cek konsistensi total token di sini vs entry count di dashboard (`/member`) dan giveaways (`/member/giveaways`). | Angka harus konsisten di ketiga tempat. | ✅ Pass — akun `spintest-20260815-01` (R7): Entry History Total=7, Dashboard "Entries per draw"=7, konsisten. Draw Status Card & Giveaways sempat nunjukin "0 entries" untuk draw RED MONTHLY tertentu — bukan inkonsistensi, karena draw itu belum `active` (opens 1 Sep 2026), sesuai by-design `entered = phase==='active' && is_entered` yang sudah dikonfirmasi di sesi sebelumnya. |
 
 ---
 
@@ -212,17 +212,17 @@ Jika salah satu di atas ternyata sudah berubah (misal Referral sudah live), cata
 
 | No | Langkah Pengujian | Hasil yang Diharapkan | Status |
 |---|---|---|:---:|
-| 1 | Akun **Visitor**, buka `/member/membership`, upgrade ke tier berbayar (mis. R1). | Upgrade IMMEDIATE — cycle baru mulai sekarang, token + 4 draw_pass langsung di-assign. TIDAK melalui `pending_upgrade`. | |
-| 2 | Akun **Paid** (mis. R4), klik **Change plan**. | Dialog muncul, list opsi tier lain (exclude tier saat ini & exclude Visitor — turun ke Visitor = "Cancel membership", bukan plan change). | |
-| 3 | Selama Safe Hours window (Jumat 16-19), coba klik Change plan. | Tombol disabled + `SafeHoursNotice` tampil (upgrade/downgrade ikut kena lockout Safe Hours). | |
-| 4 | Di luar Safe Hours, pilih tier baru, klik **Confirm change**. | `POST /memberships/upgrade` dipanggil dengan `target_sub_tier`. Banner persisten muncul: "Scheduled → [Tier] on [tanggal renewal]". Status = SCHEDULED, bukan langsung berubah (no proration, applies at next renewal). | |
-| 5 | Refresh halaman setelah step 4. | Banner scheduled tetap muncul (persisten lintas reload). | |
-| 6 | Klik **Cancel scheduled change** di banner. | `DELETE /memberships/upgrade` dipanggil. Banner hilang, tier tetap di tier lama. | |
-| 7 | Tunggu sampai next renewal date terlewati (atau simulasi backend). | Setelah bayar sukses di tier baru: fitur tier baru terbuka, token+draw_pass baru di-assign, `pending_upgrade` dihapus. | |
-| 8 | Klik **Cancel membership**. | Dialog konfirmasi: "Access continues until [tanggal renewal]. No further charges after that." Tombol "Keep membership" / "Yes, cancel". | |
-| 9 | Confirm cancel. | `POST /subscriptions/me/cancel` dipanggil. Tombol "Cancel membership" hilang dari UI (subscription sudah cancelled/inactive). Banner cancelled/grace muncul di dashboard. | |
-| 10 | Cek akses fitur selama grace/cancelled-tapi-belum-expired. | Akses tetap jalan sampai `nextRenewalIso` terlewati, sesuai pesan di step 8. | |
-| 11 | (Cross-check backend) Admin cancel subscription langsung dari Stripe dashboard (bukan dari app). | Webhook `customer.subscription.deleted` diterima → membership di-set inactive + draw_pass = 0 di sisi backend, tidak drift dari data app. | |
+| 1 | Akun **Visitor**, buka `/member/membership`, upgrade ke tier berbayar (mis. R1). | Upgrade IMMEDIATE — cycle baru mulai sekarang, token + 4 draw_pass langsung di-assign. TIDAK melalui `pending_upgrade`. | ⚠️ Verified via code only — `UpgradePlanPicker` (dirender saat `isVisitor`) redirect ke Stripe Checkout via `startSubTierCheckout()`, bukan lewat `scheduleTierChangeAction`. Tidak live-tested di step ini (akun test yang dipakai sudah paid); immediate-vs-pending sudah dikonfirmasi live waktu Suite 2 registrasi berbayar. |
+| 2 | Akun **Paid** (mis. R4), klik **Change plan**. | Dialog muncul, list opsi tier lain (exclude tier saat ini & exclude Visitor — turun ke Visitor = "Cancel membership", bukan plan change). | ✅ Pass (live, akun R7 `spintest-20260815-01`) — dialog list 6 opsi (R1/R4 Blue×4), R7 (tier sendiri) & Visitor tidak muncul. |
+| 3 | Selama Safe Hours window (Jumat 16-19), coba klik Change plan. | Tombol disabled + `SafeHoursNotice` tampil (upgrade/downgrade ikut kena lockout Safe Hours). | ⚠️ Tidak bisa live-test — tanggal tes (Sabtu 15 Aug 2026) di luar window Jumat 16-19. Verified via code: `useSafeHours()` hook dipakai untuk disable tombol + render `SafeHoursNotice`, pola sama dengan yang sudah dikonfirmasi live di Suite 2/registrasi. |
+| 4 | Di luar Safe Hours, pilih tier baru, klik **Confirm change**. | `POST /memberships/upgrade` dipanggil dengan `target_sub_tier`. Banner persisten muncul: "Scheduled → [Tier] on [tanggal renewal]". Status = SCHEDULED, bukan langsung berubah (no proration, applies at next renewal). | ✅ Pass (live) — pilih R4, confirm → banner "Scheduled → SLR Red · Plus on 12 Sep 2026" muncul, current plan tetap "SLR Red · Premium" (tidak langsung berubah). |
+| 5 | Refresh halaman setelah step 4. | Banner scheduled tetap muncul (persisten lintas reload). | ✅ Pass (live) — reload, banner "Scheduled → SLR Red · Plus on 12 Sep 2026" tetap ada (server-side `pending_upgrade`, bukan cuma state client). |
+| 6 | Klik **Cancel scheduled change** di banner. | `DELETE /memberships/upgrade` dipanggil. Banner hilang, tier tetap di tier lama. | ✅ Pass (live) — banner hilang setelah klik, current plan tetap "SLR Red · Premium". |
+| 7 | Tunggu sampai next renewal date terlewati (atau simulasi backend). | Setelah bayar sukses di tier baru: fitur tier baru terbuka, token+draw_pass baru di-assign, `pending_upgrade` dihapus. | ⚠️ Tidak bisa live-test — butuh nunggu real 28-hari renewal cycle atau akses ke cron/simulasi backend, tidak tersedia di environment tes ini. |
+| 8 | Klik **Cancel membership**. | Dialog konfirmasi: "Access continues until [tanggal renewal]. No further charges after that." Tombol "Keep membership" / "Yes, cancel". | ✅ Pass (live) — dialog persis sesuai: "Access continues until 15 Sep 2026. No further charges after that." + Keep membership / Yes, cancel. |
+| 9 | Confirm cancel. | `POST /subscriptions/me/cancel` dipanggil. Tombol "Cancel membership" hilang dari UI (subscription sudah cancelled/inactive). Banner cancelled/grace muncul di dashboard. | ✅ **FIXED (2026-08-15)** — Banner "Membership Cancelled" muncul benar setelah reload, TAPI tombol "Cancel membership" tetap tampil & klik-able (bug ditemukan live: dialog cancel muncul lagi untuk subscription yang sudah cancelled). Root cause: `isSubscriptionCanceledOrInactive` (`manage-membership-actions.tsx`) cuma cek string `billing_status` literal ("canceled"/"cancelled"/"inactive"), padahal subscription cancelled-tapi-masih-grace tetap `billing_status: "active"` dengan `cancel_at_period_end: true` — flag terpisah yang sebelumnya tidak diteruskan ke komponen ini. Fix: tambah prop `cancelAtPeriodEnd` (dari `billing.cancel_at_period_end`, diteruskan lewat `page.tsx` → `ManageTier` → `ManageMembershipActions`) + state `justCancelled` untuk optimistic-hide di tab yang sama tanpa reload. Type-check pass. Belum di-deploy/live-re-verify (perlu push dulu). |
+| 10 | Cek akses fitur selama grace/cancelled-tapi-belum-expired. | Akses tetap jalan sampai `nextRenewalIso` terlewati, sesuai pesan di step 8. | ✅ Pass (live) — setelah cancel, `/member/discounts` masih fully accessible (semua "Claim Deal" enabled, tidak ada gate), sesuai janji "Access continues until 15 Sep 2026". |
+| 11 | (Cross-check backend) Admin cancel subscription langsung dari Stripe dashboard (bukan dari app). | Webhook `customer.subscription.deleted` diterima → membership di-set inactive + draw_pass = 0 di sisi backend, tidak drift dari data app. | ⚠️ Tidak bisa ditest dari FE — ini murni backend webhook behavior, butuh akses Stripe dashboard admin & backend log/DB untuk verifikasi. Di luar scope FE testing. |
 
 ---
 

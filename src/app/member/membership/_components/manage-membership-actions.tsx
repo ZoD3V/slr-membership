@@ -25,6 +25,7 @@ interface ManageMembershipActionsProps {
     // Persisted scheduled change from memberships/me.pending_upgrade (A2, live 2026-07-26).
     scheduledChange: ScheduledTierChange | null;
     billingStatus: string | null;
+    cancelAtPeriodEnd: boolean;
 }
 
 interface ChangeOption {
@@ -43,20 +44,26 @@ export function ManageMembershipActions({
     currentSubTier,
     nextRenewalIso,
     scheduledChange,
-    billingStatus
+    billingStatus,
+    cancelAtPeriodEnd
 }: ManageMembershipActionsProps) {
     const [planOpen, setPlanOpen] = useState(false);
     const [cancelOpen, setCancelOpen] = useState(false);
     const [selected, setSelected] = useState<MemberSubTierId | null>(null);
     const [scheduled, setScheduled] = useState<ScheduledTierChange | null>(scheduledChange);
+    const [justCancelled, setJustCancelled] = useState(false);
     const [pending, startTransition] = useTransition();
 
+    // A cancelled-but-in-grace subscription keeps billing_status "active" — only
+    // cancel_at_period_end flips. justCancelled covers the same tab, same
+    // session (no server refetch yet) right after confirming cancel.
     const isSubscriptionCanceledOrInactive = useMemo(() => {
+        if (justCancelled || cancelAtPeriodEnd) return true;
         if (!billingStatus) return false;
         const status = billingStatus.toLowerCase();
 
         return status === 'canceled' || status === 'cancelled' || status === 'inactive';
-    }, [billingStatus]);
+    }, [billingStatus, cancelAtPeriodEnd, justCancelled]);
     // PRD locks sign-up, upgrade and downgrade during the Friday draw window.
     // Cancelling is not on that list, so it stays available.
     const safeHoursLocked = useSafeHours();
@@ -112,6 +119,7 @@ export function ManageMembershipActions({
             const res = await cancelMembershipAction();
             if (res.ok) {
                 setCancelOpen(false);
+                setJustCancelled(true);
                 toast.success('Membership cancellation scheduled.');
             } else {
                 toast.error(res.message);

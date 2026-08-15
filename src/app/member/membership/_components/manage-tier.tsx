@@ -10,6 +10,7 @@ interface ManageTierProps {
     nextRenewalIso: string | null;
     scheduledChange: ScheduledTierChange | null;
     billingStatus: string | null;
+    cancelAtPeriodEnd: boolean;
 }
 
 // Visitor → Stripe checkout (new subscription). Paid → schedule a tier change or
@@ -20,7 +21,8 @@ export function ManageTier({
     currentSubTier,
     nextRenewalIso,
     scheduledChange,
-    billingStatus
+    billingStatus,
+    cancelAtPeriodEnd
 }: ManageTierProps) {
     return isVisitor ? (
         <UpgradePlanPicker />
@@ -30,6 +32,7 @@ export function ManageTier({
             nextRenewalIso={nextRenewalIso}
             scheduledChange={scheduledChange}
             billingStatus={billingStatus}
+            cancelAtPeriodEnd={cancelAtPeriodEnd}
         />
     );
 }
