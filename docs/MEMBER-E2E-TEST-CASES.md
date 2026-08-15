@@ -17,7 +17,7 @@ Legend status: ✅ Pass · ❌ Fail · ⚠️ Partial/anomali · ⬜ Belum dites
 
 | Area | Status kode saat ini | PRD ref |
 |---|---|---|
-| **Referral page** (`/member/referral`) | Stub `ComingSoon` — belum ada kode/progress/history real | §4.9 |
+| **Referral page** (`/member/referral`) | ✅ 2026-08-15: BUILT — backend `GET /referral/` sudah live (dikonfirmasi via OpenAPI docs), FE ganti stub jadi halaman real: `resources/referral.ts`, `referral-section.tsx` (kode + Copy/Share, progress bar, bonus/gift history 2 varian per `tier_type`). Type-check + `npm run build` pass. Belum di-push/live-verify. | §4.9 |
 | **Spin Wheel Moment 2** (24h sebelum renewal) | ✅ 2026-08-15: FE lengkap (`RenewalSpinCard`, gating `spinEligible`), `GET /spin/status` live merespons shape benar. Belum live-tested karena tidak ada cara memaksa akun masuk window 24 jam pra-renewal — cron/timing-nya sendiri belum terverifikasi jalan. | §4.5 |
 | **Membership card + QR code** | Tidak ditemukan di `/member/profile` — kemungkinan belum dibangun | §4.7 |
 | **BENY charge** | ✅ 2026-08-15: RESOLVED — backend ternyata sudah kirim `checkout_url` (Stripe Checkout Session asli), FE-nya yang buang field itu (tidak pernah redirect member ke checkout). Sudah di-fix di FE (`resources/beny.ts`, `beny-actions.ts`, `beny-section.tsx`). Lihat Suite 7 langkah 5. | §4.4 |
@@ -226,15 +226,15 @@ Jika salah satu di atas ternyata sudah berubah (misal Referral sudah live), cata
 
 ---
 
-## TEST SUITE 13 — Referral (`/member/referral`) — Known Gap
+## TEST SUITE 13 — Referral (`/member/referral`)
 
-**PRD ref:** §4.9. Saat ini halaman masih stub `ComingSoon`.
+**PRD ref:** §4.9. Dibangun 2026-08-15 (sebelumnya stub `ComingSoon`) — backend `GET /referral/` sudah live, kontrak dikonfirmasi via OpenAPI docs.
 
 | No | Langkah Pengujian | Hasil yang Diharapkan | Status |
 |---|---|---|:---:|
-| 1 | Buka `/member/referral`. | Jika masih stub: tampil pesan "Coming Soon — Invite friends and earn bonus tokens...". Ini BUKAN bug, jangan tandai FAIL — catat sebagai konfirmasi status. | |
-| 2 | Jika sudah live (recheck sebelum tes): kode referral tampil uppercase, tombol Copy & Share. | Sesuai PRD — record hasil aktual. | |
-| 3 | Jika sudah live: cek progress counter & bonus history sesuai tier (RED/BLUE = +3 token/10 referral; Visitor = gift manual admin). | Sesuai PRD §4.9 dua varian. | |
+| 1 | Buka `/member/referral`. | Halaman render kode referral, bukan stub. | ⚠️ Verified via code + `npm run build` only — belum di-push, jadi belum bisa live-test di `dev.smartliferewards.com.au`. Live-retest setelah push. |
+| 2 | Kode referral tampil uppercase, tombol Copy & Share. | Kode di-uppercase-kan (CSS `uppercase`), Copy pakai `navigator.clipboard`, Share pakai `navigator.share` dengan fallback copy-to-clipboard (pola sama persis dengan `ebook-reader.tsx` yang sudah live-tested Suite 9). | ⚠️ Verified via code only — sama, tunggu push untuk live-retest. |
+| 3 | Progress counter & bonus/gift history sesuai tier (RED/BLUE = bonus token per `progress_to_next`; Visitor = gift manual admin, `admin_note` dari admin). | Dua varian render sesuai `tier_type` dari API (`paid` → `bonus_history` + token count; `visitor` → `gift_history` + status/catatan admin), sesuai PRD §4.9. | ⚠️ Verified via code only — request/response shape dicocokkan 1:1 ke OpenAPI schema live (`GET /api/v1/referral/`), tapi field asli (jumlah referral riil, history) belum bisa dilihat tanpa akun dengan referral aktivitas sungguhan + setelah push. |
 
 ---
 
@@ -242,11 +242,11 @@ Jika salah satu di atas ternyata sudah berubah (misal Referral sudah live), cata
 
 | No | Cek | Hasil yang Diharapkan | Status |
 |---|---|---|:---:|
-| 1 | Grep visual di semua halaman member: apakah ada angka draw_pass mentah ditampilkan? | TIDAK ADA DI MANA PUN. Hanya `entry_status` (active/inactive) atau token count yang boleh muncul. | |
-| 2 | Semua link/redirect ke Stripe (Checkout, Billing Portal, hosted invoice). | Selalu buka tab baru (`target="_blank"` + `rel="noopener noreferrer"`). | |
-| 3 | Semua form Stripe card details. | TIDAK ADA form kartu custom di app — selalu redirect ke Stripe hosted page. | |
-| 4 | Cek semua state loading/error di setiap halaman (matikan network sebentar). | Ada fallback error state yang jelas, tidak crash blank page. | |
-| 5 | Cek konsistensi entry/token count lintas halaman (Dashboard, Giveaways, Entry History). | Angka sama di ketiga tempat untuk akun yang sama. | |
+| 1 | Grep visual di semua halaman member: apakah ada angka draw_pass mentah ditampilkan? | TIDAK ADA DI MANA PUN. Hanya `entry_status` (active/inactive) atau token count yang boleh muncul. | ✅ Pass — grep `draw_pass` di seluruh `src/app/member` & `src/components/common`: cuma muncul di komentar penjelasan (`membership-summary-card.tsx:113-114`, `entry-status-badge.tsx:5`), tidak ada satupun yang dirender ke UI. |
+| 2 | Semua link/redirect ke Stripe (Checkout, Billing Portal, hosted invoice). | Selalu buka tab baru (`target="_blank"` + `rel="noopener noreferrer"`). | ✅ **FIXED (2026-08-15)** — grep semua redirect Stripe: `grace-banner.tsx`, `manage-billing-button.tsx`, hosted invoice link (`membership/page.tsx`), sign-up `step-checkout.tsx` semua sudah `_blank`. TAPI ditemukan 1 outlier: `upgrade-plan-picker.tsx:46` (checkout Visitor→paid dari `/member/membership`) pakai `window.location.href` (same-tab) — satu-satunya redirect Stripe di codebase yang beda dari pola, padahal action (`startSubTierCheckout`) & tujuan (hosted Checkout) identik dengan sign-up flow yang sudah benar `_blank`. Fixed: ganti ke `window.open(res.url, '_blank', 'noopener,noreferrer')` sama seperti `step-checkout.tsx`. Type-check pass. |
+| 3 | Semua form Stripe card details. | TIDAK ADA form kartu custom di app — selalu redirect ke Stripe hosted page. | ✅ Pass — grep `CardElement`/`@stripe/react-stripe-js`/`cardNumber` di seluruh `src`: nihil. |
+| 4 | Cek semua state loading/error di setiap halaman (matikan network sebentar). | Ada fallback error state yang jelas, tidak crash blank page. | ✅ Pass (code review) — semua 8 halaman member (`/member`, `/member/discounts`, `/member/ebooks`, `/member/entry-history`, `/member/giveaways`, `/member/membership`, `/member/prizes`, `/member/referral`) punya guard `failed`/`EmptyState` yang konsisten (try/catch di server component + `handleApiAuthError`), tidak ada yang render blank/crash saat fetch gagal. Live-tested langsung untuk beberapa (Suite 5/9 "Unavailable" state), sisanya diverifikasi lewat pola kode yang identik. |
+| 5 | Cek konsistensi entry/token count lintas halaman (Dashboard, Giveaways, Entry History). | Angka sama di ketiga tempat untuk akun yang sama. | ✅ Pass — sudah live-tested di Suite 11 step 6: akun `spintest-20260815-01` (R7) Total=7 konsisten di Entry History & Dashboard "Entries per draw". Selisih "0 entries" di draw card tertentu sudah diinvestigasi & bukan bug (draw belum `active`). |
 
 ---
 

@@ -43,7 +43,7 @@ export function UpgradePlanPicker() {
         startTransition(async () => {
             const res = await startSubTierCheckout(selected);
             if (res.ok) {
-                window.location.href = res.url; // hosted Stripe Checkout
+                window.open(res.url, '_blank', 'noopener,noreferrer'); // hosted Stripe Checkout
             } else {
                 setError(res.message);
                 toast.error(res.message);

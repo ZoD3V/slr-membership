@@ -119,5 +119,9 @@ export const API = {
         status: '/api/v1/spin/status',
         execute: '/api/v1/spin/execute'
     },
-    subscriptions: { cancel: '/api/v1/subscriptions/me/cancel' }
+    subscriptions: { cancel: '/api/v1/subscriptions/me/cancel' },
+    referral: {
+        status: '/api/v1/referral/',
+        validate: '/api/v1/referral/validate'
+    }
 } as const;
