@@ -2,7 +2,7 @@
 
 import { goldButtonStyle } from '@/lib/styles';
 
-import { Download, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 
 interface PdfEbookViewerProps {
     pdfUrl: string;
@@ -12,7 +12,8 @@ interface PdfEbookViewerProps {
 /**
  * Renders a PDF ebook inline via a native <object>. When the browser can't
  * embed a PDF (common on mobile), the <object> fallback content shows a
- * branded download / open-in-new-tab CTA instead.
+ * branded open-in-new-tab CTA instead. No download affordance — PRD: no
+ * download/offline reading on web (mobile-only).
  */
 export function PdfEbookViewer({ pdfUrl, title }: PdfEbookViewerProps) {
     return (
@@ -28,7 +29,7 @@ export function PdfEbookViewer({ pdfUrl, title }: PdfEbookViewerProps) {
                             Open “{title}”
                         </h2>
                         <p className='text-slr-muted mt-2 max-w-md text-sm leading-relaxed'>
-                            Your browser can’t display this PDF inline. Download it or open it in a new tab to read.
+                            Your browser can’t display this PDF inline. Open it in a new tab to read.
                         </p>
                         <div className='mt-5 flex flex-wrap items-center justify-center gap-3'>
                             <a
@@ -39,24 +40,9 @@ export function PdfEbookViewer({ pdfUrl, title }: PdfEbookViewerProps) {
                                 style={goldButtonStyle}>
                                 Open PDF <ExternalLink className='size-4' />
                             </a>
-                            <a
-                                href={pdfUrl}
-                                download
-                                className='border-slr-navy-border text-slr-muted hover:text-foreground inline-flex h-11 items-center justify-center gap-2 rounded-xl border px-6 text-sm font-bold uppercase transition-colors'>
-                                Download <Download className='size-4' />
-                            </a>
                         </div>
                     </div>
                 </object>
-            </div>
-
-            <div className='mt-4 flex justify-end'>
-                <a
-                    href={pdfUrl}
-                    download
-                    className='text-slr-muted hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors'>
-                    <Download className='size-3.5' /> Download PDF
-                </a>
             </div>
         </div>
     );

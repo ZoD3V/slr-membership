@@ -86,7 +86,12 @@ export function BenySection({
                     email: userProfile?.email ?? '',
                     phone: userProfile?.phone ?? ''
                 });
-                toast.success('BENY requested — pending admin activation.');
+                if (res.checkoutUrl) {
+                    window.open(res.checkoutUrl, '_blank', 'noopener,noreferrer');
+                    toast.success('Complete your $4/month payment in the new tab to finish adding BENY.');
+                } else {
+                    toast.success('BENY requested — pending admin activation.');
+                }
             } else {
                 toast.error(res.code ? `${res.message} (${res.code})` : res.message);
             }

@@ -40,6 +40,15 @@ export interface BenyStatusResponse {
     expires_at?: string | null;
 }
 
+// POST /beny/subscribe now also returns a hosted Stripe Checkout session for the
+// $4/mo charge (confirmed live 2026-08-15 — `stripe_subscription_id` on the admin
+// record is a real `cs_test_...` Checkout Session id). The member must complete
+// that checkout — the pending record alone does not collect payment.
+export interface BenySubscribeResponse extends BenyStatusResponse {
+    checkout_url?: string | null;
+    session_id?: string | null;
+}
+
 // POST /beny/subscribe requires `name` (not `full_name`), plus email + phone.
 export interface BenySubscribePayload {
     name: string;
@@ -54,9 +63,9 @@ export const getBenyStatus = cache((token: string) =>
     apiFetch<BenyStatusResponse>(API.beny.status, { token, cache: 'no-store' })
 );
 
-/** Subscribe to the BENY add-on. Collects contact details; backend creates a pending record. */
+/** Subscribe to the BENY add-on. Collects contact details; backend creates a pending record + Stripe Checkout session. */
 export const subscribeBeny = (token: string, body: BenySubscribePayload) =>
-    apiFetch<BenyStatusResponse>(API.beny.subscribe, { method: 'POST', token, body });
+    apiFetch<BenySubscribeResponse>(API.beny.subscribe, { method: 'POST', token, body });
 
 /**
  * Cancel the BENY add-on.

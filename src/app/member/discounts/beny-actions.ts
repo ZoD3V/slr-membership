@@ -5,7 +5,7 @@ import { getAccessToken } from '@/lib/api/server';
 import { ApiError } from '@/lib/api/types';
 
 type BenyActionResult =
-    | { ok: true; status: BenyStatusValue; message: string }
+    | { ok: true; status: BenyStatusValue; message: string; checkoutUrl?: string | null }
     | { ok: false; message: string; code?: string | null };
 
 function toBenyError(error: unknown): BenyActionResult {
@@ -22,16 +22,18 @@ export async function subscribeBenyAction(payload: BenySubscribePayload): Promis
     const token = await getAccessToken();
     if (!token) return { ok: false, message: 'Not authenticated.' };
 
-    // ⚠️ BACKEND BLOCK — remove this comment once Stripe is wired.
-    // PRD §1: the BENY add-on must redirect to Stripe Checkout ($4/mo) BEFORE the
-    // pending record is created. The live POST /beny/subscribe creates the pending
-    // subscription immediately WITHOUT collecting payment (no checkout URL in the
-    // response). We call it directly for now; once the backend returns a Stripe
-    // checkout session, redirect to it here and let the webhook create the pending.
+    // PRD §1: the BENY add-on must redirect to Stripe Checkout ($4/mo). The live
+    // POST /beny/subscribe now returns `checkout_url` alongside the pending record
+    // — the caller must open it so the member actually pays.
     try {
         const data = await subscribeBeny(token, payload);
 
-        return { ok: true, status: data.beny_status ?? 'pending_activation', message: 'BENY subscription requested.' };
+        return {
+            ok: true,
+            status: data.beny_status ?? 'pending_activation',
+            message: 'BENY subscription requested.',
+            checkoutUrl: data.checkout_url ?? null
+        };
     } catch (error) {
         return toBenyError(error);
     }

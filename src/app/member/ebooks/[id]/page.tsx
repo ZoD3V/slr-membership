@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { EbookReader, type ReaderChapter } from '@/components/common/ebook-reader';
 import { PdfEbookViewer } from '@/components/common/pdf-ebook-viewer';
 import { handleApiAuthError } from '@/lib/api/guard';
-import { type EbookChapter, type EbookDetail, getEbook } from '@/lib/api/resources/ebooks';
+import { type EbookChapter, type EbookDetail, getEbook, getEbooks } from '@/lib/api/resources/ebooks';
 import { getAccessToken } from '@/lib/api/server';
 import { ApiError } from '@/lib/api/types';
 import { formatShortDate } from '@/lib/member';
@@ -108,6 +108,12 @@ export default async function EbookReaderPage({ params }: { params: Promise<{ id
     const isPdf = Boolean(ebook.pdf_url);
     const chapters = isPdf ? [] : toReaderChapters(ebook.chapters);
 
+    // "Next Ebook" walks the same catalog order shown on /member/ebooks — the
+    // last item falls back to the listing rather than wrapping around.
+    const list = await getEbooks(token);
+    const currentIndex = list.findIndex((item) => item.ebook_id === id);
+    const nextEbook = currentIndex >= 0 ? (list[currentIndex + 1] ?? null) : null;
+
     return (
         <div className='flex-1'>
             {/* Hero */}
@@ -161,8 +167,8 @@ export default async function EbookReaderPage({ params }: { params: Promise<{ id
                         finishLabel={`You Finished ${ebook.title}`}
                         shareTitle={ebook.title}
                         shareText={`Read "${ebook.title}" on SLR Rewards.`}
-                        nextHref='/member/ebooks'
-                        nextLabel='More E-Books'
+                        nextHref={nextEbook ? `/member/ebooks/${nextEbook.ebook_id}` : '/member/ebooks'}
+                        nextLabel={nextEbook ? `Next: ${nextEbook.title}` : 'More E-Books'}
                     />
                 </section>
             )}
