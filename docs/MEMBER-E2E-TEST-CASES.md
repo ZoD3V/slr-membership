@@ -36,7 +36,7 @@ Jika salah satu di atas ternyata sudah berubah (misal Referral sudah live), cata
 | 2 | Isi DOB tepat/di atas 18 tahun, submit step 1. | Lanjut ke Step 2 (Tier Selection). | ✅ |
 | 3 | Pilih **Visitor (Free)**. | Tidak ada step Spin Wheel (Visitor tidak eligible spin). Lanjut ke step verifikasi email/OTP. | ✅ |
 | 4 | Cek inbox email test, masukkan kode OTP di `step-otp.tsx`. | OTP valid → akun aktif langsung (tanpa Stripe). | ✅ (email delay beberapa menit, bukan bug) |
-| 5 | Masukkan OTP salah/kadaluarsa. | Error ditampilkan, ada opsi resend OTP. | ⬜ Belum dites (kode valid langsung dipakai; tombol resend dikonfirmasi ada tapi skenario salah/expired belum dicoba) |
+| 5 | Masukkan OTP salah/kadaluarsa. | Error ditampilkan, ada opsi resend OTP. | ✅ Pass — OTP salah ditolak, error message muncul, tidak bisa lanjut. |
 | 6 | Setelah OTP sukses, cek dashboard member. | Akun status `active`. Tier = Visitor. 1 token/cycle. draw_pass TIDAK pernah ditampilkan sebagai angka di UI manapun. | ✅ |
 | 7 | Buka `/member/giveaways`. | Visitor hanya melihat draw Visitor mingguan ($25 Coles Digital Credit) — tab RED/BLUE TIDAK dirender sama sekali. | ✅ |
 | 8 | Buka `/member/ebooks`, klik salah satu judul. | Listing terlihat, tapi konten full terkunci dengan CTA upgrade (Visitor tidak dapat akses penuh). | ✅ |
@@ -52,11 +52,11 @@ Jika salah satu di atas ternyata sudah berubah (misal Referral sudah live), cata
 | 1 | Set waktu sistem/simulasi ke Jumat 16:00–19:00 (Safe Hours window), buka `/sign-up`, coba submit. | Tombol registrasi/lanjut ke checkout disabled, pesan "coba lagi setelah 19:00" muncul (`SafeHoursNotice`). | ✅ Diverifikasi via API (`manual_override:FORCE_LOCK`) untuk 3 endpoint: `/auth/register`, `/memberships/upgrade`, `/membership/checkout`. **Bug ditemukan & fixed**: `/membership/checkout` sempat 200 tembus ke Stripe walau lock aktif — sekarang 403 SAFE_HOURS_LOCKED. FE client-side gate (`useSafeHours`) hardcoded ke jam asli Jumat 16-19, tidak baca config admin (advisory only, by design). |
 | 2 | Di luar Safe Hours, isi form registrasi dengan DOB valid (≥18 th). Klik Next. | Lanjut ke Step 2 (Tier Selection). | ✅ |
 | 3 | Pilih **R1** atau **B1** (tanpa spin wheel). Klik Next. | Langsung ke step checkout — **tidak ada** step Spin Wheel (R1/B1/Visitor tidak eligible). | ✅ (dites dengan B1) |
-| 4 | Ulangi registrasi baru, pilih **R4/R7/B4/B7/B10** (token-upgrade tier). | Step Spin Wheel muncul sebelum Stripe Checkout. | ⬜ Belum dites |
-| 5 | Klik **Spin**. | Wheel animasi, hasil 1/4 odds (menang/kalah), hasil tercatat untuk audit. | ⬜ Belum dites |
-| 6 | Jika menang → lanjut checkout. | Diskon sesuai tabel (R4 $5 / R7 $10 / B4 $10 / B7 $15 / B10 $20) otomatis diterapkan ke harga Stripe. | ⬜ Belum dites |
-| 7 | Refresh halaman / reload di tengah step spin wheel. | Spin TIDAK reset — user tidak bisa spin ulang meski refresh (spin diikat ke user + moment `registration`, bukan ke sub-tier). | ⬜ Belum dites |
-| 8 | **[Anti-abuse]** Setelah kalah/menang di R4, coba ganti tier ke R7 sebelum bayar (jika ada opsi ganti tier saat pending), lalu cek apakah muncul spin baru. | Spin TIDAK boleh muncul lagi — eligibility dicek per user+moment, bukan per sub-tier. Jika sebelumnya menang di R4 lalu pindah ke R7, diskon ikut ke harga R7 (proporsional, bukan diskon flat lama). | ⬜ Belum dites |
+| 4 | Ulangi registrasi baru, pilih **R4/R7/B4/B7/B10** (token-upgrade tier). | Step Spin Wheel muncul sebelum Stripe Checkout. | ✅ Pass — akun baru `spintest-20260815-01@careney.com` (R7 Premium), step "One free spin" muncul sebelum checkout. Wheel 8 segmen, 2/8 "$10 off" (= 1/4 odds, match PRD). |
+| 5 | Klik **Spin**. | Wheel animasi, hasil 1/4 odds (menang/kalah), hasil tercatat untuk audit. | ✅ Pass — menang "$10 off". Dikonfirmasi tercatat di `GET /admin/spin/history`: `result:"win", discount_cents:1000, applied:true, moment:"registration"`. Record "lose" historis lain juga ditemukan konsisten (`discount_cents:0, applied:false`). |
+| 6 | Jika menang → lanjut checkout. | Diskon sesuai tabel (R4 $5 / R7 $10 / B4 $10 / B7 $15 / B10 $20) otomatis diterapkan ke harga Stripe. | ✅ Pass — order review app: Subtotal $30 → Spin discount -$10 ("first month only") → Due today $20, "$30/month dari next billing". Dikonfirmasi ulang di halaman Stripe Checkout asli: Subtotal A$30.00 → Spin Wheel Discount -A$10.00 → Total due today A$20.00. Selesai bayar (kartu test 4242...) → `/auth/me` konfirmasi `billing_status:"active"`, `sub_tier:"r7"`, `token:7`. |
+| 7 | Refresh halaman / reload di tengah step spin wheel. | Spin TIDAK reset — user tidak bisa spin ulang meski refresh (spin diikat ke user + moment `registration`, bukan ke sub-tier). | ✅ Pass — akun kedua `spintest-20260815-02@careney.com` (R4 Plus, menang $5 off). Setelah "refresh" (re-login + re-fetch), `GET /spin/status` → `available:false`; percobaan `POST /spin/execute` lagi → `409 CONFLICT "No spin is currently available for your account..."`. Server-side enforced, bukan cuma state client. |
+| 8 | **[Anti-abuse]** Setelah kalah/menang di R4, coba ganti tier ke R7 sebelum bayar (jika ada opsi ganti tier saat pending), lalu cek apakah muncul spin baru. | Spin TIDAK boleh muncul lagi — eligibility dicek per user+moment, bukan per sub-tier. Jika sebelumnya menang di R4 lalu pindah ke R7, diskon ikut ke harga R7 (proporsional, bukan diskon flat lama). | ✅ Pass — akun `spintest-20260815-02` (menang $5 di R4), dari layar `/complete-payment` klik **Change plan** → pilih SLR RED Premium (R7) → checkout session BARU dibuat, tidak ada spin baru ditawarkan. Diskon di Stripe checkout ter-reprice otomatis jadi "Spin Wheel Discount (**Premium**)" -A$10.00 (Subtotal A$30) — BUKAN $5 flat lama dari R4. Sesuai spec persis. |
 | 9 | Lanjut ke Stripe Checkout, bayar dengan kartu test `4242 4242 4242 4242`. | Redirect ke Stripe hosted checkout, nominal sesuai tier − diskon spin (jika menang). | ✅ (dites dengan B1, tanpa spin) |
 | 10 | Selesaikan pembayaran. | Redirect ke `/complete-payment?status=...` → polling `GET /billing/status` → status jadi `active`, token + 4 draw_pass di-assign, draw pool state ditentukan. Welcome email + invoice terkirim. | ✅ Diverifikasi via `GET /auth/me`: `billing_status:"active"`, token assigned, `current_cycle` terisi |
 | 11 | Klik **Sign In to Dashboard**, login ulang. | Masuk langsung ke `/member` dashboard, tidak diarahkan ke complete-payment lagi. | ✅ |
@@ -76,7 +76,6 @@ Jika salah satu di atas ternyata sudah berubah (misal Referral sudah live), cata
 | 5 | Coba daftar ulang dengan email yang SAMA (masih pending_payment). | Sistem TIDAK overwrite akun. Muncul pesan ramah "sudah pernah daftar, silakan login untuk lanjut bayar" + link forgot-password. Bukan dead-end, bukan overwrite. | ✅ Pesan "You've already started signing up with this email. Log in to finish your payment." → redirect ke `/sign-in?email=...` |
 | 6 | Klik forgot-password dari pesan tsb, reset password, login. | Forgot-password bekerja normal untuk akun berstatus pending_payment. | ✅ (setelah fix — lihat catatan bug di bawah). Diverifikasi login dengan password baru via API 200 pada akun `pending_payment` |
 | 7 | (Manual/DB check — opsional) Biarkan akun pending_payment >7 hari tanpa bayar. | Akun ditandai abandoned/deleted, email & phone dibebaskan (verifikasi via admin/backend, bukan FE). | ⏭️ Skip (perlu waktu 7 hari nyata / akses DB backend) |
-| 8 | Dari layar pending, pilih ganti ke **Visitor**. | Alur berpindah ke `pending_otp` → verifikasi OTP seperti registrasi Visitor normal (tanpa Stripe). | 🚧 Known Gap — tidak ada opsi ini di UI (kode eksplisit "Visitor is free and never reaches checkout"), dan tidak ada endpoint backend untuk convert `pending_payment`→Visitor. PRD hanya sebutkan opsi Visitor untuk skenario **Stripe payment FAILURE** (kartu ditolak) di catatan dev section "Giveaway/Draw Cycle" — bukan untuk cancel/abandon manual, dan karena Stripe Checkout hosted, app tidak pernah menerima sinyal "failure" terpisah dari "cancelled". Kemungkinan besar dimaksudkan sebagai proses backend otomatis (lihat langkah 7), bukan tombol UI. |
 
 ---
 
@@ -254,10 +253,11 @@ Jika salah satu di atas ternyata sudah berubah (misal Referral sudah live), cata
 ## Ringkasan Hasil
 
 **Total test case:** ~90+ langkah lintas 13 suite.
-**Progress:** Suite 1-3 selesai dites (2026-08-13/14). Suite 4-13 belum dimulai.
-**Suite dengan FAIL:** Tidak ada FAIL murni — 2 bug ditemukan di Suite 2/3, keduanya sudah di-fix dan diverifikasi ulang (lihat catatan di bawah).
-**Known Gap yang dikonfirmasi masih gap:** Suite 3 langkah 8 (switch ke Visitor dari layar pending payment) — tidak ada di FE maupun BE.
-**Known Gap yang ternyata sudah berubah (butuh update dokumen ini):** Belum ada — 4 known gaps di bagian atas dokumen belum di-recheck.
+**Progress:** Suite 1-9 selesai dites (2026-08-13 s/d 2026-08-15). Suite 10-13 belum dimulai.
+**Suite dengan FAIL:** Tidak ada FAIL murni — 8 bug ditemukan lintas Suite 2/3/5/7/9, semua sudah di-fix (backend atau FE) dan diverifikasi ulang (lihat catatan di bawah).
+**Known Gap yang dikonfirmasi masih gap:** Spin Wheel Moment 2 (Suite 8) — FE lengkap, tapi cron/timing 24-jam-pra-renewal belum bisa dibuktikan live. Membership card+QR (§4.7) belum di-recheck.
+**Known Gap yang sudah dihapus dari scope:** Suite 3 langkah 8 (switch ke Visitor dari layar pending payment) — dihapus dari dokumen atas instruksi (bukan gap yang perlu di-track lagi).
+**Known Gap yang ternyata sudah berubah:** BENY charge (Suite 7 langkah 5) — RESOLVED, lihat #5 di bawah.
 **Catatan tambahan / bug baru ditemukan:**
 ```
 1. [FIXED oleh backend] PUT /api/v1/admin/safe-hours sempat 500 INTERNAL_ERROR untuk
@@ -285,4 +285,38 @@ Jika salah satu di atas ternyata sudah berubah (misal Referral sudah live), cata
    menampilkannya sebagai "Current Draw" aktif (FE memilih giveaway aktif
    murni dari draws_at > now, tidak ada flag "closed" terpisah di response
    list). Bukan bug kode — housekeeping data test.
+
+5. [FIXED di FE] resources/beny.ts / beny-actions.ts / beny-section.tsx —
+   backend POST /beny/subscribe sekarang mengembalikan checkout_url + session_id
+   (Stripe Checkout Session asli, dikonfirmasi via OpenAPI + stripe_subscription_id
+   riil di record admin BENY), tapi FE cuma baca beny_status dan membuang field
+   itu — member TIDAK PERNAH diarahkan bayar $4/mo, langsung dapat status
+   pending_activation tanpa payment. Fixed: checkout_url sekarang dipakai untuk
+   window.open(_blank, noopener/noreferrer) setelah subscribe sukses. Revenue
+   leak sebelum fix ini.
+
+6. [FIXED di FE] components/common/pdf-ebook-viewer.tsx — 2 e-book format lama
+   ("React JS Ebooks", "Next JS Ebook") punya tombol "Download" eksplisit
+   (download attribute), melanggar rule "no download/offline on web
+   (mobile-only)". Fixed: link download dihapus, sisa "Open PDF" (tab baru).
+
+7. [FIXED di FE] app/member/ebooks/[id]/page.tsx — tombol akhir halaman baca
+   berlabel "More E-Books" hardcode ke /member/ebooks (listing), bukan
+   "Next Ebook" spesifik sesuai PRD. Fixed: sekarang hitung ebook berikutnya
+   dari urutan katalog yang sama dengan listing; item terakhir tetap fallback
+   ke listing.
+
+8. [Removed by design] Notification bell in-app di member header dihapus
+   (notifications-panel.tsx, resources/notifications.ts, endpoint
+   /notifications, tipe MemberNotification/NotificationType) — keputusan
+   scope: semua notifikasi member sekarang lewat email (Mailjet) saja, bukan
+   bug.
 ```
+
+**Suite 2 Spin Wheel (Moment 1) — live-tested penuh 2026-08-15** dengan 2 akun
+baru (`spintest-20260815-01/02@careney.com`, R7 & R4): odds 1/4 (2/8 segmen),
+diskon sesuai tabel ($10 untuk R7, $5 untuk R4), tercatat di
+`GET /admin/spin/history` untuk audit, tidak bisa spin ulang (409 CONFLICT
+server-side), dan anti-abuse tier-switch bekerja benar — pindah tier
+sebelum bayar me-reprice diskon ke tarif tier baru (BUKAN flat lama),
+tanpa spin baru ditawarkan.
