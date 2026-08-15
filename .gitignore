@@ -45,3 +45,4 @@ graphify-out/
 
 # subagent-driven-development scratch (ledgers, briefs, review packages)
 .superpowers/
+.playwright-mcp
