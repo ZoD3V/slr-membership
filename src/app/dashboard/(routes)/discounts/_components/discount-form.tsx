@@ -111,19 +111,23 @@ export function DiscountForm({ initialData }: DiscountFormProps) {
                 isFeatured: values.isFeatured
             };
 
-            let res;
-            if (initialData) {
-                res = await updateDiscountAction(initialData.id, payload);
-            } else {
-                res = await createDiscountAction(payload);
-            }
+            try {
+                const res = initialData
+                    ? await updateDiscountAction(initialData.id, payload)
+                    : await createDiscountAction(payload);
 
-            if (res.ok) {
-                toast.success(res.message);
-                router.push('/dashboard/discounts');
-                router.refresh();
-            } else {
-                toast.error(res.code ? `${res.message} (${res.code})` : res.message);
+                if (res.ok) {
+                    toast.success(res.message);
+                    router.push('/dashboard/discounts');
+                    router.refresh();
+                } else {
+                    toast.error(res.code ? `${res.message} (${res.code})` : res.message);
+                }
+            } catch {
+                // The server action can reject instead of resolving with
+                // { ok: false } — without this, the button is left stuck and
+                // the admin gets no feedback that the save failed.
+                toast.error('Something went wrong. Please try again.');
             }
         });
     };

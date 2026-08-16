@@ -1,5 +1,7 @@
 import { cache } from 'react';
 
+import { subTierCodeOf } from '@/lib/member';
+
 import { API } from '../endpoints';
 import { apiFetch } from '../http';
 
@@ -152,7 +154,20 @@ const SUB_TIER_ORDER: Record<string, number> = {
 export const getMembershipStats = cache(async (token: string): Promise<SubTierCount[]> => {
     const raw = await apiFetch<RawSubTierStat[]>(API.memberships.stats, { token, cache: 'no-store' });
 
-    return raw
-        .map((r) => ({ subTierId: r.subTierId || '-', count: r._count?._all ?? 0 }))
-        .sort((a, b) => (SUB_TIER_ORDER[a.subTierId] ?? 99) - (SUB_TIER_ORDER[b.subTierId] ?? 99));
+    // The API can emit more than one raw subTierId for "no real sub-tier"
+    // (null vs the literal string "visitor") — both resolve to the same
+    // VISITOR display code downstream, so they're merged here rather than
+    // rendered as two separate "Visitor" chips.
+    const merged = new Map<string, { subTierId: string; count: number }>();
+    for (const r of raw) {
+        const code = subTierCodeOf(r.subTierId).toLowerCase();
+        const count = r._count?._all ?? 0;
+        const existing = merged.get(code);
+        if (existing) existing.count += count;
+        else merged.set(code, { subTierId: code, count });
+    }
+
+    return Array.from(merged.values()).sort(
+        (a, b) => (SUB_TIER_ORDER[a.subTierId] ?? 99) - (SUB_TIER_ORDER[b.subTierId] ?? 99)
+    );
 });

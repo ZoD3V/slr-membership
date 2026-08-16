@@ -102,18 +102,27 @@ export function WinnerForm({
                 prize: values.prize
             };
 
-            const res = initialData
-                ? await updateWinnerAction(initialData.winnerId, payload)
-                : await createWinnerAction(payload);
+            try {
+                const res = initialData
+                    ? await updateWinnerAction(initialData.winnerId, payload)
+                    : await createWinnerAction(payload);
 
-            setPendingValues(null);
+                setPendingValues(null);
 
-            if (res.ok) {
-                toast.success(res.message);
-                router.push('/dashboard/winners');
-                router.refresh();
-            } else {
-                toast.error(res.message);
+                if (res.ok) {
+                    toast.success(res.message);
+                    router.push('/dashboard/winners');
+                    router.refresh();
+                } else {
+                    toast.error(res.message);
+                }
+            } catch {
+                // The server action can reject instead of resolving with
+                // { ok: false } (e.g. the draw-date-not-passed check) — without
+                // this, that rejection is silently swallowed and the admin
+                // sees no feedback at all.
+                setPendingValues(null);
+                toast.error('Something went wrong. Please try again.');
             }
         });
     };

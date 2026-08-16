@@ -298,10 +298,24 @@ export interface SpinHistoryMeta {
 export type NotificationChannel = 'email' | 'sms';
 export type NotificationLogStatus = 'sent' | 'failed' | 'pending';
 
-// The API types `type` as a bare string with no enum. These are the three
-// values production has actually emitted across 44 log rows; unknown values
-// must still render rather than being dropped.
-export const KNOWN_NOTIFICATION_TYPES = ['welcome', 'otp', 'password_reset'] as const;
+// The API types `type` as a bare string with no enum. These are every value
+// production has actually emitted — the 10 real template types plus the two
+// auth-flow types that only ever appear in logs (never editable templates);
+// unknown values must still render rather than being dropped.
+export const KNOWN_NOTIFICATION_TYPES = [
+    'welcome',
+    'otp',
+    'password_reset',
+    'email_verification',
+    'payment_confirmation',
+    'payment_failed',
+    'referral_bonus',
+    'spin_reminder',
+    'tier_change',
+    'beny_activation',
+    'draw_reminder',
+    'draw_result'
+] as const;
 export type KnownNotificationType = (typeof KNOWN_NOTIFICATION_TYPES)[number];
 
 export interface NotificationTemplate {
