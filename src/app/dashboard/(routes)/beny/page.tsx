@@ -3,7 +3,7 @@ import type { ListError } from '@/components/common/list-error-card';
 import Heading from '@/components/ui/heading';
 import { handleApiAuthError } from '@/lib/api/guard';
 import { toListError } from '@/lib/api/list-error';
-import { getBenyPending, getBenySubscriptions } from '@/lib/api/resources/admin';
+import { getAllBenySubscriptions, getBenyPending, getBenySubscriptions } from '@/lib/api/resources/admin';
 import { getAccessToken } from '@/lib/api/server';
 import { formatDateTime as formatDate } from '@/lib/member';
 
@@ -20,29 +20,26 @@ export default async function BenyPage({ searchParams }: { searchParams: Promise
 
     if (token) {
         try {
-            let res;
+            let items: any[] = [];
             if (initialTab === 'pending_deactivation') {
                 // Backend does not support ?status=pending_deactivation and 400s.
-                // Fetch all items and filter client side.
-                res = await getBenySubscriptions('', token, 1, 200);
+                // Walk every page (not just the first) and filter client side, so
+                // results stay complete regardless of total account count.
+                items = await getAllBenySubscriptions(token);
+                items = items.filter((b: any) => (b.status || '').toLowerCase() === 'pending_deactivation');
             } else {
-                res = await getBenySubscriptions(initialTab, token, 1, 200).catch((err) => {
+                const res = await getBenySubscriptions(initialTab, token, 1, 100).catch((err) => {
                     if (initialTab === 'pending_activation') {
                         return getBenyPending(token);
                     }
                     throw err;
                 });
-            }
 
-            let items: any[] = [];
-            if (Array.isArray(res)) {
-                items = res;
-            } else if (res && typeof res === 'object') {
-                items = res.items || res.data || res.subscriptions || [];
-            }
-
-            if (initialTab === 'pending_deactivation') {
-                items = items.filter((b: any) => (b.status || '').toLowerCase() === 'pending_deactivation');
+                if (Array.isArray(res)) {
+                    items = res;
+                } else if (res && typeof res === 'object') {
+                    items = res.items || res.data || res.subscriptions || [];
+                }
             }
 
             rows = items.map((b: any) => ({

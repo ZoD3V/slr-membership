@@ -253,13 +253,45 @@ export const getBenyPending = cache((token: string) => {
     return apiFetch<BenyPendingItem[]>(API.admin.benyPending, { token, cache: 'no-store' });
 });
 
-/** Admin: BENY subscriptions filtered by status, paginated. */
-export const getBenySubscriptions = cache((status: string, token: string, page = 1, limit = 10) => {
-    return apiFetch<any>(`${API.admin.benyList}?status=${status}&page=${page}&limit=${limit}`, {
-        token,
-        cache: 'no-store'
-    });
+/** Admin: BENY subscriptions filtered by status, paginated. `per_page` is the
+ *  backend's actual param name (capped at 100 server-side) — a prior version
+ *  of this sent `limit`, which the backend silently ignores and falls back
+ *  to its own default of 20, quietly dropping any rows beyond page 1. */
+export const getBenySubscriptions = cache((status: string, token: string, page = 1, perPage = 10) => {
+    return apiFetch<any>(
+        `${API.admin.benyList}?status=${status}&page=${page}&per_page=${Math.min(perPage, 100)}`,
+        { token, cache: 'no-store' }
+    );
 });
+
+/**
+ * Admin: every BENY subscription regardless of status, in canonical
+ * pagination order. The backend has no `pending_deactivation` status filter
+ * (only PENDING_ACTIVATION/ACTIVE/CANCELLED are accepted), so that tab has
+ * to fetch everything and filter client-side — this walks every page at the
+ * backend's max page size so results stay complete as the account count
+ * grows, instead of silently truncating at the backend's default of 20.
+ */
+export async function getAllBenySubscriptions(token: string): Promise<BenySubscriptionItem[]> {
+    const perPage = 100;
+    const first = await apiFetchPaginated<BenySubscriptionItem[], { total_pages?: number }>(
+        `${API.admin.benyList}?page=1&per_page=${perPage}`,
+        { token, cache: 'no-store' }
+    );
+
+    const items = [...first.data];
+    const totalPages = first.meta.total_pages ?? 1;
+
+    for (let page = 2; page <= totalPages; page++) {
+        const next = await apiFetchPaginated<BenySubscriptionItem[]>(
+            `${API.admin.benyList}?page=${page}&per_page=${perPage}`,
+            { token, cache: 'no-store' }
+        );
+        items.push(...next.data);
+    }
+
+    return items;
+}
 
 /** Admin: approve a pending BENY subscription (member gains access). */
 export const activateBeny = (id: string, token: string) => {

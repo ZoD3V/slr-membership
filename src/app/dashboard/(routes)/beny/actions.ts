@@ -5,6 +5,7 @@ import {
     type BenySubscriptionItem,
     activateBeny,
     deactivateBeny,
+    getAllBenySubscriptions,
     getBenySubscriptions
 } from '@/lib/api/resources/admin';
 import { getAccessToken } from '@/lib/api/server';
@@ -45,38 +46,30 @@ export async function getBenySubscriptionsAction(
     if (!token) return { ok: false, message: 'Not authenticated.' };
 
     try {
-        let res;
-        if (status === 'pending_deactivation') {
-            // Backend does not support ?status=PENDING_DEACTIVATION filter query.
-            // Retrieve all and filter on client side.
-            const { API } = await import('@/lib/api/endpoints');
-            const { apiFetch } = await import('@/lib/api/http');
-            res = await apiFetch<any>(API.admin.benyList, {
-                token,
-                cache: 'no-store'
-            });
-        } else {
-            res = await getBenySubscriptions(status, token, page, limit);
-        }
-
-        // Normalize response since backend might return a direct array or a paginated object
         let data: BenySubscriptionItem[] = [];
         let total = 0;
 
-        if (Array.isArray(res)) {
-            data = res;
-        } else if (res && typeof res === 'object') {
-            data = res.items || res.data || res.subscriptions || [];
-        }
-
         if (status === 'pending_deactivation') {
-            // Client-side filtering for pending_deactivation (case insensitive)
-            data = data.filter((item: any) => (item.status || '').toLowerCase() === 'pending_deactivation');
+            // Backend does not support ?status=PENDING_DEACTIVATION filter query.
+            // Walk every page (not just the backend's default first-20) and
+            // filter client side, so results stay complete as the account
+            // count grows past a single page.
+            const all = await getAllBenySubscriptions(token);
+            data = all.filter((item) => (item.status || '').toLowerCase() === 'pending_deactivation');
             total = data.length;
             data = data.slice((page - 1) * limit, page * limit);
         } else {
-            total = typeof res.pagination?.total === 'number' 
-                ? res.pagination.total 
+            const res = await getBenySubscriptions(status, token, page, limit);
+
+            // Normalize response since backend might return a direct array or a paginated object
+            if (Array.isArray(res)) {
+                data = res;
+            } else if (res && typeof res === 'object') {
+                data = res.items || res.data || res.subscriptions || [];
+            }
+
+            total = typeof res.pagination?.total === 'number'
+                ? res.pagination.total
                 : (typeof res.total === 'number' ? res.total : data.length);
         }
 
