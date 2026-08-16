@@ -71,7 +71,7 @@ export default async function MembershipPage() {
     const priceCents = membership?.subTier.priceCents ?? SUB_TIERS[subTier].price_cents;
 
     return (
-        <div className='mx-auto w-full max-w-4xl flex-1 space-y-6 px-4 py-6 md:px-6 md:py-8'>
+        <div className='mx-auto w-full flex-1 space-y-6 px-4 py-6 md:px-6 md:py-8'>
             <h1 className='font-bebas-neue text-3xl tracking-wide text-white uppercase sm:text-4xl'>Membership</h1>
 
             {billing?.billing_status === 'grace' ? (
