@@ -154,12 +154,16 @@ const SUB_TIER_ORDER: Record<string, number> = {
 export const getMembershipStats = cache(async (token: string): Promise<SubTierCount[]> => {
     const raw = await apiFetch<RawSubTierStat[]>(API.memberships.stats, { token, cache: 'no-store' });
 
-    // The API can emit more than one raw subTierId for "no real sub-tier"
-    // (null vs the literal string "visitor") — both resolve to the same
-    // VISITOR display code downstream, so they're merged here rather than
-    // rendered as two separate "Visitor" chips.
+    // The API's raw groupBy includes a "beny" row — that's the add-on flag,
+    // not a member sub-tier, and a member with BENY is already counted once
+    // under their real tier — so it's dropped here rather than merged into
+    // whatever it would otherwise resolve to (subTierCodeOf falls back to
+    // VISITOR for anything unrecognized, which silently double-counted BENY
+    // subscribers into the Visitor bucket).
     const merged = new Map<string, { subTierId: string; count: number }>();
     for (const r of raw) {
+        if ((r.subTierId || '').toLowerCase() === 'beny') continue;
+
         const code = subTierCodeOf(r.subTierId).toLowerCase();
         const count = r._count?._all ?? 0;
         const existing = merged.get(code);
