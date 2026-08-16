@@ -24,6 +24,7 @@ export async function getMemberProfile(): Promise<MemberProfile> {
     }
 
     return {
+        id: me?.user_id ?? identity.id ?? '',
         name: me?.full_name ?? identity.name ?? '',
         email: me?.email ?? identity.email ?? '',
         phone: me?.phone ?? null,
@@ -31,6 +32,7 @@ export async function getMemberProfile(): Promise<MemberProfile> {
         // registration-time value and goes stale after a plan change.
         sub_tier: me?.sub_tier ? subTierCodeOf(me.sub_tier) : (identity.sub_tier ?? 'VISITOR'),
         state: me?.state ?? identity.state ?? '',
-        dob: me?.dob ?? null
+        dob: me?.dob ?? null,
+        joinedAt: me?.email_verified_at ?? null
     };
 }

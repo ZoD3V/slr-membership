@@ -223,12 +223,14 @@ export interface EntryHistoryEntry {
  * inventing them is what made this page show a stranger's join date.
  */
 export interface MemberProfile {
+    id: string;
     name: string;
     email: string;
     phone: string | null; // "-" in UI when null
     sub_tier: SubTierCode;
     state: string;
     dob: string | null; // ISO date, "-" in UI when null
+    joinedAt: string | null; // ISO date, null if unverified/unavailable
 }
 
 // ── Spin Wheel Admin (real API, 2026-08-09) ───────────────────────────────────

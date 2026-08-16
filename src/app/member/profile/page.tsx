@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { TierBadge } from '@/components/common/tier-badge';
 import { getMemberProfile } from '@/data/profile';
 
+import { MembershipCardDialog } from './_components/membership-card-dialog';
 import { PersonalInfoSection } from './_components/personal-info-section';
 import { SecuritySection } from './_components/security-section';
 import { SupportLinks } from './_components/support-links';
@@ -48,6 +49,14 @@ export default async function ProfilePage() {
                     <p className='text-slr-dim mt-1.5 text-xs'>{profile.email || '-'}</p>
                 </div>
             </header>
+
+            <MembershipCardDialog
+                name={profile.name}
+                subTier={profile.sub_tier}
+                userId={profile.id}
+                state={profile.state}
+                joinedAt={profile.joinedAt}
+            />
 
             <PersonalInfoSection profile={profile} />
 
