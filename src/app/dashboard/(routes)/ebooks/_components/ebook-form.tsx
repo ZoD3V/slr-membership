@@ -32,7 +32,10 @@ const TIERS: EbookTier[] = ['VISITOR', 'RED', 'BLUE'];
 const formSchema = z.object({
     title: z.string().min(1, 'Title is required'),
     subtitle: z.string().optional(),
-    coverUrl: z.string().optional(),
+    // The API rejects a missing cover with a generic, field-less validation
+    // error — catching it here up front gives the admin a clear inline
+    // message instead of a round trip to a vague toast.
+    coverUrl: z.string().min(1, 'Cover image is required'),
     pdfUrl: z.string().optional(),
     description: z.string().optional(),
     category: z.string().optional(),
