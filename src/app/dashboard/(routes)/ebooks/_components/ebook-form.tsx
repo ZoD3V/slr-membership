@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { ImageUploadField } from '@/components/common/image-upload-field';
 import { PdfUploadField } from '@/components/common/pdf-upload-field';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import Heading from '@/components/ui/heading';
@@ -65,6 +66,7 @@ export function EbookForm({ initialData }: EbookFormProps) {
     const [chapters, setChapters] = useState<EbookChapter[]>(initialData?.chapters || []);
     const [isChapterDialogOpen, setIsChapterDialogOpen] = useState(false);
     const [selectedChapter, setSelectedChapter] = useState<EbookChapter | null>(null);
+    const [chapterPendingDelete, setChapterPendingDelete] = useState<EbookChapter | null>(null);
 
     // Content type is chosen at create time and locked on edit (derived from pdfUrl).
     const isPdfEbook = Boolean(initialData?.pdfUrl);
@@ -83,9 +85,8 @@ export function EbookForm({ initialData }: EbookFormProps) {
         router.refresh();
     };
 
-    const handleDeleteChapter = async (chapter: EbookChapter) => {
-        const chapterId = chapter.chapter_id;
-        if (!chapterId) {
+    const requestDeleteChapter = (chapter: EbookChapter) => {
+        if (!chapter.chapter_id) {
             toast.error('Cannot delete: Chapter ID (UUID) is missing in backend data.', {
                 description: 'Please request backend developers to expose the chapter ID.'
             });
@@ -93,12 +94,16 @@ export function EbookForm({ initialData }: EbookFormProps) {
             return;
         }
 
-        if (!window.confirm(`Are you sure you want to delete Chapter ${chapter.chapter_number}?`)) {
-            return;
-        }
+        setChapterPendingDelete(chapter);
+    };
+
+    const confirmDeleteChapter = () => {
+        const chapter = chapterPendingDelete;
+        if (!chapter?.chapter_id) return;
 
         startTransition(async () => {
-            const res = await deleteChapterAction(initialData!.id, chapterId);
+            const res = await deleteChapterAction(initialData!.id, chapter.chapter_id!);
+            setChapterPendingDelete(null);
             if (res.ok) {
                 toast.success('Chapter deleted successfully');
                 handleRefreshChapters();
@@ -460,7 +465,7 @@ export function EbookForm({ initialData }: EbookFormProps) {
                                                         type='button'
                                                         variant='ghost'
                                                         size='sm'
-                                                        onClick={() => handleDeleteChapter(ch)}
+                                                        onClick={() => requestDeleteChapter(ch)}
                                                         className='h-8 text-red-400 hover:bg-red-500/10 hover:text-red-300'>
                                                         Delete
                                                     </Button>
@@ -479,6 +484,20 @@ export function EbookForm({ initialData }: EbookFormProps) {
                         ebookId={initialData.id}
                         chapter={selectedChapter}
                         onSuccess={handleRefreshChapters}
+                    />
+
+                    <ConfirmDialog
+                        open={chapterPendingDelete !== null}
+                        onOpenChange={(open) => {
+                            if (!open) setChapterPendingDelete(null);
+                        }}
+                        className='dashboard-theme dark'
+                        title='Delete this chapter?'
+                        destructive
+                        isLoading={isPending}
+                        confirmText='Delete'
+                        desc={`Chapter ${chapterPendingDelete?.chapter_number} — "${chapterPendingDelete?.title}" will be permanently removed.`}
+                        handleConfirm={confirmDeleteChapter}
                     />
                 </div>
             )}
