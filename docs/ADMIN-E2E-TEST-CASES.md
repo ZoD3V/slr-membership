@@ -19,7 +19,7 @@ Legend status: ✅ Pass · ❌ Fail · ⚠️ Partial/anomali · 🚧 Known gap 
 | **Pengaturan Spin Wheel** | ✅ | 2026-08-16: RESOLVED — halaman sekarang memuat data asli langsung, tidak ada lagi peringatan data sementara. Lihat Suite 8. |
 | **Pengaturan Jam Aman (Safe Hours)** | ✅ | 2026-08-16: RESOLVED — halaman sekarang memuat data asli langsung, tidak ada lagi peringatan data sementara. Lihat Suite 9. |
 | **Template Notifikasi** | ✅ | 2026-08-16: RESOLVED — sekarang tampil 10 template asli (bukan 3 data contoh), tombol kirim notifikasi juga sudah aktif normal. Lihat Suite 11. |
-| **Halaman Info Hadiah (Prizes)** | 🚧 | Sudah bisa diedit dari admin, tapi perubahannya BELUM tampil di halaman manapun yang dilihat calon member/publik. Halaman ini sudah dibangun tapi belum tersambung ke tampilan depan. |
+| **Halaman Info Hadiah (Prizes)** | ⚠️ | 2026-08-16: DIKOREKSI — halaman member (`/member/prizes`) TERNYATA SUDAH tersambung penuh ke isi CMS ini (dikonfirmasi live, datanya cocok persis). Catatan lama di halaman admin yang bilang "belum tersambung" sudah salah/usang, sudah diperbaiki teksnya. Yang MASIH belum tersambung: halaman marketing publik `/prizes` (yang dilihat calon member sebelum daftar) — ini butuh perbaikan backend (endpoint publiknya masih wajib login) dan desain ulang tampilan (layout halaman publik beda struktur dari dokumen CMS ini), bukan sekadar sambung-kabel data. |
 | **Tab "Menunggu Nonaktif" di BENY** | 🚧 | Daftar di tab ini diambil dengan cara yang kurang efisien (ambil semua data lalu disaring di layar), bukan masalah tampilan tapi berpotensi lambat kalau data BENY sudah sangat banyak. |
 | **Hapus bab pada e-book** | ✅ | 2026-08-16: RESOLVED — kotak konfirmasi bawaan browser diganti kotak konfirmasi standar yang sama dengan halaman admin lainnya. |
 
@@ -250,7 +250,10 @@ Jika salah satu di atas ternyata sudah berubah, catat di kolom Status sebagai in
 
 **3 Known Gap lama sudah teratasi** (dulu masih pakai data sementara, sekarang sudah data asli): Pengaturan Spin Wheel, Pengaturan Jam Aman, Template Notifikasi. Lihat tabel Known Gaps di atas.
 
-**2 Known Gap lama masih berlaku, belum diperbaiki** (bukan bug baru, sudah tercatat sejak awal): Halaman Info Hadiah belum tersambung ke tampilan member/publik, tab "Menunggu Nonaktif" BENY memakai cara ambil-data yang kurang efisien. (Gap ketiga — kotak konfirmasi hapus bab e-book — sudah diperbaiki 2026-08-16, lihat di bawah.)
+**Update 2026-08-16 — sisa Known Gap dikerjakan:**
+- Tab "Menunggu Nonaktif" BENY — ✅ DIPERBAIKI. Akar masalahnya ternyata bukan cuma "kurang efisien": kode lama salah nama parameter halaman (mengirim `limit` padahal API-nya minta `per_page`), jadi diam-diam terpotong ke 20 data pertama dari backend — dikonfirmasi live ada 30 akun BENY total. Sekarang dibetulkan, dan tab ini menelusuri SEMUA halaman data (bukan cuma halaman pertama) supaya tetap akurat walau jumlah akun terus bertambah.
+- Halaman Info Hadiah — ⚠️ SEBAGIAN. Halaman member (`/member/prizes`) ternyata SUDAH tersambung penuh sejak awal (catatan lama di admin salah, sudah dikoreksi). Yang masih belum: halaman marketing publik `/prizes`, karena endpoint publiknya masih wajib login (bukan cuma masalah kode FE) dan struktur tampilannya beda dari dokumen CMS ini — butuh kerja backend + desain ulang, bukan tugas sekali-jalan.
+- Kotak konfirmasi hapus bab e-book — ✅ sudah diperbaiki lebih dulu (lihat entri Known Gaps di atas).
 
 **6 temuan baru selama pengujian kali ini** (belum diperbaiki, murni hasil temuan — perbaikan menunggu instruksi lebih lanjut):
 1. Mencatat pemenang pada undian yang jadwal undinya belum lewat gagal total tanpa pesan error apa pun ke admin (Suite 4).

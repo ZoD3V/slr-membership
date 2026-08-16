@@ -31,7 +31,7 @@ export default async function PrizesPage() {
             <div className='mx-auto w-full'>
                 <Heading
                     title='Prizes'
-                    description='Edit the prize pool CMS document. Not yet shown on any member-facing page — /prizes and /member/prizes are not wired to this content yet.'
+                    description='Edit the prize pool CMS document. Live on /member/prizes. The public /prizes marketing page has its own bespoke layout and is not wired to this content.'
                 />
 
                 {isPlaceholder ? (
