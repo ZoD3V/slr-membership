@@ -378,6 +378,12 @@ export function EbookForm({ initialData }: EbookFormProps) {
                                                 ))}
                                             </SelectContent>
                                         </Select>
+                                        {initialData ? (
+                                            <p className='text-xs text-amber-400'>
+                                                ⚠ Not loaded from the server — confirm the correct tier before
+                                                saving, or you may change this ebook&apos;s access unintentionally.
+                                            </p>
+                                        ) : null}
                                         <FormMessage />
                                     </FormItem>
                                 )}

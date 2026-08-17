@@ -101,6 +101,10 @@ export function subTierFromGroupAndName(
     group: TierGroup,
     marketingName: string | null | undefined
 ): SubTierCode | null {
+    // Visitor has exactly one sub-tier — no marketing-name disambiguation needed,
+    // and some accounts' `tier` field comes back as a BENY add-on product name
+    // instead of the real membership name, which would otherwise fail to match.
+    if (group === 'visitor') return 'VISITOR';
     if (!marketingName) return null;
     const wanted = marketingName.trim().toLowerCase();
 
