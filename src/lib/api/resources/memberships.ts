@@ -122,10 +122,13 @@ export const cancelScheduledChange = (token: string) =>
 
 // ─── Membership stats (admin-viewable sub-tier distribution) ─────────────────
 
-// Raw Prisma-groupBy row as returned by GET /memberships/stats.
+// Row as returned by GET /memberships/stats. The API used to send a
+// Prisma-raw shape ({ _count: { _all }, subTierId }, plus a "beny" add-on
+// row mixed in) — as of 2026-08-16 it sends this flat, snake_case shape
+// with the "beny" row already excluded server-side.
 interface RawSubTierStat {
-    _count: { _all: number };
-    subTierId: string;
+    sub_tier_id: string;
+    count: number;
 }
 
 // Normalized, display-ready count per sub-tier.
@@ -154,21 +157,19 @@ const SUB_TIER_ORDER: Record<string, number> = {
 export const getMembershipStats = cache(async (token: string): Promise<SubTierCount[]> => {
     const raw = await apiFetch<RawSubTierStat[]>(API.memberships.stats, { token, cache: 'no-store' });
 
-    // The API's raw groupBy includes a "beny" row — that's the add-on flag,
-    // not a member sub-tier, and a member with BENY is already counted once
-    // under their real tier — so it's dropped here rather than merged into
-    // whatever it would otherwise resolve to (subTierCodeOf falls back to
-    // VISITOR for anything unrecognized, which silently double-counted BENY
-    // subscribers into the Visitor bucket).
+    // Defensive: the API previously mixed a "beny" add-on row into this list
+    // (a member with BENY is already counted once under their real tier) and
+    // has since fixed it server-side — still filtered here in case that
+    // regresses, and merged by resolved code in case an unrecognized id ever
+    // collides with a real one (subTierCodeOf falls back to VISITOR).
     const merged = new Map<string, { subTierId: string; count: number }>();
     for (const r of raw) {
-        if ((r.subTierId || '').toLowerCase() === 'beny') continue;
+        if ((r.sub_tier_id || '').toLowerCase() === 'beny') continue;
 
-        const code = subTierCodeOf(r.subTierId).toLowerCase();
-        const count = r._count?._all ?? 0;
+        const code = subTierCodeOf(r.sub_tier_id).toLowerCase();
         const existing = merged.get(code);
-        if (existing) existing.count += count;
-        else merged.set(code, { subTierId: code, count });
+        if (existing) existing.count += r.count;
+        else merged.set(code, { subTierId: code, count: r.count });
     }
 
     return Array.from(merged.values()).sort(
