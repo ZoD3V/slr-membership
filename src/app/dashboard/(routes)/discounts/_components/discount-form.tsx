@@ -119,7 +119,6 @@ export function DiscountForm({ initialData }: DiscountFormProps) {
                 if (res.ok) {
                     toast.success(res.message);
                     router.push('/dashboard/discounts');
-                    router.refresh();
                 } else {
                     toast.error(res.code ? `${res.message} (${res.code})` : res.message);
                 }
