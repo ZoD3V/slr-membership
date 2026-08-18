@@ -12,7 +12,7 @@ type LegalDocProps = {
     contactEmail?: string;
 };
 
-const LegalDoc = ({ lastUpdated, intro, sections, contactEmail = 'support@slrrewards.com.au' }: LegalDocProps) => {
+const LegalDoc = ({ lastUpdated, intro, sections, contactEmail = 'cs@smartliferewards.com.au' }: LegalDocProps) => {
     return (
         <section className='bg-slr-navy-deep relative py-12 md:py-16'>
             <div className='mx-auto max-w-3xl px-4'>

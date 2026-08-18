@@ -13,7 +13,7 @@ const infoCards = [
     {
         icon: Mail,
         title: 'Email support',
-        body: 'support@slrrewards.com.au',
+        body: 'cs@smartliferewards.com.au',
         hint: 'For account, billing, and general help'
     },
     {
