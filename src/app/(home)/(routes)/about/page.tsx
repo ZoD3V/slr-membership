@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import SectionEyebrow from '@/components/common/section-eyebrow';
 import { Button } from '@/components/ui/button';
+import { type Discount, getPublicDiscounts } from '@/lib/api/resources/discounts';
 import { goldButtonStyle } from '@/lib/styles';
 
 import PageHero from '../_components/page-hero';
@@ -101,9 +102,17 @@ const accentStyles = {
     blue: { wrap: 'border-[#2878E84D]', bg: 'bg-[#2878E81A]', text: 'text-[#6AB0F0]' }
 };
 
-const partnerLogos = Array.from({ length: 10 }, (_, i) => `/images/list-partner-logo-${i + 1}.webp`);
+const STATIC_PARTNER_LOGOS = Array.from({ length: 10 }, (_, i) => `/images/list-partner-logo-${i + 1}.webp`);
 
-const AboutPage = () => {
+const AboutPage = async () => {
+    // Real partner discount logos, same source as the membership page's
+    // Community Givebacks marquee. Non-fatal → [] → falls back to the static set.
+    const publicDiscounts = await getPublicDiscounts().catch(() => [] as Discount[]);
+    const fetchedLogos = publicDiscounts
+        .map((d) => d.logo_url?.trim())
+        .filter((url): url is string => Boolean(url));
+    const partnerLogos = fetchedLogos.length > 0 ? fetchedLogos : STATIC_PARTNER_LOGOS;
+
     return (
         <main className='bg-slr-ink'>
             <PageHero
@@ -297,6 +306,7 @@ const AboutPage = () => {
                                     src={src}
                                     alt=''
                                     fill
+                                    unoptimized
                                     sizes='(max-width: 640px) 100px, 120px'
                                     className='object-contain p-3 opacity-80 transition-opacity hover:opacity-100'
                                 />
