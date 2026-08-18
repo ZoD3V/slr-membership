@@ -301,7 +301,7 @@ const AboutPage = async () => {
                         {partnerLogos.map((src) => (
                             <div
                                 key={src}
-                                className='relative flex aspect-square items-center justify-center rounded-xl border border-white/5 bg-white/2 p-3 transition-colors hover:border-white/10'>
+                                className='border-slr-navy-border bg-slr-navy-foreground/95 relative flex aspect-square items-center justify-center rounded-xl border p-3 transition-colors hover:border-white/10'>
                                 <Image
                                     src={src}
                                     alt=''
