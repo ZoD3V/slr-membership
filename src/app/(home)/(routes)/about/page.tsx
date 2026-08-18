@@ -301,8 +301,6 @@ const AboutPage = async () => {
                     <div className='mt-10'>
                         <LogoMarquee
                             logos={partnerLogos.map((src, idx) => ({ src, alt: `Partner Logo ${idx + 1}` }))}
-                            cardClassName='h-14 w-20 sm:h-16 sm:w-24 md:h-20 md:w-28'
-                            imageClassName='h-5 sm:h-6 md:h-7'
                         />
                     </div>
                 </div>
