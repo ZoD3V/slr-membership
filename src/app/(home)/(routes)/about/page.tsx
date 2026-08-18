@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import LogoMarquee from '@/components/common/logo-marquee';
 import SectionEyebrow from '@/components/common/section-eyebrow';
 import { Button } from '@/components/ui/button';
 import { type Discount, getPublicDiscounts } from '@/lib/api/resources/discounts';
@@ -297,21 +298,12 @@ const AboutPage = async () => {
                         </p>
                     </div>
 
-                    <div className='mt-10 grid grid-cols-3 items-center gap-4 sm:grid-cols-5 md:gap-6 lg:grid-cols-10'>
-                        {partnerLogos.map((src) => (
-                            <div
-                                key={src}
-                                className='border-slr-navy-border bg-slr-navy-foreground/95 relative flex aspect-square items-center justify-center rounded-xl border p-3 transition-colors hover:border-white/10'>
-                                <Image
-                                    src={src}
-                                    alt=''
-                                    fill
-                                    unoptimized
-                                    sizes='(max-width: 640px) 100px, 120px'
-                                    className='object-contain p-3 opacity-80 transition-opacity hover:opacity-100'
-                                />
-                            </div>
-                        ))}
+                    <div className='mt-10'>
+                        <LogoMarquee
+                            logos={partnerLogos.map((src, idx) => ({ src, alt: `Partner Logo ${idx + 1}` }))}
+                            cardClassName='h-14 w-20 sm:h-16 sm:w-24 md:h-20 md:w-28'
+                            imageClassName='h-5 sm:h-6 md:h-7'
+                        />
                     </div>
                 </div>
             </section>
