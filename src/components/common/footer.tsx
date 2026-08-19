@@ -84,7 +84,7 @@ const Footer: FC = () => {
                         </h3>
                         <div className='mt-4 flex items-center gap-3'>
                             {socials.map((social) => (
-                                <Link key={social.label} href={social.href} aria-label={social.label}>
+                                <Link target='_blank' key={social.label} href={social.href} aria-label={social.label}>
                                     <Image
                                         src={social.icon}
                                         alt=''
@@ -116,6 +116,7 @@ const Footer: FC = () => {
                             <div className='mt-5 flex flex-col gap-3'>
                                 {apps.map((app) => (
                                     <Link
+                                        target='_blank'
                                         key={app.name}
                                         href={app.href}
                                         className='flex w-47 max-w-full items-center gap-3 rounded-xl border border-[#2A2D31] bg-[#16191D] px-4 py-2.5 transition-colors hover:border-[#403314]'>
