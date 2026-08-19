@@ -42,11 +42,11 @@ const LogoMarquee = ({
         );
     }, [logos]);
 
-    // Multiply the logos list to guarantee total width exceeds viewport size (> 15 items)
+    // Multiply the logos list to guarantee total width exceeds viewport size (> 35 items)
     const multipliedLogos = React.useMemo(() => {
         if (validLogos.length === 0) return [];
         let items = [...validLogos];
-        while (items.length < 15) {
+        while (items.length < 35) {
             items = [...items, ...validLogos];
         }
         
@@ -170,7 +170,7 @@ type LogoCardProps = {
 
 const LogoCard: React.FC<LogoCardProps> = ({ src, alt, cardClassName, imageClassName }) => (
     <div
-        className={`border-slr-navy-border bg-slr-navy-card/95 flex shrink-0 items-center justify-center border ${cardClassName}`}>
+        className={`border-slr-navy-border bg-slr-navy-foreground/95 flex shrink-0 items-center justify-center border ${cardClassName}`}>
         <Image
             src={src}
             alt={alt}
