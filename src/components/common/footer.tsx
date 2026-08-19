@@ -97,8 +97,8 @@ const Footer: FC = () => {
                         </div>
                     </div>
 
-                    {/* Navigation → Get the App: 2 columns on mobile, single row on desktop */}
-                    <div className='grid grid-cols-2 gap-x-6 gap-y-10 lg:col-span-10 lg:grid-cols-10 lg:gap-10'>
+                    {/* Navigation: 2 columns on mobile, single row on desktop */}
+                    <div className='grid grid-cols-2 gap-x-6 gap-y-10 lg:col-span-10 lg:grid-cols-7 lg:gap-10'>
                         <div className='lg:col-span-2'>
                             <LinkColumn heading='Navigation' links={navigationLinks} />
                         </div>
@@ -107,35 +107,6 @@ const Footer: FC = () => {
                         </div>
                         <div className='lg:col-span-2'>
                             <LinkColumn heading='Support' links={supportLinks} />
-                        </div>
-
-                        <div className='lg:col-span-3'>
-                            <h3 className='text-slr-gold-label text-xs font-bold tracking-widest uppercase'>
-                                Get the App
-                            </h3>
-                            <div className='mt-5 flex flex-col gap-3'>
-                                {apps.map((app) => (
-                                    <Link
-                                        target='_blank'
-                                        key={app.name}
-                                        href={app.href}
-                                        className='flex w-47 max-w-full items-center gap-3 rounded-xl border border-[#2A2D31] bg-[#16191D] px-4 py-2.5 transition-colors hover:border-[#403314]'>
-                                        <Image
-                                            src={app.icon}
-                                            alt=''
-                                            width={24}
-                                            height={24}
-                                            className='h-7 w-6 shrink-0'
-                                        />
-                                        <span className='leading-tight'>
-                                            <span className='text-slr-muted block text-[10px] tracking-wider uppercase'>
-                                                {app.tagline}
-                                            </span>
-                                            <span className='block text-sm font-bold text-white'>{app.name}</span>
-                                        </span>
-                                    </Link>
-                                ))}
-                            </div>
                         </div>
                     </div>
                 </div>
