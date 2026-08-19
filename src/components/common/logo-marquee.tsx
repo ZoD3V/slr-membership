@@ -53,13 +53,15 @@ const LogoMarquee = ({
 return items;
     }, [validLogos]);
 
-    // Initialize row 1 to start at -halfWidth so it can move right (x increasing toward 0)
+    // Initialize row 1 and row 2 with offset staggers
     useEffect(() => {
         const init = () => {
             if (row1Ref.current) {
                 const half = row1Ref.current.scrollWidth / 2;
                 if (half > 0) {
                     xRow1.set(-half);
+                    // Stagger row 2 slightly to the left relative to row 1 to prevent vertical alignment overlap and gaps
+                    xRow2.set(-half / 3);
                     setMounted(true);
                 }
             } else {
@@ -70,7 +72,7 @@ return items;
         const t = window.requestAnimationFrame(init);
 
         return () => window.cancelAnimationFrame(t);
-    }, [xRow1, multipliedLogos]);
+    }, [xRow1, xRow2, multipliedLogos]);
 
     useAnimationFrame((_time, delta) => {
         if (draggingRef.current) return;
