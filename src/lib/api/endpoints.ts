@@ -21,6 +21,9 @@ export const API = {
         verifyEmail: '/api/v1/auth/verify-email',
         resendVerification: '/api/v1/auth/resend-verification'
     },
+    contact: {
+        submit: '/api/v1/contact'
+    },
     memberships: {
         tiers: '/api/v1/memberships/tiers',
         me: '/api/v1/memberships/me',
