@@ -102,7 +102,7 @@ const Footer: FC = () => {
                         <div className='lg:col-span-2'>
                             <LinkColumn heading='Navigation' links={navigationLinks} />
                         </div>
-                        <div className='lg:col-span-3'>
+                        <div className='lg:col-span-2'>
                             <LinkColumn heading='Membership' links={membershipLinks} />
                         </div>
                         <div className='lg:col-span-2'>
