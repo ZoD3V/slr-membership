@@ -40,14 +40,38 @@ export function RenewalSpinCard({ discount, expiresAt, className }: RenewalSpinC
     const [open, setOpen] = useState(false);
     const [outcome, setOutcome] = useState<SpinOutcome | null>(null);
     const [remaining, setRemaining] = useState<string | null>(null);
+    const [expired, setExpired] = useState(false);
 
-    // Rendered on the client only so the server and client agree on "now".
+    // Rendered on the client only so the server and client agree on "now". A
+    // timeout flips `expired` the instant the deadline passes, instead of
+    // waiting for the next 60s display tick (which left the "Spin now"
+    // button clickable for up to a minute after the window closed).
     useEffect(() => {
-        const tick = () => setRemaining(timeLeft(expiresAt));
-        tick();
-        const id = setInterval(tick, 60_000);
+        if (!expiresAt) {
+            setRemaining(null);
+            setExpired(false);
 
-        return () => clearInterval(id);
+            return;
+        }
+
+        const ms = Date.parse(expiresAt) - Date.now();
+        if (Number.isNaN(ms) || ms <= 0) {
+            setRemaining(null);
+            setExpired(true);
+
+            return;
+        }
+
+        setRemaining(timeLeft(expiresAt));
+        setExpired(false);
+
+        const timeout = setTimeout(() => setExpired(true), ms);
+        const interval = setInterval(() => setRemaining(timeLeft(expiresAt)), 60_000);
+
+        return () => {
+            clearTimeout(timeout);
+            clearInterval(interval);
+        };
     }, [expiresAt]);
 
     const spin = async (): Promise<SpinOutcome | null> => {
@@ -84,23 +108,27 @@ export function RenewalSpinCard({ discount, expiresAt, className }: RenewalSpinC
                                     ? outcome.won
                                         ? `You won $${outcome.discount} off`
                                         : 'No prize this time'
-                                    : `Win up to $${discount} off`}
+                                    : expired
+                                      ? 'Spin expired'
+                                      : `Win up to $${discount} off`}
                             </h2>
                             <p className='text-slr-muted mt-1 text-sm'>
                                 {outcome
                                     ? outcome.won
                                         ? 'Your discount is applied to the upcoming renewal invoice.'
                                         : 'Your membership renews at the usual price. You can spin again before your next renewal.'
-                                    : 'One spin before your renewal. A win discounts that invoice only.'}
+                                    : expired
+                                      ? "You didn't spin in time — this renewal goes through at the usual price."
+                                      : 'One spin before your renewal. A win discounts that invoice only.'}
                             </p>
-                            {outcome || !remaining ? null : (
+                            {outcome || expired || !remaining ? null : (
                                 <p className='text-slr-dim mt-1 text-xs'>
                                     Expires in {remaining} — unused spins are forfeited.
                                 </p>
                             )}
                         </div>
 
-                        {outcome ? null : (
+                        {outcome || expired ? null : (
                             <Button
                                 className='h-11 rounded-xl font-bold uppercase'
                                 style={goldButtonStyle}
