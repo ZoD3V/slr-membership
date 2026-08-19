@@ -3,7 +3,7 @@ import { apiFetch } from '../http';
 
 // ─── DTOs ────────────────────────────────────────────────────────────────────
 
-/** When the spin is offered: at sign-up, or 24h before an auto-renewal. */
+/** When the spin is offered: at sign-up, or H-2 (48h) before an auto-renewal. */
 export type SpinMoment = 'registration' | 'renewal';
 
 export interface SpinStatus {

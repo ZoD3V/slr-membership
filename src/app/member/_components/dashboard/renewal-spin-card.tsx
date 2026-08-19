@@ -33,8 +33,9 @@ function timeLeft(expiresAt: string | null): string | null {
 }
 
 /**
- * PRD §4.5 moment 2 — the spin offered 24h before auto-renewal. A win discounts
- * that one renewal invoice; losing or letting it expire renews at full price.
+ * PRD §4.5 moment 2 — the spin offered H-2 (48h) before auto-renewal. A win
+ * discounts that one renewal invoice; losing or letting it expire renews at
+ * full price.
  */
 export function RenewalSpinCard({ discount, expiresAt, className }: RenewalSpinCardProps) {
     const [open, setOpen] = useState(false);

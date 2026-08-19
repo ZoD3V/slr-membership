@@ -87,9 +87,9 @@ export default async function MemberDashboardPage() {
     const drawDataFailed = giveawaysFailed || entriesR?.status === 'rejected';
     const billing = billingR?.status === 'fulfilled' ? billingR.value : null;
 
-    // PRD §4.5 moment 2 — offered 24h before auto-renewal, and only for the
-    // token-upgrade sub-tiers the API already gates on. A registration-moment
-    // spin belongs to the sign-up wizard, so it is ignored here.
+    // PRD §4.5 moment 2 — offered H-2 (48h) before auto-renewal, and only for
+    // the token-upgrade sub-tiers the API already gates on. A registration-
+    // moment spin belongs to the sign-up wizard, so it is ignored here.
     const spin = spinR?.status === 'fulfilled' ? spinR.value : null;
     const renewalSpin = spin?.available && spin.moment === 'renewal' ? spin : null;
 
