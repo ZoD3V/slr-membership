@@ -6,6 +6,7 @@ import { Bebas_Neue, Montserrat } from 'next/font/google';
 import '@/app/globals.css';
 import { VersionWatcher } from '@/components/common/version-watcher';
 import { Toaster } from '@/components/ui/sonner';
+import { getOrganizationSchema, getWebSiteSchema } from '@/lib/seo/structured-data';
 import { GoogleAnalytics } from '@next/third-parties/google';
 
 const montserrat = Montserrat({
@@ -59,6 +60,9 @@ export const metadata: Metadata = {
         title: `${siteName} — Australia's Best Value Rewards Club`,
         description: siteDescription,
         images: [ogImage]
+    },
+    verification: {
+        google: 'google-site-verification-placeholder-code'
     }
 };
 
@@ -67,6 +71,20 @@ const Layout = ({ children }: Readonly<{ children: ReactNode }>) => {
 
     return (
         <html suppressHydrationWarning lang='en'>
+            <head>
+                <script
+                    type='application/ld+json'
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify(getOrganizationSchema())
+                    }}
+                />
+                <script
+                    type='application/ld+json'
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify(getWebSiteSchema())
+                    }}
+                />
+            </head>
             <body
                 suppressHydrationWarning
                 className={`${montserrat.variable} ${bebasNeue.variable} text-foreground bg-slr-ink overscroll-none antialiased`}>

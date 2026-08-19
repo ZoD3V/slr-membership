@@ -7,6 +7,7 @@ import {
     type TierOption,
     getMembershipTiers
 } from '@/lib/api/resources/memberships';
+import { getMembershipOfferSchema } from '@/lib/seo/structured-data';
 
 import BlueTiersSection from '../(membership)/_components/blue-tiers-section';
 import RedTiersSection from '../(membership)/_components/red-tiers-section';
@@ -53,8 +54,40 @@ const MembershipPage = async () => {
 
     const hasTiers = !!tiers && (tiers.red.length > 0 || tiers.blue.length > 0);
 
+    const schemaTiers = [
+        {
+            name: 'Smart Life Rewards Visitor (Free)',
+            description: 'Visitor Free Membership - 1 free token per cycle. Access to visitor giveaway draws.',
+            price: '0.00',
+            priceCurrency: 'AUD',
+            billingPeriod: 'P28D'
+        },
+        {
+            name: 'Smart Life Rewards Red',
+            description: 'SLR Red Membership - starting from $10/month. Access to Red draws, partner discounts, and digital e-books.',
+            price: '10.00',
+            priceCurrency: 'AUD',
+            billingPeriod: 'P28D'
+        },
+        {
+            name: 'Smart Life Rewards Premium (Blue)',
+            description: 'SLR Premium Blue Membership - starting from $26/month. Full access to premium blue draws, complete discounts directory, e-books library, and BENY add-on.',
+            price: '26.00',
+            priceCurrency: 'AUD',
+            billingPeriod: 'P28D'
+        }
+    ];
+
+    const membershipSchema = getMembershipOfferSchema(schemaTiers);
+
     return (
         <main className='bg-slr-ink pt-12'>
+            <script
+                type='application/ld+json'
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify(membershipSchema)
+                }}
+            />
             {hasTiers ? (
                 <>
                     <RedTiersSection live={toDisplayMap(tiers!.red)} startFrom={startFrom(tiers!.red)} />

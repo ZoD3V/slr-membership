@@ -2,12 +2,12 @@
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
-type FaqCategory = {
+export type FaqCategory = {
     title: string;
     items: { question: string; answer: string }[];
 };
 
-const categories: FaqCategory[] = [
+export const categories: FaqCategory[] = [
     {
         title: 'Getting Started',
         items: [

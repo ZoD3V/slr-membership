@@ -2,10 +2,11 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
+import { getFAQPageSchema } from '@/lib/seo/structured-data';
 import { goldButtonStyle } from '@/lib/styles';
 
 import PageHero from '../_components/page-hero';
-import FaqList from './_components/faq-list';
+import FaqList, { categories } from './_components/faq-list';
 
 export const metadata: Metadata = {
     title: 'FAQ · SLR Rewards',
@@ -13,8 +14,17 @@ export const metadata: Metadata = {
 };
 
 const FaqPage = () => {
+    const allFaqs = categories.flatMap((category) => category.items);
+    const faqSchema = getFAQPageSchema(allFaqs);
+
     return (
         <>
+            <script
+                type='application/ld+json'
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify(faqSchema)
+                }}
+            />
             <PageHero
                 eyebrow='Help Centre'
                 title='Frequently Asked Questions'
