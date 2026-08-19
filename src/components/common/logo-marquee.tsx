@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import Image from 'next/image';
 
+import { cn } from '@/lib/utils';
 import { motion, useAnimationFrame, useMotionValue } from 'motion/react';
 
 // Auto-scroll speed (pixels per second)
@@ -32,20 +33,44 @@ const LogoMarquee = ({
     // Use a ref for drag state so the animation frame always sees the latest value
     const draggingRef = useRef(false);
     const [isDragging, setIsDragging] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    // Filter out blank/broken URLs to avoid empty icon slots
+    const validLogos = React.useMemo(() => {
+        return (logos || []).filter(
+            (logo) => logo.src && logo.src.trim() !== '' && logo.src !== 'undefined' && logo.src !== 'null'
+        );
+    }, [logos]);
+
+    // Multiply the logos list to guarantee total width exceeds viewport size (> 15 items)
+    const multipliedLogos = React.useMemo(() => {
+        if (validLogos.length === 0) return [];
+        let items = [...validLogos];
+        while (items.length < 15) {
+            items = [...items, ...validLogos];
+        }
+        
+return items;
+    }, [validLogos]);
 
     // Initialize row 1 to start at -halfWidth so it can move right (x increasing toward 0)
     useEffect(() => {
         const init = () => {
             if (row1Ref.current) {
                 const half = row1Ref.current.scrollWidth / 2;
-                if (half > 0) xRow1.set(-half);
+                if (half > 0) {
+                    xRow1.set(-half);
+                    setMounted(true);
+                }
+            } else {
+                setMounted(true);
             }
         };
         // Wait one frame for layout
         const t = window.requestAnimationFrame(init);
 
         return () => window.cancelAnimationFrame(t);
-    }, [xRow1]);
+    }, [xRow1, multipliedLogos]);
 
     useAnimationFrame((_time, delta) => {
         if (draggingRef.current) return;
@@ -91,16 +116,25 @@ const LogoMarquee = ({
         xRow2.set(xRow2.get() + info.delta.x);
     };
 
+    if (multipliedLogos.length === 0) return null;
+
     return (
         <motion.div
-            className={`select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: mounted ? 1 : 0 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+            className={cn(
+                'select-none transition-opacity duration-300',
+                isDragging ? 'cursor-grabbing' : 'cursor-grab',
+                mounted ? 'opacity-100' : 'opacity-0'
+            )}
             onPanStart={handlePanStart}
             onPan={handlePan}
             onPanEnd={handlePanEnd}
             style={{ touchAction: 'pan-y' }}>
             {/* Row 1 — moves right when idle */}
             <motion.div ref={row1Ref} className='flex w-max will-change-transform' style={{ x: xRow1 }}>
-                {[...logos, ...logos].map((logo, idx) => (
+                {[...multipliedLogos, ...multipliedLogos].map((logo, idx) => (
                     <LogoCard
                         key={`row1-${idx}`}
                         src={logo.src}
@@ -113,7 +147,7 @@ const LogoMarquee = ({
 
             {/* Row 2 — moves left when idle */}
             <motion.div ref={row2Ref} className='flex w-max will-change-transform' style={{ x: xRow2 }}>
-                {[...logos, ...logos].map((logo, idx) => (
+                {[...multipliedLogos, ...multipliedLogos].map((logo, idx) => (
                     <LogoCard
                         key={`row2-${idx}`}
                         src={logo.src}
@@ -136,7 +170,7 @@ type LogoCardProps = {
 
 const LogoCard: React.FC<LogoCardProps> = ({ src, alt, cardClassName, imageClassName }) => (
     <div
-        className={`border-slr-navy-border bg-slr-navy-foreground/95 flex shrink-0 items-center justify-center border ${cardClassName}`}>
+        className={`border-slr-navy-border bg-slr-navy-card/95 flex shrink-0 items-center justify-center border ${cardClassName}`}>
         <Image
             src={src}
             alt={alt}
