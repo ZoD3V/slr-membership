@@ -67,7 +67,7 @@ const Footer: FC = () => {
             <div className='mx-auto max-w-7xl px-6 py-14'>
                 <div className='grid grid-cols-1 gap-10 lg:grid-cols-12'>
                     {/* Brand + socials */}
-                    <div className='lg:col-span-2'>
+                    <div className='lg:col-span-4'>
                         <Image
                             src='/images/slr-rewards-logo-color.webp'
                             alt='SLR Smart Life Rewards'
@@ -75,7 +75,7 @@ const Footer: FC = () => {
                             height={56}
                             className='h-12 w-auto'
                         />
-                        <p className='text-slr-muted mt-5 max-w-xs text-sm leading-relaxed'>
+                        <p className='text-slr-muted mt-5 max-w-sm text-sm leading-relaxed'>
                             Australia&apos;s Best Value Rewards Club — helping Australians beat the cost of living.
                         </p>
 
@@ -98,7 +98,7 @@ const Footer: FC = () => {
                     </div>
 
                     {/* Navigation: 2 columns on mobile, single row on desktop */}
-                    <div className='grid grid-cols-2 gap-x-6 gap-y-10 lg:col-span-10 lg:grid-cols-7 lg:gap-10'>
+                    <div className='grid grid-cols-2 gap-x-6 gap-y-10 lg:col-span-8 lg:grid-cols-7 lg:gap-10'>
                         <div className='lg:col-span-2'>
                             <LinkColumn heading='Navigation' links={navigationLinks} />
                         </div>
