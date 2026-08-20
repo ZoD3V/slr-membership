@@ -11,7 +11,7 @@ const Page = () => {
             {/* Background wrapper that contains both MembershipClubSection and VisitorRedBlueSection */}
             <div className='relative isolate overflow-hidden'>
                 {/* Background image container with fixed height and bottom fade */}
-                <div className='absolute top-0 left-0 right-0 h-[650px] -z-20'>
+                <div className='absolute top-0 left-0 right-0 h-[800px] md:h-[900px] -z-20'>
                     <Image
                         src='/images/bg-membership-club.webp'
                         alt=''
@@ -20,7 +20,7 @@ const Page = () => {
                         priority
                     />
                     {/* Fade/blur gradient at the bottom of the background image */}
-                    <div className='absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-slr-ink via-slr-ink/75 to-transparent' />
+                    <div className='absolute bottom-0 left-0 right-0 h-64 md:h-80 bg-gradient-to-t from-slr-ink via-slr-ink/75 to-transparent' />
                 </div>
                 
                 <MembershipClubSection />
