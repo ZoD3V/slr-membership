@@ -18,8 +18,8 @@ const barHighlightStyle: React.CSSProperties = {
 const MembershipClubSection = () => {
     return (
         <section className='relative isolate overflow-hidden pb-0'>
-            {/* Background image - taller with fade at bottom */}
-            <div className='absolute inset-0 -z-10 relative h-[70vh] min-h-[500px] max-h-[700px]'>
+            {/* Background image - taller with fade at bottom, extends down for price cards to overlap */}
+            <div className='absolute inset-0 -z-10 relative h-[90vh] min-h-[700px] max-h-[900px]'>
                 <Image
                     src='/images/bg-membership-club.webp'
                     alt=''
@@ -27,8 +27,8 @@ const MembershipClubSection = () => {
                     className='object-cover opacity-30'
                     priority
                 />
-                {/* Fade/blur gradient at bottom */}
-                <div className='absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-slr-ink via-slr-ink/50 to-transparent' />
+                {/* Fade/blur gradient at bottom - extends lower for card overlap */}
+                <div className='absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-slr-ink via-slr-ink/50 to-transparent' />
             </div>
 
             <div className='mx-auto max-w-3xl px-4 text-center relative z-10 pt-16 md:pt-24'>
@@ -41,7 +41,7 @@ const MembershipClubSection = () => {
                     </span>
                 </h2>
 
-                {/* Card overlaps background - negative margin to rise up */}
+                {/* Prize Pool card - overlaps background */}
                 <div className='mx-auto mt-12 -mb-20 md:-mb-28 w-full max-w-xs rounded-2xl p-0.5 relative' style={{ background: GOLD_GRADIENT }}>
                     <div style={barHighlightStyle} className='px-6 py-8 shadow-[0px_12px_40px_0px_#00000080] sm:px-10'>
                         <p className='text-sm font-bold tracking-[0.3em] text-[#0A0A0A] uppercase sm:text-base mb-3'>
