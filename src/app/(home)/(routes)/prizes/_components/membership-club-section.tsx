@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 import { GOLD_GRADIENT } from '@/lib/styles';
 
 const clubGradient = 'linear-gradient(180deg, #73470A 0%, #FFD44D 30%, #FFFFD9 50%, #F2B32E 70%, #664008 100%)';
@@ -17,21 +15,8 @@ const barHighlightStyle: React.CSSProperties = {
 
 const MembershipClubSection = () => {
     return (
-        <section className='relative isolate overflow-hidden pb-0'>
-            {/* Background image - taller with fade at bottom, extends down for price cards to overlap */}
-            <div className='absolute inset-0 -z-10 relative h-[90vh] min-h-[700px] max-h-[900px]'>
-                <Image
-                    src='/images/bg-membership-club.webp'
-                    alt=''
-                    fill
-                    className='object-cover opacity-30'
-                    priority
-                />
-                {/* Fade/blur gradient at bottom - extends lower for card overlap */}
-                <div className='absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-slr-ink via-slr-ink/50 to-transparent' />
-            </div>
-
-            <div className='mx-auto max-w-3xl px-4 text-center relative z-10 pt-16 md:pt-24'>
+        <section className='relative isolate pt-16 md:pt-24 pb-12'>
+            <div className='mx-auto max-w-3xl px-4 text-center relative z-10'>
                 <h2 className='font-bebas-neue leading-[0.85] tracking-wide uppercase'>
                     <span className='text-gradient-silver block text-4xl sm:text-5xl md:text-6xl'>Membership</span>
                     <span
@@ -41,8 +26,8 @@ const MembershipClubSection = () => {
                     </span>
                 </h2>
 
-                {/* Prize Pool card - overlaps background */}
-                <div className='mx-auto mt-12 -mb-20 md:-mb-28 w-full max-w-xs rounded-2xl p-0.5 relative' style={{ background: GOLD_GRADIENT }}>
+                {/* Prize Pool card */}
+                <div className='mx-auto mt-12 w-full max-w-xs rounded-2xl p-0.5 relative' style={{ background: GOLD_GRADIENT }}>
                     <div style={barHighlightStyle} className='px-6 py-8 shadow-[0px_12px_40px_0px_#00000080] sm:px-10'>
                         <p className='text-sm font-bold tracking-[0.3em] text-[#0A0A0A] uppercase sm:text-base mb-3'>
                             Prize Pool
