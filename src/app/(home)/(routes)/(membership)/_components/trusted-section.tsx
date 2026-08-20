@@ -20,7 +20,7 @@ const features: Feature[] = [
         icon: '/icons/ic-calendar-gold.png',
         title: 'Weekly Draws Every Cycle',
         description:
-            "We run draws weekly, not monthly — so you don't wait weeks to see results. More cycles means more winning opportunities across the same time period.",
+            "We run draws weekly and monthly — so you don't wait weeks to see results. More cycles means more winning opportunities across the same time period.",
         stat: { value: 'Weekly', label: 'Draw Cadence' }
     },
     {

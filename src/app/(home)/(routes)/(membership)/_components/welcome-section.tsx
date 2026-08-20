@@ -16,7 +16,7 @@ const bars = [
 const highlights = [
     { title: 'Visitor, Red, Blue', subtitle: 'Tier separated draw pool' },
     { title: 'Up to $24,000', subtitle: 'Monthly bonus pool' },
-    { title: 'Weekly Draw', subtitle: '4 draws per month' }
+    { title: 'Weekly Draw', subtitle: '18 draws per month' }
 ];
 
 const WelcomeSection = () => {
@@ -104,7 +104,7 @@ const WelcomeSection = () => {
                                         </p>
                                         <p
                                             className={cn(
-                                                'font-bebas-neue mt-0.5 text-[8px] leading-none sm:text-sm md:text-lg lg:text-xl xl:text-2xl',
+                                                'font-bebas-neue mt-0.5 text-[12px] leading-none sm:text-sm md:text-lg lg:text-xl xl:text-2xl',
                                                 bar.highlight ? 'text-gradient-gold' : 'text-white'
                                             )}>
                                             {bar.prize}

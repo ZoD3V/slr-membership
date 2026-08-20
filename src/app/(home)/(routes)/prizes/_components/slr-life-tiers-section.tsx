@@ -16,7 +16,7 @@ const SlrLifeTiersSection = () => {
                         className='pointer-events-none absolute top-1/2 left-1/2 -z-10 h-[140%] w-[130%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(ellipse_at_center,#D4AF3759_0%,#D4AF3700_65%)] blur-2xl'
                     />
                     <h2 className='text-gradient-gold font-bebas-neue text-[52px] leading-none tracking-wider uppercase sm:text-[72px] md:text-[88px] xl:text-[104px]'>
-                        SLR Life Tiers
+                        SLR Membership Club
                     </h2>
                 </div>
 
