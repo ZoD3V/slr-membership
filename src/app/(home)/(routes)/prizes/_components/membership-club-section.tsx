@@ -40,9 +40,7 @@ const MembershipClubSection = () => {
                         <p className='text-sm font-bold tracking-[0.3em] text-[#0A0A0A] uppercase sm:text-base mb-3'>
                             Prize Pool
                         </p>
-                        <p
-                            className='font-bebas-neue my-3 bg-clip-text text-7xl leading-none font-extrabold text-transparent sm:text-8xl'
-                            style={{ backgroundImage: 'linear-gradient(180deg, #FFE066 0%, #F5C22E 50%, #C78C14 100%)' }}>
+                        <p className='font-bebas-neue my-3 text-7xl leading-none font-extrabold text-[#0A0A0A] sm:text-8xl'>
                             $2,100
                         </p>
                         <p className='text-xs font-bold tracking-[0.2em] text-[#3D3D3D] uppercase sm:text-sm'>
