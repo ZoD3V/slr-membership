@@ -16,7 +16,7 @@ const Page = () => {
                         src='/images/bg-membership-club.webp'
                         alt=''
                         fill
-                        className='object-cover opacity-25 object-top'
+                        className='object-cover opacity-45 object-top'
                         priority
                     />
                     {/* Fade/blur gradient at the bottom of the background image */}

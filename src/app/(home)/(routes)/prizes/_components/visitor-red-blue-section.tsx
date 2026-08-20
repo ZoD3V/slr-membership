@@ -194,7 +194,7 @@ const VisitorCard = () => (
 
 const VisitorRedBlueSection = () => {
     return (
-        <section className='bg-transparent relative isolate overflow-hidden py-16 md:py-24 -mt-24 md:-mt-32'>
+        <section className='bg-transparent relative isolate overflow-hidden py-16 md:py-24 -mt-8 md:-mt-12'>
             <div className='mx-auto max-w-7xl px-4'>
                 <div className='grid grid-cols-1 items-stretch gap-5 md:grid-cols-3'>
                     <TierCard tier={redTier} />
