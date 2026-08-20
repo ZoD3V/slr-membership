@@ -37,7 +37,7 @@ const MembershipClubSection = () => {
 
                 <div className='mx-auto mt-12 w-full max-w-xs rounded-2xl p-0.5' style={{ background: GOLD_GRADIENT }}>
                     <div style={barHighlightStyle} className='px-6 py-8 shadow-[0px_12px_40px_0px_#00000080] sm:px-10'>
-                        <p className='text-sm font-bold tracking-[0.3em] text-[#1A1408] uppercase sm:text-base mb-3'>
+                        <p className='text-sm font-bold tracking-[0.3em] text-[#0A0A0A] uppercase sm:text-base mb-3'>
                             Prize Pool
                         </p>
                         <p
@@ -45,7 +45,7 @@ const MembershipClubSection = () => {
                             style={{ backgroundImage: 'linear-gradient(180deg, #FFE066 0%, #F5C22E 50%, #C78C14 100%)' }}>
                             $2,100
                         </p>
-                        <p className='text-xs font-bold tracking-[0.2em] text-[#1A1408] uppercase sm:text-sm'>
+                        <p className='text-xs font-bold tracking-[0.2em] text-[#3D3D3D] uppercase sm:text-sm'>
                             @ 22 Prizes • One Month
                         </p>
                     </div>
