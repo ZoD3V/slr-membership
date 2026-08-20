@@ -15,7 +15,7 @@ const barHighlightStyle: React.CSSProperties = {
 
 const MembershipClubSection = () => {
     return (
-        <section className='relative isolate pt-16 md:pt-24 pb-12'>
+        <section className='relative isolate pt-24 md:pt-36 pb-20 md:pb-28'>
             <div className='mx-auto max-w-3xl px-4 text-center relative z-10'>
                 <h2 className='font-bebas-neue leading-[0.85] tracking-wide uppercase'>
                     <span className='text-gradient-silver block text-4xl sm:text-5xl md:text-6xl'>Membership</span>
