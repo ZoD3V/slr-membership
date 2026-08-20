@@ -110,7 +110,7 @@ const TierCard: FC<{ tier: Tier }> = ({ tier }) => {
                         className='mt-3 rounded-full bg-black/30 px-4 py-1 text-sm font-bold tracking-wider text-white uppercase'>
                         {tier.price}
                     </span>
-                    <p className='mt-3 text-[11px] font-semibold tracking-widest text-white/60 uppercase'>
+                    <p className='mt-3 text-xs font-semibold tracking-widest text-white/60 uppercase'>
                         {tier.meta}
                     </p>
                 </div>
@@ -226,13 +226,13 @@ const VisitorRedBlueSection = () => {
                                             ) : line.kind === 'accent' ? (
                                                 <p
                                                     key={line.text}
-                                                    className='text-[10px] font-semibold tracking-[0.15em] text-[#8C660D] uppercase'>
+                                                    className='text-[11px] font-semibold tracking-[0.15em] text-[#8C660D] uppercase'>
                                                     {line.text}
                                                 </p>
                                             ) : (
                                                 <p
                                                     key={line.text}
-                                                    className='text-[8px] leading-tight font-extrabold tracking-[0.08em] text-[#212121] uppercase'>
+                                                    className='text-[10px] leading-tight font-extrabold tracking-[0.08em] text-[#212121] uppercase'>
                                                     {line.text}
                                                 </p>
                                             )
