@@ -185,8 +185,8 @@ export default async function MemberDetailPage({ params }: { params: Promise<{ u
                         <ul className='space-y-2 text-sm'>
                             {wins.map((w) => (
                                 <li key={w.win_id} className='flex items-center justify-between'>
-                                    <span>{dash(w.giveaway_name)}</span>
-                                    <span className='text-muted-foreground'>{day(w.won_at)}</span>
+                                    <span>{dash(w.prize)}</span>
+                                    <span className='text-muted-foreground'>{day(w.recorded_at)}</span>
                                 </li>
                             ))}
                         </ul>

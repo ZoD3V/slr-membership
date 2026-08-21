@@ -79,10 +79,9 @@ export interface AdminMemberDetailCycle {
 }
 
 export interface AdminMemberDetailWin {
-    // TODO: Define win structure once backend provides examples
     win_id: string;
-    giveaway_name: string;
-    won_at: string;
+    prize: string;
+    recorded_at: string;
 }
 
 export interface AdminMemberDetail {
