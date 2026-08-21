@@ -180,7 +180,7 @@ const BlueTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispl
                             <div className='my-4 h-px w-full bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.35)_50%,rgba(255,255,255,0)_100%)]' />
 
                             {/* Benefits header row + add-on badge */}
-                            <div className='flex items-start justify-between gap-3'>
+                            <div className='flex items-center justify-between gap-3'>
                                 <p className='text-xs font-semibold tracking-widest text-white uppercase sm:text-sm'>
                                     Main Benefits
                                 </p>
@@ -202,7 +202,7 @@ const BlueTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispl
                             </div>
 
                             {/* Benefits list */}
-                            <ul className='mt-4 space-y-2.5'>
+                            <ul className='space-y-2.5'>
                                 {mainBenefits.map((item) => (
                                     <li key={item} className='flex items-start gap-2 text-white/90'>
                                         <Image
