@@ -33,15 +33,15 @@ type TierTheme = {
 
 const redTiers: Tier[] = [
     { label: 'Standard', price: '$10', token: '1 Token', spin: null },
-    { label: 'Plus', price: '$20', token: '4 Tokens', spin: '/icons/ic-duck-5-wheel.png' },
-    { label: 'Premium', price: '$30', token: '7 Tokens', spin: '/icons/ic-duck-10-wheel.png' }
+    { label: 'Plus', price: '$20', token: '4 Tokens', spin: '/icons/ic-duck-5-wheel.webp' },
+    { label: 'Premium', price: '$30', token: '7 Tokens', spin: '/icons/ic-duck-10-wheel.webp' }
 ];
 
 const blueTiers: Tier[] = [
     { label: 'Standard', price: '$26', token: '1 Token', spin: null },
-    { label: 'Plus', price: '$39', token: '4 Tokens', spin: '/icons/ic-duck-10-wheel.png' },
-    { label: 'Premium', price: '$52', token: '7 Tokens', spin: '/icons/ic-duck-15-wheel.png' },
-    { label: 'Elite', price: '$65', token: '10 Tokens', spin: '/icons/ic-duck-20-wheel.png' }
+    { label: 'Plus', price: '$39', token: '4 Tokens', spin: '/icons/ic-duck-10-wheel.webp' },
+    { label: 'Premium', price: '$52', token: '7 Tokens', spin: '/icons/ic-duck-15-wheel.webp' },
+    { label: 'Elite', price: '$65', token: '10 Tokens', spin: '/icons/ic-duck-20-wheel.webp' }
 ];
 
 const redTheme: TierTheme = {

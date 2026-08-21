@@ -25,7 +25,7 @@ const WelcomeSection = () => {
             <div className='mx-auto max-w-7xl px-4'>
                 <div className='text-center'>
                     <SectionEyebrow
-                        label="Australia's Best Value Rewards Club"
+                        label="Australia's TOP Rewards Club"
                         color='#E2B42B'
                         lineColor='#B08A20'
                         className='mt-5'

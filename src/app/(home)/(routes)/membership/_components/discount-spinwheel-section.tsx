@@ -16,7 +16,7 @@ const DiscountSpinWheelSection = () => {
                 </SectionHeading>
 
                 <Image
-                    src='/icons/ic-duck-20-wheel.png'
+                    src='/icons/ic-duck-20-wheel.webp'
                     alt='Monthly discount spin wheel'
                     width={390}
                     height={390}
