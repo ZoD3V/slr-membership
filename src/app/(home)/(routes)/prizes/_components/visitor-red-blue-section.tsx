@@ -1,6 +1,7 @@
 import type { CSSProperties, FC } from 'react';
 
 import Image from 'next/image';
+import Link from 'next/link';
 
 import GoldPillButton from '@/components/common/gold-pill-button';
 
@@ -244,8 +245,13 @@ const VisitorRedBlueSection = () => {
                     </div>
                 </div>
 
-                <div className='mt-8 flex justify-center'>
+                <div className='mt-8 flex flex-wrap items-center justify-center gap-4'>
                     <GoldPillButton href='/sign-up'>Join Us Now!</GoldPillButton>
+                    <Link
+                        href='/membership'
+                        className='border border-[#FFD147] bg-[#FFD1471A] text-[#FFDC75] shadow-[inset_0_1px_5px_rgba(255,220,117,0.15)] inline-flex items-center justify-center rounded-xl px-8 py-2.5 text-base font-bold tracking-wide uppercase transition-all hover:bg-[#FFD147]/20 lg:px-10 lg:py-3 lg:text-lg'>
+                        Draw Rules
+                    </Link>
                 </div>
             </div>
         </section>
