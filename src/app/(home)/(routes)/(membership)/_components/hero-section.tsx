@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 import GoldPillButton from '@/components/common/gold-pill-button';
 
@@ -51,8 +52,13 @@ const HeroSection = () => {
                 </div>
 
                 {/* CTA */}
-                <div className='mt-8 flex flex-col items-center gap-3'>
-                    <GoldPillButton href='/sign-up'>JOIN NOW</GoldPillButton>
+                <div className='mx-auto mt-8 flex w-full max-w-xs flex-col items-center gap-3 sm:max-w-none sm:flex-row sm:justify-center'>
+                    <GoldPillButton href='/sign-up' className='w-full sm:w-auto'>JOIN NOW</GoldPillButton>
+                    <Link
+                        href='/membership'
+                        className='w-full inline-flex items-center justify-center rounded-xl border border-[#FFD147] bg-[#FFD1471A] px-8 py-2.5 text-base font-bold tracking-wide text-[#FFDC75] uppercase shadow-[inset_0_1px_5px_rgba(255,220,117,0.15)] transition-all hover:bg-[#FFD147]/20 sm:w-auto lg:px-10 lg:py-3 lg:text-lg'>
+                        View Membership
+                    </Link>
                 </div>
 
                 {/* TV / Giveaway image */}
