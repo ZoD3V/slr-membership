@@ -132,7 +132,7 @@ export default async function MemberDashboardPage() {
     let activeDrawsAt = Infinity;
     for (const g of giveaways) {
         const drawsAt = Date.parse(g.draws_at ?? '');
-        if (drawsAt > nowMs && drawsAt < activeDrawsAt && isGiveawayEnterable(tierGroupFromApi(g.tier), memberGroup)) {
+        if (drawsAt > nowMs && drawsAt < activeDrawsAt && tierGroupFromApi(g.tier) === memberGroup) {
             activeGiveaway = g;
             activeDrawsAt = drawsAt;
         }
@@ -174,7 +174,7 @@ export default async function MemberDashboardPage() {
         return Number.isNaN(t) ? Infinity : t;
     };
     const upcomingGiveaways: UpcomingGiveaway[] = giveaways
-        .filter((g) => drawTimeMs(g) > nowMs)
+        .filter((g) => drawTimeMs(g) > nowMs && tierGroupFromApi(g.tier) === memberGroup)
         .sort((a, b) => drawTimeMs(a) - drawTimeMs(b))
         .slice(0, 6)
         .map((g) => {

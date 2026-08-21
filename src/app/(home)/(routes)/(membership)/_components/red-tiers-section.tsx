@@ -105,7 +105,7 @@ const Badge: FC<{ children: ReactNode; icon?: ReactNode; darkTheme?: boolean }> 
     return (
         <span
             className={cn(
-                'inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-[8px] font-extrabold tracking-wider whitespace-nowrap uppercase sm:px-2.5 sm:py-1 sm:text-[9px] xl:px-3 xl:py-1 xl:text-[10px]',
+                'inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[7px] font-extrabold tracking-wide whitespace-nowrap uppercase sm:gap-1.5 sm:px-2.5 sm:py-1 sm:text-[9px] xl:px-3 xl:py-1 xl:text-[10px]',
                 darkTheme
                     ? 'border border-[#FFD147] bg-[#FFD147]/5 text-[#FFDC75] shadow-[inset_0_1px_3px_rgba(255,220,117,0.1)]'
                     : 'border border-[#000000] bg-transparent text-black'
@@ -224,19 +224,23 @@ const RedTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispla
                                     key={tier.name}
                                     style={tier.cardStyle}
                                     className='flex flex-1 items-center justify-between gap-3 rounded-2xl p-3 max-[374px]:flex-col max-[374px]:items-stretch sm:p-4'>
-                                    <div className='flex min-w-0 flex-1 items-center gap-2 sm:gap-3'>
+                                    <div className='flex min-w-0 flex-1 items-center gap-1.5 sm:gap-3'>
                                         <Image
                                             src={tier.icon}
                                             alt={tier.name}
                                             width={112}
                                             height={112}
-                                            className='h-12 w-12 shrink-0 object-contain sm:h-14 sm:w-14 xl:h-16 xl:w-16'
+                                            className='h-10 w-10 shrink-0 object-contain sm:h-14 sm:w-14 xl:h-16 xl:w-16'
                                         />
                                         <div className='min-w-0'>
-                                            <div className='flex flex-wrap items-center gap-2'>
+                                            <div className='flex flex-wrap items-center gap-x-1.5 gap-y-1 lg:gap-2'>
+                                                {/* Below lg the name claims its own row, so badges always wrap
+                                                    together and every card ends up the same height — sharing the
+                                                    row lets short names ("Plus") keep a badge inline while long
+                                                    ones ("Premium") push it down. */}
                                                 <span
                                                     className={cn(
-                                                        'font-bebas-neue text-lg font-extrabold tracking-[0.18em] uppercase sm:text-xl xl:text-[22px] xl:leading-tight',
+                                                        'font-bebas-neue text-lg font-extrabold tracking-[0.18em] uppercase max-lg:basis-full max-lg:leading-none sm:text-xl xl:text-[22px] xl:leading-tight',
                                                         isPlus ? 'text-black' : 'text-white'
                                                     )}>
                                                     {l?.name ?? tier.name}
@@ -246,7 +250,7 @@ const RedTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispla
                                                         icon={
                                                             <Disc3
                                                                 className={cn(
-                                                                    'h-3 w-3 xl:h-4 xl:w-4',
+                                                                    'h-2.5 w-2.5 xl:h-4 xl:w-4',
                                                                     isPlus ? 'text-black' : 'text-[#FFDC75]'
                                                                 )}
                                                             />
@@ -278,7 +282,7 @@ const RedTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispla
 
                                     <div
                                         style={tier.tokenBoxStyle}
-                                        className='flex w-24 shrink-0 flex-col items-center justify-center rounded-xl px-2.5 py-3 text-center max-[374px]:w-full sm:w-32 sm:px-4 sm:py-4 xl:w-40'>
+                                        className='flex w-20 shrink-0 flex-col items-center justify-center rounded-xl px-2 py-3 text-center max-[374px]:w-full sm:w-32 sm:px-4 sm:py-4 xl:w-40'>
                                         <span
                                             className={cn(
                                                 'font-bebas-neue text-xl leading-none font-black whitespace-nowrap sm:text-2xl xl:text-[26px]',

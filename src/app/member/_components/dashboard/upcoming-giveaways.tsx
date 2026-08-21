@@ -65,7 +65,7 @@ export function UpcomingGiveaways({ giveaways }: { giveaways: UpcomingGiveaway[]
     return (
         <section>
             <SectionTitle viewAllHref='/member/giveaways'>Active Giveaways</SectionTitle>
-            <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+            <div className='grid gap-4 lg:grid-cols-2 xl:grid-cols-3'>
                 {giveaways.map((giveaway) => (
                     <GiveawayCard key={giveaway.id} giveaway={giveaway} />
                 ))}
