@@ -31,7 +31,7 @@ const initialData: SignUpFormData = {
     name: '',
     email: '',
     password: '',
-    state: '',
+    state: 'VIC',
     phone: '',
     dob: '',
     tier: null,
