@@ -120,13 +120,13 @@ export function PersonalInfoSection({ profile }: PersonalInfoSectionProps) {
                 <Row label='Email'>
                     <span className='text-white/90'>{profile.email || '-'}</span>
                     <span className='text-slr-dim ml-2 inline-flex items-center gap-1 text-xs'>
-                        <Lock className='size-3' /> admin approval
+                        <Lock className='size-3' />
                     </span>
                 </Row>
                 <Row label='Address (State)'>
                     <span className='text-white/90'>{profile.state || '-'}</span>
                     <span className='text-slr-dim ml-2 inline-flex items-center gap-1 text-xs'>
-                        <Lock className='size-3' /> admin approval
+                        <Lock className='size-3' />
                     </span>
                 </Row>
                 <Row label='Date of Birth'>
@@ -180,10 +180,6 @@ export function PersonalInfoSection({ profile }: PersonalInfoSectionProps) {
                     </Button>
                 </div>
             ) : null}
-
-            <p className='text-slr-dim mt-4 text-xs'>
-                Email and state changes require admin approval — contact support to request one.
-            </p>
         </section>
     );
 }
