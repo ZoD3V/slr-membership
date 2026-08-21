@@ -23,6 +23,20 @@ export const goldBgStyle: CSSProperties = {
 };
 
 /**
+ * Vertical "bar highlight" gold (180°) — the brighter, more dimensional gold used
+ * for solid gold surfaces like the Prize Pool card and the PLUS tier row.
+ */
+export const GOLD_BAR_GRADIENT = 'linear-gradient(180deg, #FFE066 0%, #F5C22E 50%, #C78C14 100%)';
+
+/** Solid gold surface — `GOLD_BAR_GRADIENT` fill, dark-gold edge, warm outer glow. */
+export const goldBarStyle: CSSProperties = {
+    background: GOLD_BAR_GRADIENT,
+    border: '3px solid #8C660D',
+    boxShadow: '0px 10px 18px rgba(0, 0, 0, 0.35), 0px 0px 36px rgba(255, 199, 51, 0.55)',
+    borderRadius: '12px'
+};
+
+/**
  * Dark form-input style — matches the sign-up (register) inputs. Apply to a
  * shadcn `<Input>` / `<SelectTrigger>` via `className`. h-11, subtle glass fill,
  * gold focus ring.
