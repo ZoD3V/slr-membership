@@ -6,24 +6,19 @@ import { motion, useAnimationControls } from 'motion/react';
 
 type Segment = { label: string; isWin: boolean; fill: string; textColor: string };
 
-const SEGMENT_COUNT = 8;
+const SEGMENT_COUNT = 4;
 const SEGMENT_ANGLE = 360 / SEGMENT_COUNT;
 const RADIUS = 140;
 const CENTER = 150;
 const FULL_SPINS = 5;
 const SPIN_MS = 3400;
 
-// Two winning wedges out of eight, but the odds are NOT read from this layout —
-// the server decides win/lose (PRD: 1/4) and the wheel only animates to it.
+// One winning wedge out of four (1/4 odds visual) with duck icons for no-prize
 const buildSegments = (winLabel: string): Segment[] => [
-    { label: 'No prize', isWin: false, fill: '#1E2530', textColor: '#8EA0B8' },
+    { label: '', isWin: false, fill: '#1E2530', textColor: '#8EA0B8' },
     { label: winLabel, isWin: true, fill: '#D4AF37', textColor: '#0C1132' },
-    { label: 'No prize', isWin: false, fill: '#1E2530', textColor: '#8EA0B8' },
-    { label: 'No prize', isWin: false, fill: '#2A0810', textColor: '#E88888' },
-    { label: 'No prize', isWin: false, fill: '#1E2530', textColor: '#8EA0B8' },
-    { label: winLabel, isWin: true, fill: '#FFE066', textColor: '#0C1132' },
-    { label: 'No prize', isWin: false, fill: '#1E2530', textColor: '#8EA0B8' },
-    { label: 'No prize', isWin: false, fill: '#142034', textColor: '#6AB0F0' }
+    { label: '', isWin: false, fill: '#2A0810', textColor: '#E88888' },
+    { label: '', isWin: false, fill: '#142034', textColor: '#6AB0F0' }
 ];
 
 const polarToCartesian = (cx: number, cy: number, r: number, angleDeg: number) => {
@@ -135,17 +130,28 @@ export function SpinWheel({ winDiscount, onSpin, onSettled, spinLabel = 'Spin th
                                         stroke='rgba(255,255,255,0.08)'
                                         strokeWidth='1'
                                     />
-                                    <text
-                                        x={labelPos.x}
-                                        y={labelPos.y}
-                                        fill={seg.textColor}
-                                        fontSize='12'
-                                        fontWeight='700'
-                                        textAnchor='middle'
-                                        dominantBaseline='middle'
-                                        transform={`rotate(${midAngle}, ${labelPos.x}, ${labelPos.y})`}>
-                                        {seg.label}
-                                    </text>
+                                    {seg.isWin ? (
+                                        <text
+                                            x={labelPos.x}
+                                            y={labelPos.y}
+                                            fill={seg.textColor}
+                                            fontSize='13'
+                                            fontWeight='700'
+                                            textAnchor='middle'
+                                            dominantBaseline='middle'
+                                            transform={`rotate(${midAngle}, ${labelPos.x}, ${labelPos.y})`}>
+                                            {seg.label}
+                                        </text>
+                                    ) : (
+                                        <image
+                                            href='/icons/ic-duck.webp'
+                                            x={labelPos.x - 22}
+                                            y={labelPos.y - 22}
+                                            width='44'
+                                            height='44'
+                                            transform={`rotate(${midAngle}, ${labelPos.x}, ${labelPos.y})`}
+                                        />
+                                    )}
                                 </g>
                             );
                         })}
