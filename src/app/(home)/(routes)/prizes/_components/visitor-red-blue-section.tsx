@@ -111,9 +111,7 @@ const TierCard: FC<{ tier: Tier }> = ({ tier }) => {
                         className='mt-3 rounded-full bg-black/30 px-4 py-1 text-sm font-bold tracking-wider text-white uppercase'>
                         {tier.price}
                     </span>
-                    <p className='mt-3 text-sm font-semibold tracking-wider text-white/60 uppercase'>
-                        {tier.meta}
-                    </p>
+                    <p className='mt-3 text-sm font-semibold tracking-wider text-white/60 uppercase'>{tier.meta}</p>
                 </div>
 
                 <div className='flex flex-col gap-6 px-6 py-8'>
@@ -195,7 +193,7 @@ const VisitorCard = () => (
 
 const VisitorRedBlueSection = () => {
     return (
-        <section className='bg-transparent relative isolate overflow-hidden py-16 md:py-24 -mt-8 md:-mt-12'>
+        <section className='relative isolate -mt-8 overflow-hidden bg-transparent py-16 md:-mt-12 md:py-24'>
             <div className='mx-auto max-w-7xl px-4'>
                 <div className='grid grid-cols-1 items-stretch gap-5 md:grid-cols-3'>
                     <TierCard tier={redTier} />
@@ -245,11 +243,13 @@ const VisitorRedBlueSection = () => {
                     </div>
                 </div>
 
-                <div className='mt-8 flex flex-wrap items-center justify-center gap-4'>
-                    <GoldPillButton href='/sign-up'>Join Us Now!</GoldPillButton>
+                <div className='mx-auto mt-8 flex w-full max-w-xs flex-col gap-4 sm:max-w-none sm:flex-row sm:items-center sm:justify-center'>
+                    <GoldPillButton href='/sign-up' className='w-full sm:w-auto'>
+                        Join Us Now!
+                    </GoldPillButton>
                     <Link
                         href='/membership'
-                        className='border border-[#FFD147] bg-[#FFD1471A] text-[#FFDC75] shadow-[inset_0_1px_5px_rgba(255,220,117,0.15)] inline-flex items-center justify-center rounded-xl px-8 py-2.5 text-base font-bold tracking-wide uppercase transition-all hover:bg-[#FFD147]/20 lg:px-10 lg:py-3 lg:text-lg'>
+                        className='w-full inline-flex items-center justify-center rounded-xl border border-[#FFD147] bg-[#FFD1471A] px-8 py-2.5 text-base font-bold tracking-wide text-[#FFDC75] uppercase shadow-[inset_0_1px_5px_rgba(255,220,117,0.15)] transition-all hover:bg-[#FFD147]/20 sm:w-auto lg:px-10 lg:py-3 lg:text-lg'>
                         Draw Rules
                     </Link>
                 </div>
