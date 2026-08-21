@@ -334,14 +334,14 @@ const BlueTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispl
                                         className='flex w-24 shrink-0 flex-col items-center justify-center rounded-xl px-2 py-3 text-center max-[374px]:w-full sm:w-36 sm:px-4 sm:py-4 xl:w-40'>
                                         <span
                                             className={cn(
-                                                'font-bebas-neue text-xl leading-none font-black whitespace-nowrap sm:text-2xl xl:text-[26px]',
+                                                'font-bebas-neue text-xl leading-none font-black whitespace-nowrap sm:text-2xl xl:text-[28px]',
                                                 tier.tokenClass
                                             )}>
                                             {l?.tokens ?? tier.tokens}
                                         </span>
                                         <span
                                             className={cn(
-                                                'mt-1.5 text-[9px] font-semibold tracking-[0.2em] whitespace-nowrap uppercase sm:text-[11px] xl:text-xs',
+                                                'mt-1.5 text-[9px] font-semibold tracking-widest whitespace-nowrap uppercase sm:text-[14px] xl:text-sm',
                                                 tier.labelClass
                                             )}>
                                             All Access

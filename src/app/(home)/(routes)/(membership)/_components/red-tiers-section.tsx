@@ -285,14 +285,14 @@ const RedTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispla
                                         className='flex w-20 shrink-0 flex-col items-center justify-center rounded-xl px-2 py-3 text-center max-[374px]:w-full sm:w-32 sm:px-4 sm:py-4 xl:w-40'>
                                         <span
                                             className={cn(
-                                                'font-bebas-neue text-xl leading-none font-black whitespace-nowrap sm:text-2xl xl:text-[26px]',
+                                                'font-bebas-neue text-xl leading-none font-black whitespace-nowrap sm:text-2xl xl:text-[28px]',
                                                 tier.tokenClass
                                             )}>
                                             {l?.tokens ?? tier.tokens}
                                         </span>
                                         <div
                                             className={cn(
-                                                'mt-1.5 flex flex-col items-center text-[9px] leading-snug font-semibold tracking-[0.2em] uppercase sm:text-[11px] xl:text-xs',
+                                                'mt-1.5 flex flex-col items-center text-[9px] leading-snug font-semibold tracking-[0.2em] uppercase sm:text-[14px] xl:text-sm',
                                                 tier.labelClass
                                             )}>
                                             <span>Member</span>
