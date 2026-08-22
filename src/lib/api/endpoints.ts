@@ -39,6 +39,10 @@ export const API = {
         dashboard: '/api/v1/admin/dashboard',
         memberDetail: (userId: string) => `/api/v1/admin/members/${userId}`,
         deleteMember: (userId: string) => `/api/v1/admin/members/${userId}`,
+        // Same path as memberDetail/deleteMember — the verb picks the operation.
+        // PUT edits the profile fields; despite the verb it merges, so omitted
+        // fields keep their value (verified live 2026-08-22).
+        updateMemberProfile: (userId: string) => `/api/v1/admin/members/${userId}`,
         updateMemberStatus: (userId: string) => `/api/v1/admin/members/${userId}/status`,
         benyPending: '/api/v1/admin/beny/pending',
         benyActivate: (id: string) => `/api/v1/admin/beny/${id}/activate`,
@@ -97,12 +101,13 @@ export const API = {
         history: '/api/v1/entries/'
     },
     prizes: {
-        // OpenAPI docs (checked 2026-08-12 against docsx-2s3crt3-199/json)
-        // mark this `security: none`, but live still 401s without a Bearer
-        // token — spec bug, not ours; keep sending the token. Path matches
-        // the doc's trailing slash. `/public/prizes` (the old assumed path)
-        // stays 404; this is the real member-facing document, same flat
-        // shape as admin.prizes below.
+        // Public since 2026-08-22 — re-probed live and it now answers 200 with
+        // no token, with a garbage token, and with or without the trailing
+        // slash, matching the OpenAPI `security: none`. It used to 401
+        // unauthenticated (2026-08-12), so the member reader still passes its
+        // token; the public reader below sends none. `/public/prizes` (the old
+        // assumed path) stays 404 — this is the real document, same flat shape
+        // as admin.prizes below.
         member: '/api/v1/prizes/'
     },
     users: {

@@ -15,7 +15,7 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
                 // date text, so `ml-auto` never reaches the right edge — it is not a
                 // flex item of the input box. Pinning it absolutely does, and `pr-9`
                 // keeps the value from running underneath it.
-                type === 'datetime-local' &&
+                (type === 'date' || type === 'datetime-local') &&
                     'relative pr-9 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:top-1/2 [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:-translate-y-1/2 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-datetime-edit]:w-full',
                 className
             )}

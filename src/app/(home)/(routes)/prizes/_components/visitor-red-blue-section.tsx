@@ -4,18 +4,19 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import GoldPillButton from '@/components/common/gold-pill-button';
+import type { PrizeContent } from '@/types/member';
 
 type Reward = {
     icon: string;
-    period?: string;
-    amount: string;
-    caption: string;
+    period: string;
+    /** Prize copy straight off the CMS document — free-form, so it renders as
+     *  one line rather than being split into an amount and a caption. */
+    text: string;
 };
 
 type Tier = {
     name: string;
     price: string;
-    meta: string;
     rewards: Reward[];
     footer: [string, string];
     cardBg: string;
@@ -24,75 +25,103 @@ type Tier = {
     footerBg: string;
 };
 
-const redTier: Tier = {
+/** Everything about a paid tier card that isn't CMS-managed: brand palette,
+ *  price, artwork, and the closing tagline. */
+const redTheme = {
     name: 'SLR Red',
     price: '$10 Month',
-    meta: 'For 100 Members · Stage 1',
-    rewards: [
-        { icon: '/icons/ic-red-cole.webp', period: 'Weekly', amount: '$25', caption: 'Coles Credits' },
-        { icon: '/icons/ic-red-coin.webp', amount: '$50', caption: 'Cash' },
-        { icon: '/icons/ic-red-gift.webp', period: 'Monthly', amount: '$300', caption: 'Bonus Monthly Credit' }
-    ],
-    footer: ['Low Cost.', 'Strong Weekly Rewards.'],
+    weeklyIcon: '/icons/ic-red-cole.webp',
+    monthlyIcon: '/icons/ic-red-gift.webp',
+    footer: ['Low Cost.', 'Strong Weekly Rewards.'] as [string, string],
     cardBg: 'linear-gradient(180deg, #530710 0%, #000000 19.27%, #220408 71.42%, #470818 87.62%)',
     borderGradient: 'linear-gradient(180deg, #FF6B7A 10%, #C8152E 25%, #8B0010 75.24%, #C8152E 87.62%, #FF6B7A 100%)',
     accent: '#F24040',
     footerBg: 'linear-gradient(180deg, #F22E2E 0%, #A61212 100%)'
 };
 
-const blueTier: Tier = {
+const blueTheme = {
     name: 'SLR Blue',
     price: '$26 Month',
-    meta: 'For 100 Members · Stage 1',
-    rewards: [
-        { icon: '/icons/ic-blue-cole.webp', period: 'Weekly', amount: '$25', caption: 'Coles Credits' },
-        { icon: '/icons/ic-blue-coin.webp', amount: '$150', caption: 'Cash' },
-        { icon: '/icons/ic-blue-gift.webp', period: 'Monthly', amount: '$700', caption: 'Bonus Monthly Credit' }
-    ],
-    footer: ['Higher Tier.', 'Bigger Rewards.'],
+    weeklyIcon: '/icons/ic-blue-cole.webp',
+    monthlyIcon: '/icons/ic-blue-gift.webp',
+    footer: ['Higher Tier.', 'Bigger Rewards.'] as [string, string],
     cardBg: 'linear-gradient(180deg, #0F2F7A 0%, #000207 10.41%, #000D35 63.57%, #0D2662 87.62%)',
     borderGradient: 'linear-gradient(180deg, #6AACFF 0%, #1A62C0 25%, #0A2E80 50%, #1A62C0 75%, #6AACFF 100%)',
     accent: '#6699FF',
     footerBg: 'linear-gradient(180deg, #4080FF 0%, #143399 100%)'
 };
 
+function toTier(theme: typeof redTheme, weekly: string, monthly: string): Tier {
+    const { weeklyIcon, monthlyIcon, ...rest } = theme;
+
+    return {
+        ...rest,
+        rewards: [
+            { icon: weeklyIcon, period: 'Weekly', text: weekly },
+            { icon: monthlyIcon, period: 'Monthly', text: monthly }
+        ]
+    };
+}
+
 type StatLine = { text: string; kind?: 'accent' | 'big' };
 type Stat = { icon: string; iconClass: string; lines: StatLine[] };
 
-const stats: Stat[] = [
-    {
-        icon: '/icons/ic-people3d-gold.webp',
-        iconClass: 'h-14 w-14',
-        lines: [{ text: 'For 100 Members' }, { text: '— Stage 1 —', kind: 'accent' }]
-    },
-    {
-        icon: '/icons/ic-target3d-gold.webp',
-        iconClass: 'h-14 w-14',
-        lines: [{ text: 'Focus on Members Level' }, { text: 'Value, Rewards &' }, { text: 'Cost of Living Support' }]
-    },
-    {
-        icon: '/icons/ic-pricetag3d-gold.webp',
-        iconClass: 'h-14 w-14',
-        lines: [{ text: 'Membership' }, { text: '— Discounts —', kind: 'accent' }, { text: 'Rewards' }]
-    },
-    {
-        icon: '/icons/ic-r-b.png',
-        iconClass: 'h-11 w-auto',
-        lines: [{ text: 'Odds Vary' }, { text: 'Based on Membership' }, { text: 'Levels & Total Members' }]
-    },
-    {
-        icon: '/icons/ic-trophy3d-gold.webp',
-        iconClass: 'h-14 w-14',
-        lines: [{ text: '90.7%', kind: 'big' }, { text: '— 9 in 10 —', kind: 'accent' }, { text: 'Wins Yearly' }]
-    }
-];
+/** `stage_label` reads as 'For 100 Members • Stage 1' — the audience half sets
+ *  the stat's first line, the stage half its accent line. Falls back to a
+ *  single line when the CMS drops the separator. */
+function stageLines(stageLabel: string): StatLine[] {
+    const [audience, stage] = stageLabel.split(/\s*[•·|]\s*/);
+
+    if (!stage) return [{ text: stageLabel }];
+
+    return [{ text: audience }, { text: `— ${stage} —`, kind: 'accent' }];
+}
+
+function buildStats(content: PrizeContent): Stat[] {
+    return [
+        {
+            icon: '/icons/ic-people3d-gold.webp',
+            iconClass: 'h-14 w-14',
+            lines: stageLines(content.stage_label)
+        },
+        {
+            icon: '/icons/ic-target3d-gold.webp',
+            iconClass: 'h-14 w-14',
+            lines: [
+                { text: 'Focus on Members Level' },
+                { text: 'Value, Rewards &' },
+                { text: 'Cost of Living Support' }
+            ]
+        },
+        {
+            icon: '/icons/ic-pricetag3d-gold.webp',
+            iconClass: 'h-14 w-14',
+            lines: [{ text: 'Membership' }, { text: '— Discounts —', kind: 'accent' }, { text: 'Rewards' }]
+        },
+        {
+            icon: '/icons/ic-r-b.png',
+            iconClass: 'h-11 w-auto',
+            lines: [{ text: 'Odds Vary' }, { text: 'Based on Membership' }, { text: 'Levels & Total Members' }]
+        },
+        {
+            // 90.7% stays static — the CMS document carries no percentage field,
+            // only the `odds` sentence underneath it.
+            icon: '/icons/ic-trophy3d-gold.webp',
+            iconClass: 'h-14 w-14',
+            lines: [
+                { text: '90.7%', kind: 'big' },
+                { text: content.odds, kind: 'accent' }
+            ]
+        }
+    ];
+}
 
 const statBarStyle: CSSProperties = {
     background: 'linear-gradient(180deg, #FFE073 0%, #C7992E 50%, #FFE073 100%)',
     boxShadow: '0px 0px 30px 0px #FFB23340, 0px 10px 20px 0px #00000080'
 };
 
-const TierCard: FC<{ tier: Tier }> = ({ tier }) => {
+const TierCard: FC<{ tier: Tier; stageLabel: string }> = ({ tier, stageLabel }) => {
     const titleStyle: CSSProperties = { color: tier.accent, textShadow: `0px 0px 18px ${tier.accent}80` };
 
     return (
@@ -111,12 +140,12 @@ const TierCard: FC<{ tier: Tier }> = ({ tier }) => {
                         className='mt-3 rounded-full bg-black/30 px-4 py-1 text-sm font-bold tracking-wider text-white uppercase'>
                         {tier.price}
                     </span>
-                    <p className='mt-3 text-sm font-semibold tracking-wider text-white/60 uppercase'>{tier.meta}</p>
+                    <p className='mt-3 text-sm font-semibold tracking-wider text-white/60 uppercase'>{stageLabel}</p>
                 </div>
 
                 <div className='flex flex-col gap-6 px-6 py-8'>
                     {tier.rewards.map((reward) => (
-                        <div key={reward.caption} className='flex items-center gap-4'>
+                        <div key={reward.period} className='flex items-center gap-4'>
                             <Image
                                 src={reward.icon}
                                 alt=''
@@ -125,16 +154,13 @@ const TierCard: FC<{ tier: Tier }> = ({ tier }) => {
                                 className='h-16 w-16 shrink-0 object-contain'
                             />
                             <div className='min-w-0 text-left'>
-                                {reward.period && (
-                                    <p
-                                        style={{ color: tier.accent }}
-                                        className='text-sm font-bold tracking-[0.2em] uppercase'>
-                                        {reward.period}
-                                    </p>
-                                )}
-                                <p className='text-4xl leading-none font-extrabold text-white'>{reward.amount}</p>
-                                <p className='mt-1.5 text-xs font-bold tracking-[0.15em] text-white/90 uppercase'>
-                                    {reward.caption}
+                                <p
+                                    style={{ color: tier.accent }}
+                                    className='text-sm font-bold tracking-[0.2em] uppercase'>
+                                    {reward.period}
+                                </p>
+                                <p className='mt-1 text-xl leading-tight font-extrabold text-white sm:text-2xl'>
+                                    {reward.text}
                                 </p>
                             </div>
                         </div>
@@ -153,7 +179,7 @@ const TierCard: FC<{ tier: Tier }> = ({ tier }) => {
     );
 };
 
-const VisitorCard = () => (
+const VisitorCard = ({ prize }: { prize: string }) => (
     <div className='flex h-full flex-col items-center rounded-2xl bg-[#F1FBFE] px-6 py-8 text-center'>
         <h3 className='font-bebas-neue text-4xl font-bold tracking-wider text-[#0A0A0A] uppercase sm:text-5xl'>
             Visitor
@@ -171,8 +197,7 @@ const VisitorCard = () => (
         />
 
         <p className='mt-8 text-sm font-bold tracking-[0.2em] text-[#0A0A0A] uppercase'>Weekly</p>
-        <p className='text-7xl leading-none font-extrabold text-[#0A0A0A] sm:text-8xl'>$25</p>
-        <p className='mt-2 text-xs font-bold tracking-[0.15em] text-[#0A0A0A]/80 uppercase'>Coles Digital Credit</p>
+        <p className='mt-2 text-3xl leading-tight font-extrabold text-[#0A0A0A] sm:text-4xl'>{prize}</p>
 
         <div className='my-6 h-px w-24 bg-[#D1A62E]' />
 
@@ -191,14 +216,22 @@ const VisitorCard = () => (
     </div>
 );
 
-const VisitorRedBlueSection = () => {
+const VisitorRedBlueSection = ({ content }: { content: PrizeContent }) => {
+    const stats = buildStats(content);
+
     return (
         <section className='relative isolate -mt-8 overflow-hidden bg-transparent py-16 md:-mt-12 md:py-24'>
             <div className='mx-auto max-w-7xl px-4'>
                 <div className='grid grid-cols-1 items-stretch gap-5 md:grid-cols-3'>
-                    <TierCard tier={redTier} />
-                    <VisitorCard />
-                    <TierCard tier={blueTier} />
+                    <TierCard
+                        tier={toTier(redTheme, content.red_weekly, content.red_monthly)}
+                        stageLabel={content.stage_label}
+                    />
+                    <VisitorCard prize={content.visitor_prize} />
+                    <TierCard
+                        tier={toTier(blueTheme, content.blue_weekly, content.blue_monthly)}
+                        stageLabel={content.stage_label}
+                    />
                 </div>
 
                 {/* Stats bar */}
@@ -249,7 +282,7 @@ const VisitorRedBlueSection = () => {
                     </GoldPillButton>
                     <Link
                         href='/membership'
-                        className='w-full inline-flex items-center justify-center rounded-xl border border-[#FFD147] bg-[#FFD1471A] px-8 py-2.5 text-base font-bold tracking-wide text-[#FFDC75] uppercase shadow-[inset_0_1px_5px_rgba(255,220,117,0.15)] transition-all hover:bg-[#FFD147]/20 sm:w-auto lg:px-10 lg:py-3 lg:text-lg'>
+                        className='inline-flex w-full items-center justify-center rounded-xl border border-[#FFD147] bg-[#FFD1471A] px-8 py-2.5 text-base font-bold tracking-wide text-[#FFDC75] uppercase shadow-[inset_0_1px_5px_rgba(255,220,117,0.15)] transition-all hover:bg-[#FFD147]/20 sm:w-auto lg:px-10 lg:py-3 lg:text-lg'>
                         Draw Rules
                     </Link>
                 </div>

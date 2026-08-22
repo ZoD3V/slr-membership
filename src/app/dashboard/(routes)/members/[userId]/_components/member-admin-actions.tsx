@@ -8,12 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AU_STATES, AU_STATE_CODES, type AuStateCode } from '@/constant/au-states';
 import type { AdminMemberStatusValue } from '@/lib/api/resources/admin';
 import type { MemberSubTierId } from '@/lib/api/resources/memberships';
 import { formatAdminTierName, subTierCodeOf } from '@/lib/member';
 
-import { changeMemberStateAction, changeMemberTierAction, updateMemberStatusAction } from '../../actions';
+import { changeMemberTierAction, updateMemberStatusAction } from '../../actions';
 import { Loader2Icon } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -38,32 +37,24 @@ const toStatusValue = (status: string): AdminMemberStatusValue => {
     return STATUS_OPTIONS.some((o) => o.value === upper) ? (upper as AdminMemberStatusValue) : 'ACTIVE';
 };
 
-const toStateValue = (state: string): AuStateCode | '' =>
-    AU_STATE_CODES.includes(state?.toUpperCase() as AuStateCode) ? (state.toUpperCase() as AuStateCode) : '';
-
 export function MemberAdminActions({
     userId,
     currentStatus,
-    currentTierCode,
-    currentState
+    currentTierCode
 }: {
     userId: string;
     currentStatus: string;
     currentTierCode: string;
-    currentState: string;
 }) {
     const router = useRouter();
     const [status, setStatus] = useState<AdminMemberStatusValue>(toStatusValue(currentStatus));
     // The member-detail response exposes the base tier code only (not the exact
     // sub-tier), so the sub-tier control starts unset and the admin selects one.
     const [subTier, setSubTier] = useState<MemberSubTierId | ''>('');
-    const [state, setState] = useState<AuStateCode | ''>(toStateValue(currentState));
     const [statusPending, startStatus] = useTransition();
     const [tierPending, startTier] = useTransition();
-    const [statePending, startState] = useTransition();
 
     const savedStatus = toStatusValue(currentStatus);
-    const savedState = toStateValue(currentState);
     const baseTierLabel = currentTierCode ? currentTierCode.toUpperCase() : '—';
 
     const saveStatus = () => {
@@ -92,26 +83,12 @@ export function MemberAdminActions({
         });
     };
 
-    const saveState = () => {
-        if (!state || state === savedState) return;
-        startState(async () => {
-            const res = await changeMemberStateAction(userId, state);
-            if (res.ok) {
-                toast.success(res.message);
-                router.refresh();
-            } else {
-                toast.error(res.code ? `${res.message} (${res.code})` : res.message);
-            }
-        });
-    };
-
     return (
         <Card>
             <CardHeader className='pb-2'>
                 <CardTitle className='text-base'>Admin actions</CardTitle>
                 <CardDescription>
-                    Update the member&apos;s account status, tier / sub-tier, or draw-pool state. Each control saves
-                    independently.
+                    Update the member&apos;s account status or tier / sub-tier. Each control saves independently.
                 </CardDescription>
             </CardHeader>
             <CardContent className='grid gap-6 sm:grid-cols-2'>
@@ -153,27 +130,6 @@ export function MemberAdminActions({
                         </Select>
                         <Button onClick={saveTier} disabled={tierPending || !subTier}>
                             {tierPending ? <Loader2Icon className='h-4 w-4 animate-spin' /> : 'Update'}
-                        </Button>
-                    </div>
-                </div>
-
-                <div className='grid gap-2 sm:col-span-2'>
-                    <Label htmlFor='member-state'>Draw-pool state</Label>
-                    <div className='flex gap-2'>
-                        <Select value={state} onValueChange={(v) => setState(v as AuStateCode)}>
-                            <SelectTrigger id='member-state' className='flex-1'>
-                                <SelectValue placeholder='Select state' />
-                            </SelectTrigger>
-                            <SelectContent className='dashboard-theme dark'>
-                                {AU_STATES.map((s) => (
-                                    <SelectItem key={s.code} value={s.code}>
-                                        {s.code} — {s.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <Button onClick={saveState} disabled={statePending || !state || state === savedState}>
-                            {statePending ? <Loader2Icon className='h-4 w-4 animate-spin' /> : 'Update'}
                         </Button>
                     </div>
                 </div>

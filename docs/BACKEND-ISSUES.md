@@ -1152,3 +1152,45 @@ FE admin panel sudah dibangun (toggle + history + filter) — **history dan `?mo
 2. Karena kegagalannya berpola sama dengan Safe Hours dan Spin Config (lihat di atas), mohon cek apakah ketiganya berbagi satu root cause sebelum memperbaikinya satu-satu.
 
 **Catatan:** belum ada panel admin Notifications di frontend yang mengonsumsi endpoint ini — berbeda dari Safe Hours dan Spin Config yang masing-masing sudah punya panel admin terbangun dengan fallback ke seed data. Panel admin Notifications adalah fitur frontend berikutnya yang diantrikan sprint ini dan bergantung pada `GET /admin/notification-templates` sebagai read utamanya, jadi endpoint ini perlu diperbaiki sebelum panel itu bisa mulai dibangun melawan data live.
+
+---
+
+## `PUT /api/v1/admin/members/{userId}` — dua gap kecil (endpoint sendiri sehat)
+
+**Verified live 2026-08-22** (admin token, akun test buangan `test6969@stripe.com` / `019fa962-be51-741a-a194-5332b3ce657d`, semua nilai dikembalikan ke semula setelah probe). Endpoint berfungsi baik: merge semantics benar (kirim satu field, lima lainnya tidak tersentuh), validasi `full_name`/`email`/`state` rapi dengan pesan error yang jelas, duplikat email menjawab `409 CONFLICT`, `dob` menerima date-only maupun `null`. Sudah diintegrasikan ke kartu **Edit profile** di halaman detail member admin.
+
+Dua hal yang perlu tindakan backend:
+
+### 1. 🟡 `pay_id_email` bisa ditulis tapi tidak pernah bisa dibaca
+
+`PUT` menerima `pay_id_email` dan mengembalikannya di response. Tapi `GET /api/v1/admin/members/{userId}` **tidak memuat field itu sama sekali**:
+
+```
+GET  /admin/members/{id}  → keys: user_id, full_name, email, dob, status,
+                                  created_at, membership, subscription,
+                                  cycles, wins, phone, state     ← tidak ada pay_id_email
+PUT  /admin/members/{id}  → data: { ..., "pay_id_email": null }  ← ada di sini saja
+```
+
+Akibatnya admin bisa menyimpan PayID email, tapi begitu halaman di-refresh nilainya hilang dari layar — tidak ada cara memverifikasi apa yang tersimpan, dan tidak ada cara mengedit tanpa mengetik ulang dari nol.
+
+**Keputusan FE (2026-08-22): field ini TIDAK dipasang di form Edit profile admin.** Input yang selalu kosong berarti admin mengetik menimpa nilai yang tidak pernah bisa ia lihat — itu jalan pintas menuju kehilangan data diam-diam. Ditambah lagi tujuan field ini masih belum dikonfirmasi ke klien (lihat item di bagian "Member-account restructure" di atas: *"likely a PayID payout email for prize winnings, but unconfirmed"*), dan per hari ini **tidak ada satu pun layar di aplikasi yang mengonsumsi `pay_id_email`** — placeholder lama di member profile sudah dihapus. Tipe payload-nya tetap disimpan di `resources/admin.ts` supaya kontraknya tidak hilang.
+
+**Yang diminta:**
+
+1. Tambahkan `pay_id_email` ke response `GET /admin/members/{userId}`.
+2. Konfirmasikan ke klien untuk apa field ini sebenarnya dipakai. Kalau memang tidak terpakai di produk, lebih baik dicabut dari semua endpoint daripada dibiarkan menggantung setengah jadi.
+
+Kontrolnya baru akan dipasang kalau kedua poin di atas selesai.
+
+### 2. 🟡 `phone` tidak divalidasi sama sekali
+
+```
+PUT /admin/members/{id}  body {"phone":"abc123"}  → 200 OK, tersimpan apa adanya
+```
+
+Bandingkan dengan `PATCH /api/v1/users/me` yang menerapkan pola `^\+?[0-9]{8,15}$` dan menolak huruf dengan 400. Jalur admin melewati pemeriksaan itu sepenuhnya, jadi satu salah ketik bisa menulis nomor telepon yang tidak valid ke akun member — dan nomor itu ikut terekspor ke CSV TPAL.
+
+**Yang diminta:** terapkan pola validasi `phone` yang sama seperti di `PATCH /users/me`.
+
+**Catatan tambahan (bukan permintaan):** `GET /admin/members/{userId}` mengembalikan `dob` walau field itu tidak dideklarasikan di schema OpenAPI-nya. FE sudah menambahkannya ke DTO; mohon schema disesuaikan supaya tidak hilang di refactor berikutnya.

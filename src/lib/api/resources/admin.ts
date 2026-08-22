@@ -1,5 +1,7 @@
 import { cache } from 'react';
 
+import type { AuStateCode } from '@/constant/au-states';
+
 import { API } from '../endpoints';
 import { apiFetch, apiFetchPaginated } from '../http';
 
@@ -90,6 +92,10 @@ export interface AdminMemberDetail {
     email: string;
     phone: string;
     state: string;
+    // ISO date-time, nullable. Returned by the live endpoint but absent from
+    // its OpenAPI schema. `pay_id_email` is the reverse — writable via
+    // PUT /admin/members/{userId}, never returned here.
+    dob: string | null;
     status: 'active' | 'suspended' | 'deactivated' | string;
     created_at: string;
     membership: AdminMemberDetailMembership;
@@ -105,6 +111,46 @@ export type AdminMemberStatusValue = 'ACTIVE' | 'SUSPENDED' | 'DEACTIVATED';
 export interface AdminMemberStatusUpdate {
     user_id: string;
     status: string; // lowercase, e.g. 'active'
+}
+
+/**
+ * Editable profile fields on PUT /admin/members/{userId}. Every key is
+ * optional and the endpoint merges — sending one field leaves the rest
+ * untouched (verified live 2026-08-22), so only send what actually changed.
+ */
+export interface AdminMemberProfilePayload {
+    full_name?: string; // min 1 char, max 200
+    email?: string; // must be unique platform-wide — duplicates 409
+    phone?: string;
+    state?: AuStateCode;
+    dob?: string | null; // send date-only ('1990-05-14'); comes back ISO date-time
+    /**
+     * Accepted by the endpoint, but **no UI sends it**. The admin edit form
+     * deliberately leaves it out: `GET /admin/members/{userId}` doesn't return
+     * the field, so the input could only ever render blank — an admin would be
+     * typing over a value they cannot see. Its purpose was also never confirmed
+     * with the client (docs/BACKEND-ISSUES.md). Wire a control once the GET
+     * returns it and the requirement is settled.
+     */
+    pay_id_email?: string | null;
+}
+
+/**
+ * Mirrors the live PUT /admin/members/{userId} response `data`. Note this
+ * carries `pay_id_email`, which `GET /admin/members/{userId}` does NOT
+ * return — the write response is currently the only way to read that field
+ * back (see docs/BACKEND-ISSUES.md).
+ */
+export interface AdminMemberProfileUpdate {
+    user_id: string;
+    full_name: string;
+    email: string;
+    phone: string | null;
+    state: string | null;
+    dob: string | null;
+    pay_id_email: string | null;
+    status: string;
+    created_at: string;
 }
 
 // Mirrors GET /admin/beny/pending items.
@@ -247,6 +293,15 @@ export const updateAdminMemberStatus = (userId: string, status: AdminMemberStatu
     });
 };
 
+/** Admin: edit a member's profile details. Merges — pass only changed fields. */
+export const updateAdminMemberProfile = (userId: string, payload: AdminMemberProfilePayload, token: string) => {
+    return apiFetch<AdminMemberProfileUpdate>(API.admin.updateMemberProfile(userId), {
+        method: 'PUT',
+        body: payload,
+        token
+    });
+};
+
 /** Admin: BENY subscriptions waiting for manual activation. */
 export const getBenyPending = cache((token: string) => {
     return apiFetch<BenyPendingItem[]>(API.admin.benyPending, { token, cache: 'no-store' });
@@ -257,10 +312,10 @@ export const getBenyPending = cache((token: string) => {
  *  of this sent `limit`, which the backend silently ignores and falls back
  *  to its own default of 20, quietly dropping any rows beyond page 1. */
 export const getBenySubscriptions = cache((status: string, token: string, page = 1, perPage = 10) => {
-    return apiFetch<any>(
-        `${API.admin.benyList}?status=${status}&page=${page}&per_page=${Math.min(perPage, 100)}`,
-        { token, cache: 'no-store' }
-    );
+    return apiFetch<any>(`${API.admin.benyList}?status=${status}&page=${page}&per_page=${Math.min(perPage, 100)}`, {
+        token,
+        cache: 'no-store'
+    });
 });
 
 /**

@@ -13,6 +13,7 @@ import { formatAdminTierName, subTierFromGroupAndName } from '@/lib/member';
 import type { TierGroup } from '@/types/member';
 
 import { MemberAdminActions } from './_components/member-admin-actions';
+import { MemberProfileForm } from './_components/member-profile-form';
 import { ArrowLeft, CircleAlert } from 'lucide-react';
 
 const dash = (v: string | null | undefined) => (v && v.trim() ? v : '-');
@@ -111,11 +112,21 @@ export default async function MemberDetailPage({ params }: { params: Promise<{ u
                 </InfoCard>
             </div>
 
+            <MemberProfileForm
+                userId={member.user_id}
+                initial={{
+                    full_name: member.full_name ?? '',
+                    email: member.email ?? '',
+                    phone: member.phone ?? '',
+                    state: member.state ?? '',
+                    dob: member.dob ?? ''
+                }}
+            />
+
             <MemberAdminActions
                 userId={member.user_id}
                 currentStatus={member.status}
                 currentTierCode={membership?.tier_code ?? ''}
-                currentState={member.state ?? ''}
             />
 
             <InfoCard title='Subscription'>
