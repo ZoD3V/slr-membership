@@ -1194,3 +1194,37 @@ Bandingkan dengan `PATCH /api/v1/users/me` yang menerapkan pola `^\+?[0-9]{8,15}
 **Yang diminta:** terapkan pola validasi `phone` yang sama seperti di `PATCH /users/me`.
 
 **Catatan tambahan (bukan permintaan):** `GET /admin/members/{userId}` mengembalikan `dob` walau field itu tidak dideklarasikan di schema OpenAPI-nya. FE sudah menambahkannya ke DTO; mohon schema disesuaikan supaya tidak hilang di refactor berikutnya.
+
+---
+
+## `GET /api/v1/admin/members?status=` — filter jalan untuk 2 nilai, 400 dan 500 untuk 2 sisanya
+
+**Verified live 2026-08-22** (admin token, read-only). OpenAPI tidak mendeklarasikan satu pun query parameter untuk route ini, jadi semuanya dibuktikan dengan probe.
+
+Yang jalan: `status` memfilter dengan benar, case-insensitive, dan `meta.total` ikut menyesuaikan (bukan cuma memangkas halaman). Bisa dikombinasikan dengan `tier` dan `search`.
+
+```
+?                          → 200  n=76  statuses={active:48, pending_payment:28}
+?status=active             → 200  n=48  total=48
+?status=ACTIVE             → 200  n=48  total=48      ← case-insensitive
+?status=suspended          → 200  n=0   total=0       ← enum valid, data kosong
+?status=pending_payment    → 400  VALIDATION_ERROR  errors:[{field:"status", message:"Invalid status"}]
+?status=deactivated        → 500  INTERNAL_ERROR    (reproducible, 2x)
+?status=bogus_value        → 400  VALIDATION_ERROR
+```
+
+Dua masalah:
+
+### 1. 🔴 `pending_payment` ditolak padahal itu status 28 dari 76 member
+
+Nilai yang paling berguna untuk admin — orang yang mendaftar tapi tidak pernah membayar — justru satu-satunya kelompok besar yang tidak bisa difilter. Enum yang diterima filter jelas tidak sinkron dengan nilai yang benar-benar ada di kolom `status`. Ini pengulangan masalah yang sudah dicatat di DTO `AdminMemberListItem`: `pending_payment` muncul di data live tapi tidak ada di spec mana pun.
+
+**Yang diminta:** samakan enum yang diterima filter dengan himpunan status yang benar-benar dipakai di database.
+
+### 2. 🔴 `deactivated` melempar 500, bukan 400 atau hasil kosong
+
+`deactivated` adalah nilai sah — `PUT /admin/members/{userId}/status` menerima `ACTIVE|SUSPENDED|DEACTIVATED`. Jadi status yang bisa **ditulis** lewat satu endpoint justru **meledakkan** endpoint lain saat dipakai memfilter. Bukan validasi yang menolak, tapi handler yang crash.
+
+**Yang diminta:** perbaiki crash-nya, lalu pastikan enum tulis (`PUT .../status`) dan enum baca (`GET ?status=`) memang himpunan yang sama.
+
+**Dampak ke FE (tidak memblokir):** filter status di halaman Members dikerjakan **client-side**, bukan lewat param ini. Halaman itu memang sudah memuat seluruh member (satu request per tier group) untuk keperluan lain, jadi memfilter di client lebih lengkap sekaligus lebih murah daripada round-trip — dan kebal terhadap kedua bug di atas. Begitu enum-nya benar dan crash-nya beres, pemindahan ke filter server-side jadi opsi kalau daftar membernya sudah terlalu besar untuk dimuat sekaligus.

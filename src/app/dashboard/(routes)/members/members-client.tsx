@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { StatusFilter, type StatusFilterValue } from '@/app/dashboard/_components/status-filter';
 import { TierFilter, type TierFilterValue } from '@/app/dashboard/_components/tier-filter';
 import { DataTable } from '@/components/data-table';
 import type { TierGroup } from '@/types/member';
@@ -28,8 +29,27 @@ export function MembersClient({ data }: { data: MemberRow[] }) {
     const router = useRouter();
     const [, startTransition] = useTransition();
     const [tier, setTier] = useState<TierFilterValue>('all');
+    const [status, setStatus] = useState<StatusFilterValue>('all');
 
-    const filtered = useMemo(() => (tier === 'all' ? data : data.filter((r) => r.tierGroup === tier)), [data, tier]);
+    // Statuses the API actually sent, canonical order first. Case-insensitive
+    // because the DTO warns the backend is inconsistent about status casing.
+    const statuses = useMemo(() => {
+        const seen = new Set(data.map((r) => r.status?.toLowerCase()).filter(Boolean));
+        const canonical = ['active', 'pending_payment', 'suspended', 'deactivated'];
+
+        return [...canonical.filter((s) => seen.has(s)), ...[...seen].filter((s) => !canonical.includes(s)).sort()];
+    }, [data]);
+
+    const filtered = useMemo(
+        () =>
+            data.filter(
+                (r) =>
+                    (tier === 'all' || r.tierGroup === tier) && (status === 'all' || r.status?.toLowerCase() === status)
+            ),
+        [data, tier, status]
+    );
+
+    const filtering = tier !== 'all' || status !== 'all';
 
     const handleEdit = (row: MemberRow) => {
         router.push(`/dashboard/members/${row.id}`);
@@ -49,9 +69,10 @@ export function MembersClient({ data }: { data: MemberRow[] }) {
 
     return (
         <>
-            <div className='flex items-center gap-3'>
+            <div className='flex flex-wrap items-center gap-3'>
                 <TierFilter value={tier} onChange={setTier} />
-                {tier !== 'all' ? (
+                <StatusFilter value={status} onChange={setStatus} statuses={statuses} />
+                {filtering ? (
                     <span className='text-muted-foreground text-xs'>
                         {filtered.length} of {data.length} members
                     </span>

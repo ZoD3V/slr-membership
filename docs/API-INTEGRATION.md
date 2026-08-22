@@ -183,7 +183,7 @@ Legend: ✅ integrated (called) · 🟡 mapped, not called · ❌ not integrated
 | ❌ | PUT | `/api/v1/admin/members/{userId}/tier` | admin | Update member tier config (base tier only; ignores state/sub_tier — **superseded by `/memberships/change-tier`** for admin tier control) |
 | ✅ | GET | `/api/v1/admin/members/{userId}` | admin | Get detailed member profile and history. Returns `dob` (undeclared in its OpenAPI schema) but **omits `pay_id_email`**, which PUT can write — that field is unreadable after save |
 | ✅ | PUT | `/api/v1/admin/members/{userId}` | admin | Update member profile details (full_name, email, phone, state, dob, pay_id_email) → member-detail **Edit profile** card. Merge semantics; `phone` unvalidated server-side |
-| ✅ | GET | `/api/v1/admin/members` | admin | List all members with filters and pagination |
+| ✅ | GET | `/api/v1/admin/members` | admin | List all members with filters and pagination. Params are undeclared in OpenAPI — `tier`/`search`/`page`/`per_page` verified working. ⚠️ `status` filters correctly for `active`/`suspended` but **400s on `pending_payment`** (28 of 76 live members) and **500s on `deactivated`**, so the Members page filters status client-side instead — see BACKEND-ISSUES.md |
 | ❌ | GET | `/api/v1/audit/` | audit | Admin: query audit log (filter + cursor or page) |
 | ✅ | POST | `/api/v1/auth/forgot-password` | auth | Request password reset email |
 | ✅ | POST | `/api/v1/auth/login` | auth | Login with email + password |
