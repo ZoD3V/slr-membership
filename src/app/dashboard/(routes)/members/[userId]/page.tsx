@@ -98,6 +98,7 @@ export default async function MemberDetailPage({ params }: { params: Promise<{ u
                     <Field label='Full name' value={dash(member.full_name)} />
                     <Field label='Email' value={dash(member.email)} />
                     <Field label='Phone' value={dash(member.phone)} />
+                    <Field label='Date of birth' value={day(member.dob)} />
                     <Field label='State' value={dash(member.state)} />
                     <Field label='Status' value={dash(member.status)} />
                     <Field label='Registered' value={day(member.created_at)} />

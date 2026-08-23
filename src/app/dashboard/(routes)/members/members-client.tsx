@@ -17,11 +17,14 @@ export type MemberRow = {
     id: string;
     name: string;
     email: string;
+    phone: string;
+    dob: string;
     tier: string;
     /** Parent tier group; null when the API sent a tier string we can't parse. */
     tierGroup: TierGroup | null;
     state: string;
     status: string;
+    billing_status: string;
     registered_at: string;
 };
 

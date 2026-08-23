@@ -55,11 +55,14 @@ export default async function MembersPage() {
                 id: m.user_id,
                 name: m.full_name || '-',
                 email: m.email || '-',
+                phone: m.phone || '-',
+                dob: m.dob ? m.dob.slice(0, 10) : '-',
                 tier: code ? formatAdminTierName(code) : m.tier || '-',
                 // Not a column — drives the parent-tier filter in the client.
                 tierGroup: group,
                 state: m.state || '-',
                 status: m.status || '-',
+                billing_status: m.billing_status || '-',
                 registered_at: m.created_at ? m.created_at.slice(0, 10) : '-'
             };
         });

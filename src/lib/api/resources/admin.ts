@@ -40,6 +40,7 @@ export interface AdminMemberListItem {
     full_name: string;
     email: string;
     phone: string;
+    dob?: string | null;
     state: string;
     /**
      * Live OpenAPI (2026-08-03) declares a bare `string` with no enum, and the
@@ -50,6 +51,7 @@ export interface AdminMemberListItem {
      */
     status: string;
     tier: string; // e.g., 'RED R4'
+    billing_status?: string;
     created_at: string;
     draw_pass?: number | null;
 }

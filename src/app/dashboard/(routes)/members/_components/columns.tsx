@@ -12,6 +12,8 @@ const pill = 'rounded-md border px-2 py-0.5 text-xs font-semibold uppercase';
 export const membersColumns: Column[] = [
     { key: 'name', label: 'Name' },
     { key: 'email', label: 'Email' },
+    { key: 'phone', label: 'Phone' },
+    { key: 'dob', label: 'DOB' },
     { key: 'tier', label: 'Tier' },
     { key: 'state', label: 'State' },
     { 
@@ -20,6 +22,15 @@ export const membersColumns: Column[] = [
         render: (row) => (
             <span className={cn(pill, STATUS_STYLE[row.status] ?? 'border-slr-navy-border bg-slr-navy-card text-slr-dim')}>
                 {row.status}
+            </span>
+        )
+    },
+    {
+        key: 'billing_status',
+        label: 'Billing',
+        render: (row) => (
+            <span className={cn(pill, row.billing_status === 'active' ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400' : 'border-slate-500/40 bg-slate-500/10 text-slate-400')}>
+                {row.billing_status || '-'}
             </span>
         )
     },
