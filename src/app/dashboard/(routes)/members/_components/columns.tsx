@@ -7,15 +7,39 @@ const STATUS_STYLE: Record<string, string> = {
     deactivated: 'border-slate-500/40 bg-slate-500/10 text-slate-300'
 };
 
-const pill = 'rounded-md border px-2 py-0.5 text-xs font-semibold uppercase';
+const pill = 'inline-block whitespace-nowrap rounded-md border px-2 py-0.5 text-xs font-semibold uppercase';
 
 export const membersColumns: Column[] = [
-    { key: 'name', label: 'Name' },
-    { key: 'email', label: 'Email' },
-    { key: 'phone', label: 'Phone' },
-    { key: 'dob', label: 'DOB' },
-    { key: 'tier', label: 'Tier' },
-    { key: 'state', label: 'State' },
+    { 
+        key: 'name', 
+        label: 'Name',
+        render: (row) => <span className='font-medium text-white whitespace-nowrap'>{row.name || '-'}</span>
+    },
+    { 
+        key: 'email', 
+        label: 'Email',
+        render: (row) => <span className='text-slr-muted whitespace-nowrap'>{row.email || '-'}</span>
+    },
+    { 
+        key: 'phone', 
+        label: 'Phone',
+        render: (row) => <span className='text-slr-muted whitespace-nowrap tabular-nums'>{row.phone || '-'}</span>
+    },
+    { 
+        key: 'dob', 
+        label: 'DOB',
+        render: (row) => <span className='text-slr-dim whitespace-nowrap tabular-nums'>{row.dob || '-'}</span>
+    },
+    { 
+        key: 'tier', 
+        label: 'Tier',
+        render: (row) => <span className='font-semibold text-white whitespace-nowrap'>{row.tier || '-'}</span>
+    },
+    { 
+        key: 'state', 
+        label: 'State',
+        render: (row) => <span className='text-slr-dim whitespace-nowrap'>{row.state || '-'}</span>
+    },
     { 
         key: 'status', 
         label: 'Status',
@@ -34,6 +58,10 @@ export const membersColumns: Column[] = [
             </span>
         )
     },
-    { key: 'registered_at', label: 'Registered' },
+    { 
+        key: 'registered_at', 
+        label: 'Registered',
+        render: (row) => <span className='text-slr-dim whitespace-nowrap tabular-nums'>{row.registered_at || '-'}</span>
+    },
     { key: 'action', label: 'Action' }
 ];

@@ -86,6 +86,7 @@ export function MembersClient({ data }: { data: MemberRow[] }) {
                 searchKey='name'
                 columns={membersColumns}
                 data={filtered}
+                nowrap={true}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
             />
