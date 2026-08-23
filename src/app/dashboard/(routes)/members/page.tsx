@@ -63,6 +63,7 @@ export default async function MembersPage() {
                 state: m.state || '-',
                 status: m.status || '-',
                 billing_status: m.billing_status || '-',
+                draw_pass: m.draw_pass ?? '-',
                 registered_at: m.created_at ? m.created_at.slice(0, 10) : '-'
             };
         });

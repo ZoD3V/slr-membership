@@ -59,6 +59,30 @@ export const membersColumns: Column[] = [
         )
     },
     { 
+        key: 'draw_pass', 
+        label: 'TPAL Entry',
+        render: (row) => {
+            const dp = typeof row.draw_pass === 'number' ? row.draw_pass : Number(row.draw_pass);
+            // Nilai > 0 atau -1 (Visitor infinite pass) = Eligible/Active ikut TPAL export
+            // Nilai 0 atau <= 0 (selain -1) = Excluded/Inactive
+            const isEligible = dp > 0 || dp === -1;
+            
+            if (isNaN(dp) || row.draw_pass === '-' || row.draw_pass === null) {
+                return <span className='text-slr-dim whitespace-nowrap'>-</span>;
+            }
+
+            return isEligible ? (
+                <span className={cn(pill, 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400')}>
+                    Eligible
+                </span>
+            ) : (
+                <span className={cn(pill, 'border-rose-500/40 bg-rose-500/10 text-rose-400')}>
+                    Excluded
+                </span>
+            );
+        }
+    },
+    { 
         key: 'registered_at', 
         label: 'Registered',
         render: (row) => <span className='text-slr-dim whitespace-nowrap tabular-nums'>{row.registered_at || '-'}</span>
