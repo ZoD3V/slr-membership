@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react';
 
 import Link from 'next/link';
 
-import { useSession } from 'next-auth/react';
-
 import EmptyState from '@/components/common/empty-state';
 import GoldCtaButton from '@/components/common/gold-cta-button';
 import { formatShortDate } from '@/lib/member';
@@ -30,7 +28,6 @@ const SecondaryLink = ({ href, children }: { href: string; children: string }) =
 export function ActivationStatus() {
     const [phase, setPhase] = useState<Phase>('polling');
     const [detail, setDetail] = useState<ActivationState | null>(null);
-    const { update } = useSession();
 
     useEffect(() => {
         let cancelled = false;
@@ -44,9 +41,6 @@ export function ActivationStatus() {
 
             if (!res.authed) return setPhase('unauthed');
             if (res.active) {
-                // Clear requiresPayment so middleware lets the user straight into /member
-                update?.({ requiresPayment: false });
-
                 return setPhase('active');
             }
 
@@ -61,7 +55,7 @@ export function ActivationStatus() {
             cancelled = true;
             clearTimeout(timer);
         };
-    }, [update]);
+    }, []);
 
     if (phase === 'polling') {
         return (
