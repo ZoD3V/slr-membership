@@ -12,7 +12,9 @@ export interface ContactPayload {
 }
 
 export interface ContactSubmission {
-    submission_id: string;
+    ticket_id?: string | number;
+    submission_id?: string;
+    reference_id?: string;
 }
 
 export const submitContact = (payload: ContactPayload) =>

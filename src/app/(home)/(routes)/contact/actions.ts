@@ -45,8 +45,10 @@ function toActionError(error: unknown): ActionError {
 export async function submitContactAction(payload: ContactPayload): Promise<ActionResult<ContactSubmission>> {
     try {
         const data = await submitContact(payload);
+        const ticket = data?.ticket_id ?? data?.submission_id ?? data?.reference_id;
+        const refText = ticket ? ` (Ticket #${ticket})` : '';
 
-        return { ok: true, data, message: "Message sent. We'll get back to you within one business day." };
+        return { ok: true, data, message: `Message sent${refText}. We'll get back to you within one business day.` };
     } catch (error) {
         return toActionError(error);
     }
