@@ -8,7 +8,8 @@ const RESULT_STYLE: Record<'win' | 'lose', string> = {
 
 const MOMENT_LABEL: Record<string, string> = {
     registration: 'Registration',
-    pre_renewal: 'Pre-renewal'
+    pre_renewal: 'Pre-renewal',
+    renewal: 'Renewal'
 };
 
 // BENY is a separate add-on, never spin-eligible (constant/tiers.ts

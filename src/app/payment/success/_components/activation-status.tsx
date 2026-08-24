@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 
 import Link from 'next/link';
 
+import { useSession } from 'next-auth/react';
+
 import EmptyState from '@/components/common/empty-state';
 import GoldCtaButton from '@/components/common/gold-cta-button';
 import { formatShortDate } from '@/lib/member';
@@ -28,6 +30,7 @@ const SecondaryLink = ({ href, children }: { href: string; children: string }) =
 export function ActivationStatus() {
     const [phase, setPhase] = useState<Phase>('polling');
     const [detail, setDetail] = useState<ActivationState | null>(null);
+    const { update } = useSession();
 
     useEffect(() => {
         let cancelled = false;
@@ -40,7 +43,12 @@ export function ActivationStatus() {
             setDetail(res);
 
             if (!res.authed) return setPhase('unauthed');
-            if (res.active) return setPhase('active');
+            if (res.active) {
+                // Clear requiresPayment so middleware lets the user straight into /member
+                update?.({ requiresPayment: false });
+
+                return setPhase('active');
+            }
 
             tries += 1;
             if (tries >= MAX_TRIES) return setPhase('timeout');
@@ -53,7 +61,7 @@ export function ActivationStatus() {
             cancelled = true;
             clearTimeout(timer);
         };
-    }, []);
+    }, [update]);
 
     if (phase === 'polling') {
         return (
@@ -80,8 +88,8 @@ export function ActivationStatus() {
                 description={`Your ${tier} membership is now active — tokens and draw entries are allocated for this cycle.${renewal}`}
                 action={
                     <div className='flex flex-col items-center gap-3'>
-                        <GoldCtaButton href='/api/auth/logout' className='w-full max-w-xs'>
-                            Sign In to Dashboard
+                        <GoldCtaButton href='/member' className='w-full max-w-xs'>
+                            Go to Dashboard
                         </GoldCtaButton>
                     </div>
                 }
@@ -115,8 +123,8 @@ export function ActivationStatus() {
             description='Your payment went through — activation is taking a moment. Head to your dashboard; it’ll update shortly.'
             action={
                 <div className='flex flex-col items-center gap-3'>
-                    <GoldCtaButton href='/api/auth/logout' className='w-full max-w-xs'>
-                        Sign In to Dashboard
+                    <GoldCtaButton href='/member' className='w-full max-w-xs'>
+                        Go to Dashboard
                     </GoldCtaButton>
                 </div>
             }

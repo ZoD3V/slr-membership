@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -34,7 +36,9 @@ const SignIn = () => {
                     </p>
                 </div>
 
-                <LoginForm />
+                <Suspense>
+                    <LoginForm />
+                </Suspense>
 
                 <p className='text-slr-muted mt-6 text-center text-sm'>
                     Don&apos;t have an account?{' '}

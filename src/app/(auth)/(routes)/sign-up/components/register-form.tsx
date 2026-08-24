@@ -105,6 +105,9 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
             });
             setUserId(res.user_id);
             setRegisteredEmail(data.email);
+            if (typeof window !== 'undefined') {
+                sessionStorage.setItem('slr_registered_email', data.email);
+            }
             if (res.requires_otp) {
                 setStep('otp');
 
@@ -185,7 +188,18 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
                     <StepOtp
                         email={data.email}
                         userId={userId ?? ''}
-                        onNext={() => setStep('success')}
+                        onNext={async () => {
+                            try {
+                                await signIn('credentials', {
+                                    email: data.email,
+                                    password: data.password,
+                                    redirect: false
+                                });
+                            } catch (signInErr) {
+                                console.error('Auto sign-in failed after OTP verification:', signInErr);
+                            }
+                            setStep('success');
+                        }}
                         onBack={() => setStep('tier')}
                     />
                 );

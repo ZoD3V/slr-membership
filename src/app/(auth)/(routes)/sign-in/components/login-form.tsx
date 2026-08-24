@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,11 +25,23 @@ const glassStyle: React.CSSProperties = {
 };
 
 export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) {
+    const searchParams = useSearchParams();
+    const [email, setEmail] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<string | null>(null);
     // `busy` covers both the sign-in request AND the redirect that follows, so the
     // button never flips back to idle between success and the page swap.
     const [busy, setBusy] = useState(false);
+
+    useEffect(() => {
+        const paramEmail = searchParams?.get('email');
+        if (paramEmail) {
+            setEmail(paramEmail);
+        } else if (typeof window !== 'undefined') {
+            const stored = sessionStorage.getItem('slr_registered_email');
+            if (stored) setEmail(stored);
+        }
+    }, [searchParams]);
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -90,6 +103,8 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                                     id='email'
                                     type='text'
                                     name='email'
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     placeholder='email@example.com'
                                     required
                                     className='h-11 rounded-lg border-white/10 bg-white/5 text-white placeholder:text-white/40 focus-visible:border-[#D4AF37]/60 focus-visible:ring-[#D4AF37]/20'

@@ -89,9 +89,9 @@ export default async function MemberDashboardPage() {
 
     // PRD §4.5 moment 2 — offered H-2 (48h) before auto-renewal, and only for
     // the token-upgrade sub-tiers the API already gates on. A registration-
-    // moment spin belongs to the sign-up wizard, so it is ignored here.
     const spin = spinR?.status === 'fulfilled' ? spinR.value : null;
-    const renewalSpin = spin?.available && spin.moment === 'renewal' ? spin : null;
+    const renewalSpin =
+        spin?.available && (spin.moment === 'renewal' || spin.moment === 'pre_renewal') ? spin : null;
 
     const subTier = membership ? subTierCodeOf(membership.subTierId) : member.sub_tier;
     const memberGroup = tierGroupOf(subTier);

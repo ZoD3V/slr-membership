@@ -80,7 +80,7 @@ export const authConfig = {
 
             return true;
         },
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger, session }) {
             if (user) {
                 token.accessToken = (user as any).accessToken;
                 token.refreshToken = (user as any).refreshToken;
@@ -90,6 +90,17 @@ export const authConfig = {
                 token.sub_tier = (user as any).sub_tier;
                 token.state = (user as any).state;
                 token.requiresPayment = (user as any).requiresPayment;
+            }
+            if (trigger === 'update' && session) {
+                if (session.requiresPayment !== undefined) {
+                    token.requiresPayment = session.requiresPayment;
+                }
+                if (session.tier !== undefined) {
+                    token.tier = session.tier;
+                }
+                if (session.sub_tier !== undefined) {
+                    token.sub_tier = session.sub_tier;
+                }
             }
 
             return token;

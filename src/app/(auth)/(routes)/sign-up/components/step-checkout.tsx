@@ -72,8 +72,8 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
                     url
                 });
             }
-            window.open(url, '_blank', 'noopener,noreferrer'); // open Stripe checkout in new tab
-            setRedirecting(false);
+            window.location.href = url; // redirect in the same tab
+            // Keep redirecting=true so the spinner stays active while navigating
         } catch (err) {
             if (process.env.NODE_ENV === 'development') {
                 console.error('[SignUp Checkout Error]', {
