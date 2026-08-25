@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 import { Disc3 } from 'lucide-react';
 
 const mainBenefits = [
-    '9 Draws Weekly/Monthly',
+    '9 Draws Weekly/Monthly with bigger prizes',
     'Monthly bonus prize',
     'Community Discounts',
     'Access to E-books in Finance and Wellbeing',
