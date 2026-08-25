@@ -210,7 +210,7 @@ const VisitorCard = ({ prize }: { prize: string }) => (
                 className='h-5 w-5 shrink-0 object-contain'
             />
             <span className='text-xs font-bold tracking-[0.12em] text-[#0A0A0A] uppercase'>
-                Access to Discounts &amp; Partner Offers
+                Access to Selected Benefits
             </span>
         </div>
     </div>
