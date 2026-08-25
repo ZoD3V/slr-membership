@@ -64,6 +64,7 @@ jobs:
     name: Build & Push Docker Image (${{ needs.set-env.outputs.target_env }})
     needs: set-env
     runs-on: ubuntu-latest
+    environment: ${{ needs.set-env.outputs.target_env }}
     if: ${{ github.event.inputs.restart_only != true && github.event.inputs.restart_only != 'true' }}
 
     permissions:
@@ -115,6 +116,7 @@ jobs:
     needs: [set-env, build-and-push]
     if: ${{ always() && (needs.build-and-push.result == 'success' || needs.build-and-push.result == 'skipped') }}
     runs-on: ubuntu-latest
+    environment: ${{ needs.set-env.outputs.target_env }}
 
     steps:
       - name: Checkout code
@@ -126,7 +128,7 @@ jobs:
       - name: Configure SSH key
         run: |
           mkdir -p ~/.ssh
-          printf "%s\n" "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          printf "%s\n" "${{ secrets.SSH_KEY || vars.SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p ${{ vars.SSH_PORT || secrets.SSH_PORT || 22 }} -H "${{ vars.SSH_HOST || secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
@@ -136,14 +138,22 @@ jobs:
           TARGET_ENV="${{ needs.set-env.outputs.target_env }}"
 
           if [ "$TARGET_ENV" = "prod" ]; then
-            DEPLOY_PATH="${{ vars.DEPLOY_PATH_PROD || secrets.DEPLOY_PATH_PROD }}"
+            DEPLOY_PATH="${{ vars.DEPLOY_PATH_PROD || secrets.DEPLOY_PATH_PROD || '/home/ubuntu/frontend/slr-membership' }}"
             ENV_CONTENT='${{ vars.ENV_FILE_PROD || secrets.ENV_FILE_PROD }}'
+            [ -z "$ENV_CONTENT" ] && ENV_CONTENT='${{ secrets.ENV_FILE }}'
           else
-            DEPLOY_PATH="${{ vars.DEPLOY_PATH_DEV || secrets.DEPLOY_PATH_DEV }}"
+            DEPLOY_PATH="${{ vars.DEPLOY_PATH_DEV || secrets.DEPLOY_PATH_DEV || '/home/ubuntu/frontend/slr-membership-dev' }}"
             ENV_CONTENT='${{ vars.ENV_FILE_DEV || secrets.ENV_FILE_DEV }}'
+            [ -z "$ENV_CONTENT" ] && ENV_CONTENT='${{ secrets.ENV_FILE }}'
           fi
 
           echo "DEPLOY_PATH=${DEPLOY_PATH}" >> $GITHUB_ENV
+
+          echo "=== RESOLVED CONFIGURATION ==="
+          echo "Target Environment : ${TARGET_ENV}"
+          echo "Deploy Path        : ${DEPLOY_PATH}"
+          echo "Env Content Length : ${#ENV_CONTENT} chars"
+          echo "=============================="
 
           ssh -p ${{ vars.SSH_PORT || secrets.SSH_PORT || 22 }} ${{ vars.SSH_USER || secrets.SSH_USER }}@${{ vars.SSH_HOST || secrets.SSH_HOST }} "mkdir -p ${DEPLOY_PATH}"
 
@@ -153,7 +163,7 @@ jobs:
             rm -f .env.temp
             echo "[INFO] ${TARGET_ENV} .env deployed to ${DEPLOY_PATH}."
           else
-            echo "[WARN] No ENV_FILE provided. Preserving existing remote .env."
+            echo "[WARN] No ENV_FILE provided for ${TARGET_ENV}. Preserving existing remote .env."
           fi
 
       - name: Sync docker-compose.yml to VPS
