@@ -43,8 +43,6 @@ jobs:
             TARGET_ENV="${{ github.event.inputs.environment }}"
           elif [ "${{ github.ref_name }}" = "main" ]; then
             TARGET_ENV="prod"
-          elif [ "${{ github.ref_name }}" = "develop" ]; then
-            TARGET_ENV="dev"
           else
             TARGET_ENV="dev"
           fi
@@ -64,7 +62,6 @@ jobs:
     name: Build & Push Docker Image (${{ needs.set-env.outputs.target_env }})
     needs: set-env
     runs-on: ubuntu-latest
-    environment: ${{ needs.set-env.outputs.target_env }}
     if: ${{ github.event.inputs.restart_only != true && github.event.inputs.restart_only != 'true' }}
 
     permissions:
@@ -116,7 +113,6 @@ jobs:
     needs: [set-env, build-and-push]
     if: ${{ always() && (needs.build-and-push.result == 'success' || needs.build-and-push.result == 'skipped') }}
     runs-on: ubuntu-latest
-    environment: ${{ needs.set-env.outputs.target_env }}
 
     steps:
       - name: Checkout code
@@ -140,11 +136,9 @@ jobs:
           if [ "$TARGET_ENV" = "prod" ]; then
             DEPLOY_PATH="${{ vars.DEPLOY_PATH_PROD || secrets.DEPLOY_PATH_PROD || '/home/ubuntu/frontend/slr-membership' }}"
             ENV_CONTENT='${{ vars.ENV_FILE_PROD || secrets.ENV_FILE_PROD }}'
-            [ -z "$ENV_CONTENT" ] && ENV_CONTENT='${{ secrets.ENV_FILE }}'
           else
             DEPLOY_PATH="${{ vars.DEPLOY_PATH_DEV || secrets.DEPLOY_PATH_DEV || '/home/ubuntu/frontend/slr-membership-dev' }}"
             ENV_CONTENT='${{ vars.ENV_FILE_DEV || secrets.ENV_FILE_DEV }}'
-            [ -z "$ENV_CONTENT" ] && ENV_CONTENT='${{ secrets.ENV_FILE }}'
           fi
 
           echo "DEPLOY_PATH=${DEPLOY_PATH}" >> $GITHUB_ENV
@@ -161,9 +155,9 @@ jobs:
             echo "$ENV_CONTENT" > .env.temp
             scp -P ${{ vars.SSH_PORT || secrets.SSH_PORT || 22 }} .env.temp ${{ vars.SSH_USER || secrets.SSH_USER }}@${{ vars.SSH_HOST || secrets.SSH_HOST }}:${DEPLOY_PATH}/.env
             rm -f .env.temp
-            echo "[INFO] ${TARGET_ENV} .env deployed to ${DEPLOY_PATH}."
+            echo "[INFO] Successfully deployed ${TARGET_ENV} .env to ${DEPLOY_PATH}."
           else
-            echo "[WARN] No ENV_FILE provided for ${TARGET_ENV}. Preserving existing remote .env."
+            echo "[ERROR] ENV_FILE_${TARGET_ENV^^} is NOT set in GitHub Variables/Secrets! The remote VPS .env was NOT updated."
           fi
 
       - name: Sync docker-compose.yml to VPS
