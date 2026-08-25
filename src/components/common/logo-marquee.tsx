@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 
 import { cn } from '@/lib/utils';
+
 import { motion, useAnimationFrame, useMotionValue } from 'motion/react';
 
 // Auto-scroll speed (pixels per second)
@@ -49,8 +50,8 @@ const LogoMarquee = ({
         while (items.length < 35) {
             items = [...items, ...validLogos];
         }
-        
-return items;
+
+        return items;
     }, [validLogos]);
 
     // Initialize row 1 and row 2 with offset staggers
@@ -126,7 +127,10 @@ return items;
             animate={{ opacity: mounted ? 1 : 0 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
             className={cn(
-                'select-none transition-opacity duration-300',
+                // The rows below are `w-max` — far wider than any viewport — so the
+                // clipping belongs here rather than on each caller. Without it the
+                // overflow reaches the document and the whole page scrolls sideways.
+                'overflow-hidden transition-opacity duration-300 select-none',
                 isDragging ? 'cursor-grabbing' : 'cursor-grab',
                 mounted ? 'opacity-100' : 'opacity-0'
             )}
