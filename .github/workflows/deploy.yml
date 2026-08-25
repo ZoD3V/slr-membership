@@ -1,9 +1,25 @@
-name: Deploy to VPS
+name: Deploy SLR Membership
 
 on:
   push:
     branches:
       - main
+      - develop
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target Environment to Deploy"
+        type: choice
+        required: true
+        default: "dev"
+        options:
+          - dev
+          - prod
+      restart_only:
+        description: "Restart services without rebuilding? (true/false)"
+        type: boolean
+        required: true
+        default: false
 
 concurrency:
   group: deploy-slr-membership-${{ github.ref }}
@@ -13,26 +29,61 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  build-and-deploy:
+  set-env:
+    name: Determine Environment
     runs-on: ubuntu-latest
+    outputs:
+      target_env: ${{ steps.env_setup.outputs.target_env }}
+      image_tag: ${{ steps.env_setup.outputs.image_tag }}
+    steps:
+      - name: Calculate target environment and image tag
+        id: env_setup
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TARGET_ENV="${{ github.event.inputs.environment }}"
+          elif [ "${{ github.ref_name }}" = "main" ]; then
+            TARGET_ENV="prod"
+          elif [ "${{ github.ref_name }}" = "develop" ]; then
+            TARGET_ENV="dev"
+          else
+            TARGET_ENV="dev"
+          fi
+
+          if [ "$TARGET_ENV" = "prod" ]; then
+            IMAGE_TAG="prod"
+          else
+            IMAGE_TAG="dev"
+          fi
+
+          echo "target_env=${TARGET_ENV}" >> $GITHUB_OUTPUT
+          echo "image_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+          echo "Target Environment: ${TARGET_ENV}"
+          echo "Image Tag Prefix: ${IMAGE_TAG}"
+
+  build-and-push:
+    name: Build & Push Docker Image (${{ needs.set-env.outputs.target_env }})
+    needs: set-env
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.restart_only != true && github.event.inputs.restart_only != 'true' }}
 
     permissions:
       contents: read
       packages: write
 
+    outputs:
+      image_name: ${{ steps.vars.outputs.image_name }}
+      image_tag: ${{ steps.meta.outputs.tags }}
+
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set image name (lowercase)
-        run: echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
-
-      - name: Create .env file from GitHub Secret
+      - name: Set image name
+        id: vars
         run: |
-          echo "${{ secrets.ENV_FILE }}" > .env
-          echo "" >> .env
-          echo "REGISTRY=${{ env.REGISTRY }}" >> .env
-          echo "IMAGE_NAME=${{ env.IMAGE_NAME }}" >> .env
+          IMAGE_NAME="${GITHUB_REPOSITORY,,}"
+          echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_ENV
+          echo "image_name=${IMAGE_NAME}" >> $GITHUB_OUTPUT
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -41,14 +92,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels)
+      - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=sha,prefix=
-            type=raw,value=latest
+            type=raw,value=${{ needs.set-env.outputs.image_tag }}
+            type=sha,prefix=${{ needs.set-env.outputs.image_tag }}-
+            type=raw,value=latest,enable=${{ needs.set-env.outputs.target_env == 'prod' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -58,49 +110,107 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Configure SSH Key
+  deploy:
+    name: Deploy to VPS (${{ needs.set-env.outputs.target_env }})
+    needs: [set-env, build-and-push]
+    if: ${{ always() && (needs.build-and-push.result == 'success' || needs.build-and-push.result == 'skipped') }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set image name
+        run: echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+
+      - name: Configure SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          printf "%s\n" "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -p ${{ secrets.SSH_PORT || 22 }} -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+          ssh-keyscan -p ${{ vars.SSH_PORT || secrets.SSH_PORT || 22 }} -H "${{ vars.SSH_HOST || secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
-      - name: Copy files to VPS
+      - name: Resolve deployment environment paths and secrets
         run: |
-          ssh -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p ~/frontend/slr-membership"
-          scp -P ${{ secrets.SSH_PORT || 22 }} .env docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/frontend/slr-membership/
+          TARGET_ENV="${{ needs.set-env.outputs.target_env }}"
 
-      - name: Deploy container via SSH
+          if [ "$TARGET_ENV" = "prod" ]; then
+            DEPLOY_PATH="${{ vars.DEPLOY_PATH_PROD || secrets.DEPLOY_PATH_PROD }}"
+            ENV_CONTENT='${{ vars.ENV_FILE_PROD || secrets.ENV_FILE_PROD }}'
+          else
+            DEPLOY_PATH="${{ vars.DEPLOY_PATH_DEV || secrets.DEPLOY_PATH_DEV }}"
+            ENV_CONTENT='${{ vars.ENV_FILE_DEV || secrets.ENV_FILE_DEV }}'
+          fi
+
+          echo "DEPLOY_PATH=${DEPLOY_PATH}" >> $GITHUB_ENV
+
+          ssh -p ${{ vars.SSH_PORT || secrets.SSH_PORT || 22 }} ${{ vars.SSH_USER || secrets.SSH_USER }}@${{ vars.SSH_HOST || secrets.SSH_HOST }} "mkdir -p ${DEPLOY_PATH}"
+
+          if [ -n "$ENV_CONTENT" ]; then
+            echo "$ENV_CONTENT" > .env.temp
+            scp -P ${{ vars.SSH_PORT || secrets.SSH_PORT || 22 }} .env.temp ${{ vars.SSH_USER || secrets.SSH_USER }}@${{ vars.SSH_HOST || secrets.SSH_HOST }}:${DEPLOY_PATH}/.env
+            rm -f .env.temp
+            echo "[INFO] ${TARGET_ENV} .env deployed to ${DEPLOY_PATH}."
+          else
+            echo "[WARN] No ENV_FILE provided. Preserving existing remote .env."
+          fi
+
+      - name: Sync docker-compose.yml to VPS
         run: |
-          ssh -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "bash -s" <<EOF
-            # Login to ghcr.io on VPS
-            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-            
-            # Go to working directory
-            cd ~/frontend/slr-membership
+          scp -P ${{ vars.SSH_PORT || secrets.SSH_PORT || 22 }} docker-compose.yml ${{ vars.SSH_USER || secrets.SSH_USER }}@${{ vars.SSH_HOST || secrets.SSH_HOST }}:${DEPLOY_PATH}/docker-compose.yml
+          echo "[INFO] docker-compose.yml synced to VPS."
 
-            # Pull latest image and recreate container
-            docker compose pull
-            docker rm -f slr-membership 2>/dev/null || true
-            docker compose up -d
+      - name: Deploy Docker services via SSH
+        run: |
+          RESTART_ONLY="${{ github.event.inputs.restart_only || 'false' }}"
+          TAG="${{ needs.set-env.outputs.image_tag }}"
+          GHCR_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${TAG}"
 
-            # Verify container is running
-            sleep 3
-            if docker ps --filter "name=slr-membership" --filter "status=running" -q | grep -q .; then
-              echo "✅ Container is running successfully"
+          ssh -p ${{ vars.SSH_PORT || secrets.SSH_PORT || 22 }} ${{ vars.SSH_USER || secrets.SSH_USER }}@${{ vars.SSH_HOST || secrets.SSH_HOST }} "bash -s" <<EOF
+            cd ${DEPLOY_PATH}
+
+            echo "Target Environment: ${{ needs.set-env.outputs.target_env }}"
+            echo "Image: ${GHCR_IMAGE}"
+            echo "Restart Only: ${RESTART_ONLY}"
+
+            echo "${{ vars.GHCR_PAT || secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+            grep -q '^GHCR_IMAGE=' .env 2>/dev/null && sed -i "s|^GHCR_IMAGE=.*|GHCR_IMAGE=${GHCR_IMAGE}|" .env || echo "GHCR_IMAGE=${GHCR_IMAGE}" >> .env
+
+            DOCKER_NETWORK=\$(grep -E '^DOCKER_NETWORK=' .env 2>/dev/null | cut -d'=' -f2 | tr -d '\r\n')
+            DOCKER_NETWORK=\${DOCKER_NETWORK:-shared-network}
+
+            if ! docker network ls | grep -q "\${DOCKER_NETWORK}"; then
+              echo "[INFO] Creating network: \${DOCKER_NETWORK}"
+              docker network create "\${DOCKER_NETWORK}"
             else
-              echo "❌ Container failed to start. Logs:"
-              docker compose logs
-              exit 1
+              echo "[INFO] Network '\${DOCKER_NETWORK}' exists."
             fi
 
-            # Clean up old images
+            if [ "${RESTART_ONLY}" = "true" ]; then
+              echo "[INFO] Restarting services..."
+              docker compose --env-file .env restart
+            else
+              echo "[INFO] Pulling latest image..."
+              docker compose --env-file .env pull
+
+              echo "[INFO] Starting services..."
+              docker compose --env-file .env up -d --force-recreate --remove-orphans
+            fi
+
+            echo "[INFO] Service status:"
+            docker compose --env-file .env ps
+
             docker image prune -af
           EOF
 
+      - name: Deployment complete
+        run: echo "[SUCCESS] SLR Membership successfully deployed to [${{ needs.set-env.outputs.target_env }}] environment."
+
   cleanup-registry:
-    needs: build-and-deploy
+    name: Cleanup Old Images
+    needs: [set-env, deploy]
     runs-on: ubuntu-latest
 
     permissions:
@@ -108,10 +218,10 @@ jobs:
       packages: write
 
     steps:
-      - name: Delete old images from ghcr.io
+      - name: Delete old images from GHCR
         uses: actions/delete-package-versions@v5
         with:
           package-name: ${{ github.event.repository.name }}
           package-type: container
-          min-versions-to-keep: 3
-          delete-only-untagged-versions: false
+          min-versions-to-keep: 5
+          delete-only-untagged-versions: true
