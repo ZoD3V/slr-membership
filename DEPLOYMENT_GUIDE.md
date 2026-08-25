@@ -17,7 +17,7 @@ To ensure `prod` and `dev` environments run side-by-side on the same VPS without
 | **Target Directory (`DEPLOY_PATH`)** | `/home/ubuntu/frontend/slr-membership` | `/home/ubuntu/frontend/slr-membership-dev` |
 | **Compose Project Name (`APP_NAME`-`NODE_ENV`)** | `slr-membership-production` | `slr-membership-development` |
 | **Container Name (`CONTAINER_NAME`)** | `slr-membership-production` | `slr-membership-development` |
-| **Host Port (`APP_PORT`)** | `3000` | `3001` |
+| **Host Port (`APP_PORT`)** | `3001` | `3000` |
 | **Docker Container Image Tag** | `ghcr.io/...:prod` (`:latest`) | `ghcr.io/...:dev` |
 
 ---
@@ -50,7 +50,7 @@ Go to **Variables** tab -> Click **New repository variable**:
 ```env
 APP_NAME=slr-membership
 NODE_ENV=production
-APP_PORT=3000
+APP_PORT=3001
 
 AUTH_TRUST_HOST=true
 NEXTAUTH_URL=https://membership.smartliferewards.com.au
@@ -66,7 +66,7 @@ NEXT_PUBLIC_API_URL=https://api.smartliferewards.com.au
 ```env
 APP_NAME=slr-membership
 NODE_ENV=development
-APP_PORT=3001
+APP_PORT=3000
 
 AUTH_TRUST_HOST=true
 NEXTAUTH_URL=https://dev-membership.smartliferewards.com.au
@@ -77,7 +77,7 @@ NEXT_PUBLIC_API_URL=https://dev-api.smartliferewards.com.au
 
 ## 3. Nginx Reverse Proxy Configuration on VPS
 
-Since `prod` runs on host port `3000` and `dev` runs on host port `3001`, configure Nginx on your VPS as follows:
+Since `prod` runs on host port `3001` and `dev` runs on host port `3000`, configure Nginx on your VPS as follows:
 
 ### Production Nginx Server Block (`membership.smartliferewards.com.au`)
 ```nginx
@@ -86,7 +86,7 @@ server {
     server_name membership.smartliferewards.com.au;
 
     location / {
-        proxy_pass http://127.0.0.1:3000;
+        proxy_pass http://127.0.0.1:3001;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -102,7 +102,7 @@ server {
     server_name dev-membership.smartliferewards.com.au;
 
     location / {
-        proxy_pass http://127.0.0.1:3001;
+        proxy_pass http://127.0.0.1:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -118,11 +118,11 @@ server {
 1. **Push to `main` Branch**:
    - Targets the `prod` configuration.
    - Deploys `ENV_FILE_PROD` to `DEPLOY_PATH_PROD` (`/home/ubuntu/frontend/slr-membership`).
-   - Runs `docker compose up -d` on port `3000`.
+   - Runs `docker compose up -d` on port `3001`.
 
 2. **Push to `develop` Branch**:
    - Targets the `dev` configuration.
    - Deploys `ENV_FILE_DEV` to `DEPLOY_PATH_DEV` (`/home/ubuntu/frontend/slr-membership-dev`).
-   - Runs `docker compose up -d` on port `3001`.
+   - Runs `docker compose up -d` on port `3000`.
 
 Both environments run completely isolated on the same VPS.
