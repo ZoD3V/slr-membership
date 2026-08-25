@@ -10,7 +10,9 @@ type Reward = {
     icon: string;
     period: string;
     /** Prize copy straight off the CMS document — free-form, so it renders as
-     *  one line rather than being split into an amount and a caption. */
+     *  written rather than being split into an amount and a caption. Admins may
+     *  press Enter to list two prizes in one slot, so it renders
+     *  `whitespace-pre-line` and can be multi-line. */
     text: string;
 };
 
@@ -159,7 +161,7 @@ const TierCard: FC<{ tier: Tier; stageLabel: string }> = ({ tier, stageLabel }) 
                                     className='text-sm font-bold tracking-[0.2em] uppercase'>
                                     {reward.period}
                                 </p>
-                                <p className='mt-1 text-xl leading-tight font-extrabold text-white sm:text-2xl'>
+                                <p className='mt-1 text-xl leading-tight font-extrabold whitespace-pre-line text-white sm:text-2xl'>
                                     {reward.text}
                                 </p>
                             </div>
@@ -197,7 +199,9 @@ const VisitorCard = ({ prize }: { prize: string }) => (
         />
 
         <p className='mt-8 text-sm font-bold tracking-[0.2em] text-[#0A0A0A] uppercase'>Weekly</p>
-        <p className='mt-2 text-3xl leading-tight font-extrabold text-[#0A0A0A] sm:text-4xl'>{prize}</p>
+        <p className='mt-2 text-3xl leading-tight font-extrabold whitespace-pre-line text-[#0A0A0A] sm:text-4xl'>
+            {prize}
+        </p>
 
         <div className='my-6 h-px w-24 bg-[#D1A62E]' />
 

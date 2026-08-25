@@ -19,12 +19,19 @@ export function getPrizePool(token: string) {
     return apiFetch<PrizeContent>(API.prizes.member, { token });
 }
 
+/** Cache tag for the public read below — purged by the admin save action. */
+export const PRIZE_CONTENT_TAG = 'prize-content';
+
 /**
  * The same document read without a token, for the public marketing page.
  * Verified live 2026-08-22: 200 unauthenticated. Revalidated hourly — prize
  * stages turn over far slower than that, and the public page must stay fast.
+ * Tagged so an admin save can purge it immediately instead of leaving the
+ * marketing page up to an hour stale.
  */
-export const getPublicPrizeContent = cache(() => apiFetch<PrizeContent>(API.prizes.member, { revalidate: 3600 }));
+export const getPublicPrizeContent = cache(() =>
+    apiFetch<PrizeContent>(API.prizes.member, { revalidate: 3600, tags: [PRIZE_CONTENT_TAG] })
+);
 
 /**
  * The admin-editable Prizes CMS document (real API, 2026-08-09). Admin-gated

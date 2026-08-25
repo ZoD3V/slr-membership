@@ -49,11 +49,11 @@ export function PrizeTierCard({ tier, isYours }: { tier: PrizeTierBreakdown; isY
             <div className='mt-4 space-y-3 border-t border-white/10 pt-4'>
                 <div>
                     <p className='text-slr-gold-label text-xs font-semibold tracking-widest uppercase'>Weekly</p>
-                    <p className='mt-0.5 text-sm text-white/90'>{tier.weekly}</p>
+                    <p className='mt-0.5 text-sm whitespace-pre-line text-white/90'>{tier.weekly}</p>
                 </div>
                 <div>
                     <p className='text-slr-gold-label text-xs font-semibold tracking-widest uppercase'>Monthly</p>
-                    <p className='mt-0.5 text-sm text-white/90'>{tier.monthly ?? '—'}</p>
+                    <p className='mt-0.5 text-sm whitespace-pre-line text-white/90'>{tier.monthly ?? '—'}</p>
                 </div>
             </div>
 

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import type { PrizeContent } from '@/types/member';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -20,11 +21,14 @@ const formSchema = z.object({
     prize_count: z.string().min(1, 'Required'),
     stage_label: z.string().min(1, 'Required'),
     odds: z.string().min(1, 'Required'),
-    visitor_prize: z.string().min(1, 'Required'),
-    red_weekly: z.string().min(1, 'Required'),
-    red_monthly: z.string().min(1, 'Required'),
-    blue_weekly: z.string().min(1, 'Required'),
-    blue_monthly: z.string().min(1, 'Required')
+    // Breakdown copy is multi-line: a newline is how the admin splits one slot
+    // into two prize lines. Trimmed so a stray trailing Enter doesn't render as
+    // an empty line on the public page.
+    visitor_prize: z.string().trim().min(1, 'Required'),
+    red_weekly: z.string().trim().min(1, 'Required'),
+    red_monthly: z.string().trim().min(1, 'Required'),
+    blue_weekly: z.string().trim().min(1, 'Required'),
+    blue_monthly: z.string().trim().min(1, 'Required')
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -146,7 +150,7 @@ export function PrizesClient({ content }: { content: PrizeContent }) {
                                         <FormItem className='min-w-0'>
                                             <FormLabel>Prize</FormLabel>
                                             <FormControl>
-                                                <Input {...field} />
+                                                <Textarea rows={2} className='min-h-16 resize-y' {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -164,7 +168,7 @@ export function PrizesClient({ content }: { content: PrizeContent }) {
                                             <FormItem className='min-w-0'>
                                                 <FormLabel>Weekly</FormLabel>
                                                 <FormControl>
-                                                    <Input {...field} />
+                                                    <Textarea rows={2} className='min-h-16 resize-y' {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -177,7 +181,7 @@ export function PrizesClient({ content }: { content: PrizeContent }) {
                                             <FormItem className='min-w-0'>
                                                 <FormLabel>Monthly</FormLabel>
                                                 <FormControl>
-                                                    <Input {...field} />
+                                                    <Textarea rows={2} className='min-h-16 resize-y' {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -196,7 +200,7 @@ export function PrizesClient({ content }: { content: PrizeContent }) {
                                             <FormItem className='min-w-0'>
                                                 <FormLabel>Weekly</FormLabel>
                                                 <FormControl>
-                                                    <Input {...field} />
+                                                    <Textarea rows={2} className='min-h-16 resize-y' {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -209,7 +213,7 @@ export function PrizesClient({ content }: { content: PrizeContent }) {
                                             <FormItem className='min-w-0'>
                                                 <FormLabel>Monthly</FormLabel>
                                                 <FormControl>
-                                                    <Input {...field} />
+                                                    <Textarea rows={2} className='min-h-16 resize-y' {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>

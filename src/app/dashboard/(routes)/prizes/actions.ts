@@ -1,9 +1,9 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 
 import { handleApiAuthError } from '@/lib/api/guard';
-import { updateAdminPrizeContent } from '@/lib/api/resources/prizes';
+import { PRIZE_CONTENT_TAG, updateAdminPrizeContent } from '@/lib/api/resources/prizes';
 import { getAccessToken } from '@/lib/api/server';
 import { ApiError } from '@/lib/api/types';
 import type { PrizeContent, PrizeContentUpdatePayload } from '@/types/member';
@@ -37,19 +37,22 @@ function toActionError(error: unknown): ActionError {
     return { ok: false, message: 'Something went wrong. Please try again.' };
 }
 
-export async function savePrizeContentAction(
-    payload: PrizeContentUpdatePayload
-): Promise<ActionResult<PrizeContent>> {
+export async function savePrizeContentAction(payload: PrizeContentUpdatePayload): Promise<ActionResult<PrizeContent>> {
     const token = await getAccessToken();
     if (!token) return { ok: false, message: 'Not authenticated.' };
 
     try {
         const data = await updateAdminPrizeContent(token, payload);
 
-        // Only this route consumes PrizeContent — the member/public prizes
-        // pages read a different, unrelated document (PrizePool), so they are
-        // no longer revalidated here.
         revalidatePath('/dashboard/prizes');
+
+        // The public /prizes page reads this same document through an
+        // hour-long ISR cache, so without this purge an edit would sit
+        // invisible on the marketing page until that window lapsed.
+        // `updateTag` (not `revalidateTag`) because this is a Server Action and
+        // the admin must see their own write straight away.
+        // (/member/prizes fetches uncached, so it needs no purge.)
+        updateTag(PRIZE_CONTENT_TAG);
 
         return { ok: true, data, message: 'Prize content saved.' };
     } catch (error) {
