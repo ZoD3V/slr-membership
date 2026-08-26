@@ -4,10 +4,12 @@ import Image from 'next/image';
 import { auth } from '@/auth';
 import { SUB_TIERS } from '@/constant/tiers';
 import { handleApiAuthError } from '@/lib/api/guard';
+import { getMe } from '@/lib/api/resources/auth';
 import { getMyMembership } from '@/lib/api/resources/memberships';
 import { getAccessToken } from '@/lib/api/server';
 import { subTierCodeOf } from '@/lib/member';
 
+import ActivatedRedirect from './_components/activated-redirect';
 import CompletePaymentClient from './_components/complete-payment-client';
 
 export const metadata: Metadata = {
@@ -27,13 +29,25 @@ export default async function CompletePaymentPage({ searchParams }: { searchPara
     // The session's sub_tier is the registration-time value and goes stale after
     // a plan change, so the plan on show comes from memberships/me.
     let subTierId: string | undefined;
+    // The JWT's requiresPayment is a login-time snapshot: a member who paid after
+    // signing in is still routed here until the token is rewritten.
+    let alreadyPaid = false;
     if (token) {
         try {
-            const membership = await getMyMembership(token);
+            const [membership, me] = await Promise.all([getMyMembership(token), getMe(token).catch(() => null)]);
             subTierId = membership.subTierId;
+            alreadyPaid = me ? me.requires_payment !== true : membership.billingStatus?.toLowerCase() === 'active';
         } catch (error) {
             handleApiAuthError(error);
         }
+    }
+
+    if (alreadyPaid) {
+        return (
+            <main className='dark bg-slr-navy-deep flex min-h-svh flex-col items-center justify-center px-4 py-12'>
+                <ActivatedRedirect />
+            </main>
+        );
     }
 
     const subTier = subTierCodeOf(subTierId ?? (session?.user as { sub_tier?: string } | undefined)?.sub_tier);

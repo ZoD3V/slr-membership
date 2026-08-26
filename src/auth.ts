@@ -5,7 +5,7 @@ import { ApiError } from '@/lib/api/types';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 
-export const { auth, handlers, signIn, signOut } = NextAuth({
+export const { auth, handlers, signIn, signOut, unstable_update } = NextAuth({
     ...authConfig,
     providers: [
         Credentials({

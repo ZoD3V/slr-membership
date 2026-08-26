@@ -6,7 +6,9 @@ import Link from 'next/link';
 
 import EmptyState from '@/components/common/empty-state';
 import GoldCtaButton from '@/components/common/gold-cta-button';
+import { Button } from '@/components/ui/button';
 import { formatShortDate } from '@/lib/member';
+import { goldButtonStyle } from '@/lib/styles';
 
 import { type ActivationState, checkActivation } from '../actions';
 import { CheckCircle2, Loader2 } from 'lucide-react';
@@ -28,6 +30,7 @@ const SecondaryLink = ({ href, children }: { href: string; children: string }) =
 export function ActivationStatus() {
     const [phase, setPhase] = useState<Phase>('polling');
     const [detail, setDetail] = useState<ActivationState | null>(null);
+    const [attempt, setAttempt] = useState(0);
 
     useEffect(() => {
         let cancelled = false;
@@ -53,7 +56,12 @@ export function ActivationStatus() {
             cancelled = true;
             clearTimeout(timer);
         };
-    }, []);
+    }, [attempt]);
+
+    const retry = () => {
+        setPhase('polling');
+        setAttempt((n) => n + 1);
+    };
 
     if (phase === 'polling') {
         return (
@@ -80,8 +88,8 @@ export function ActivationStatus() {
                 description={`Your ${tier} membership is now active — tokens and draw entries are allocated for this cycle.${renewal}`}
                 action={
                     <div className='flex flex-col items-center gap-3'>
-                        <GoldCtaButton href='/api/auth/logout' className='w-full max-w-xs'>
-                            Sign In to Dashboard
+                        <GoldCtaButton href='/member' className='w-full max-w-xs'>
+                            Go to Dashboard
                         </GoldCtaButton>
                     </div>
                 }
@@ -107,7 +115,31 @@ export function ActivationStatus() {
         );
     }
 
-    // timeout — payment received but activation still settling
+    // timeout — the webhook still hasn't confirmed. While the backend keeps the
+    // account flagged unpaid, /member only redirects back to /complete-payment,
+    // so offer a re-check instead of a link that bounces.
+    if (detail?.requiresPayment) {
+        return (
+            <EmptyState
+                icon={CheckCircle2}
+                title='Payment Received'
+                description='Your payment went through, but we haven’t had confirmation from Stripe yet. This usually clears within a minute.'
+                action={
+                    <div className='flex flex-col items-center gap-3'>
+                        <Button
+                            type='button'
+                            onClick={retry}
+                            className='h-11 w-full max-w-xs rounded-xl font-bold uppercase'
+                            style={goldButtonStyle}>
+                            Check again
+                        </Button>
+                        <SecondaryLink href='/contact'>Contact support</SecondaryLink>
+                    </div>
+                }
+            />
+        );
+    }
+
     return (
         <EmptyState
             icon={CheckCircle2}
@@ -115,8 +147,8 @@ export function ActivationStatus() {
             description='Your payment went through — activation is taking a moment. Head to your dashboard; it’ll update shortly.'
             action={
                 <div className='flex flex-col items-center gap-3'>
-                    <GoldCtaButton href='/api/auth/logout' className='w-full max-w-xs'>
-                        Sign In to Dashboard
+                    <GoldCtaButton href='/member' className='w-full max-w-xs'>
+                        Go to Dashboard
                     </GoldCtaButton>
                 </div>
             }

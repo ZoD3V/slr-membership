@@ -11,14 +11,14 @@ Endpoints that return errors or behave against the PRD, found while integrating 
 >
 > Backend melaporkan perbaikan; hasil probe ulang:
 >
-> | Endpoint | Sebelumnya | Sekarang | |
-> | --- | --- | --- | --- |
-> | `GET /admin/notifications/templates` | 500 | **200** | ✅ tapi `data: []` — kosong |
-> | `GET /admin/notifications/logs` | 500 | **200** | ✅ 44 baris, `template_id` sudah ada |
-> | `GET /admin/safe-hours` | 500 | **200** | ✅ `updated_at: null` |
-> | `GET /admin/spin/config` | 500 | **200** | ✅ mengirim **9** sub_tiers |
-> | `GET /admin/spin/history?tier=` | 500 | **200** | ✅ diskriminasi sub-tier benar |
-> | `GET /public/prizes` | 404 | **404** | 🔴 belum dibuat |
+> | Endpoint                             | Sebelumnya | Sekarang |                                      |
+> | ------------------------------------ | ---------- | -------- | ------------------------------------ |
+> | `GET /admin/notifications/templates` | 500        | **200**  | ✅ tapi `data: []` — kosong          |
+> | `GET /admin/notifications/logs`      | 500        | **200**  | ✅ 44 baris, `template_id` sudah ada |
+> | `GET /admin/safe-hours`              | 500        | **200**  | ✅ `updated_at: null`                |
+> | `GET /admin/spin/config`             | 500        | **200**  | ✅ mengirim **9** sub_tiers          |
+> | `GET /admin/spin/history?tier=`      | 500        | **200**  | ✅ diskriminasi sub-tier benar       |
+> | `GET /public/prizes`                 | 404        | **404**  | 🔴 belum dibuat                      |
 >
 > **Empat isu baru yang muncul setelah perbaikan:**
 >
@@ -1051,9 +1051,9 @@ Riwayat spin. **Status: 200, verified 2026-08-10** — keys dan `meta` cocok den
 
 - `?moment=` — nilai yang valid adalah **`pre_renewal`**, bukan `renewal` seperti yang ditulis sebelumnya di dokumen ini. Verified: `?moment=pre_renewal` → 200; `?moment=renewal` → ditolak `VALIDATION_ERROR`, yang justru mengonfirmasi ejaan `pre_renewal` yang benar. Nilai lain: `registration`.
 - `?tier=` — ✅ **RESOLVED 2026-08-11.** Sebelumnya `500 INTERNAL_ERROR` untuk setiap nilai (`r4`, `R4`, `Plus`); sekarang 200 dan mendiskriminasi sub-tier dengan benar. Verified across all seven ids: `r1`→1, `r4`→1, `r7`→7, `b1`→2, `b4`→4, `b7`→4, `b10`→10 baris. Juga menerima marketing name (`Plus`→5 = r4+b4) dan kode tier (`RED`/`red`→9). **FE sudah mengaktifkan kembali kontrol filter tier** dan mengirim parameter `tier` lagi.
-  - 🟡 **Masih terbuka:** nilai yang tidak dikenal (`?tier=xyz`) dijawab `200 { data: [] }`, bukan `VALIDATION_ERROR` — admin yang salah ketik akan melihat "tidak ada data". FE memvalidasi terhadap tujuh id yang dikenal sebelum meneruskan, tapi mohon backend menolaknya dengan 400.
-  - 🟡 **Masih terbuka:** di spec, `tier` masih `{"type": "string"}` polos tanpa enum, padahal perilaku aslinya menerima empat bentuk. Mohon diberi enum.
-  - 🟡 **Masih terbuka:** **response body** tetap mengirim marketing name telanjang (`"tier": "Plus"`), jadi baris hasil filter tetap tidak bisa dibaca sebagai RED atau BLUE. Lihat permintaan `sub_tier_id` di bawah.
+    - 🟡 **Masih terbuka:** nilai yang tidak dikenal (`?tier=xyz`) dijawab `200 { data: [] }`, bukan `VALIDATION_ERROR` — admin yang salah ketik akan melihat "tidak ada data". FE memvalidasi terhadap tujuh id yang dikenal sebelum meneruskan, tapi mohon backend menolaknya dengan 400.
+    - 🟡 **Masih terbuka:** di spec, `tier` masih `{"type": "string"}` polos tanpa enum, padahal perilaku aslinya menerima empat bentuk. Mohon diberi enum.
+    - 🟡 **Masih terbuka:** **response body** tetap mengirim marketing name telanjang (`"tier": "Plus"`), jadi baris hasil filter tetap tidak bisa dibaca sebagai RED atau BLUE. Lihat permintaan `sub_tier_id` di bawah.
 
 Bentuk response yang **sebelumnya diasumsikan FE** (belum dikonfirmasi persis — field names inferred dari tipe `SpinResult` yang sudah ada; verifikasi 2026-08-10 hanya mengonfirmasi keys/`meta` cocok dokumen, bukan menyalin payload persis), disimpan di sini untuk referensi:
 
@@ -1174,7 +1174,7 @@ PUT  /admin/members/{id}  → data: { ..., "pay_id_email": null }  ← ada di si
 
 Akibatnya admin bisa menyimpan PayID email, tapi begitu halaman di-refresh nilainya hilang dari layar — tidak ada cara memverifikasi apa yang tersimpan, dan tidak ada cara mengedit tanpa mengetik ulang dari nol.
 
-**Keputusan FE (2026-08-22): field ini TIDAK dipasang di form Edit profile admin.** Input yang selalu kosong berarti admin mengetik menimpa nilai yang tidak pernah bisa ia lihat — itu jalan pintas menuju kehilangan data diam-diam. Ditambah lagi tujuan field ini masih belum dikonfirmasi ke klien (lihat item di bagian "Member-account restructure" di atas: *"likely a PayID payout email for prize winnings, but unconfirmed"*), dan per hari ini **tidak ada satu pun layar di aplikasi yang mengonsumsi `pay_id_email`** — placeholder lama di member profile sudah dihapus. Tipe payload-nya tetap disimpan di `resources/admin.ts` supaya kontraknya tidak hilang.
+**Keputusan FE (2026-08-22): field ini TIDAK dipasang di form Edit profile admin.** Input yang selalu kosong berarti admin mengetik menimpa nilai yang tidak pernah bisa ia lihat — itu jalan pintas menuju kehilangan data diam-diam. Ditambah lagi tujuan field ini masih belum dikonfirmasi ke klien (lihat item di bagian "Member-account restructure" di atas: _"likely a PayID payout email for prize winnings, but unconfirmed"_), dan per hari ini **tidak ada satu pun layar di aplikasi yang mengonsumsi `pay_id_email`** — placeholder lama di member profile sudah dihapus. Tipe payload-nya tetap disimpan di `resources/admin.ts` supaya kontraknya tidak hilang.
 
 **Yang diminta:**
 
@@ -1228,3 +1228,32 @@ Nilai yang paling berguna untuk admin — orang yang mendaftar tapi tidak pernah
 **Yang diminta:** perbaiki crash-nya, lalu pastikan enum tulis (`PUT .../status`) dan enum baca (`GET ?status=`) memang himpunan yang sama.
 
 **Dampak ke FE (tidak memblokir):** filter status di halaman Members dikerjakan **client-side**, bukan lewat param ini. Halaman itu memang sudah memuat seluruh member (satu request per tier group) untuk keperluan lain, jadi memfilter di client lebih lengkap sekaligus lebih murah daripada round-trip — dan kebal terhadap kedua bug di atas. Begitu enum-nya benar dan crash-nya beres, pemindahan ke filter server-side jadi opsi kalau daftar membernya sudah terlalu besar untuk dimuat sekaligus.
+
+---
+
+## 🔴 2026-08-26 — Webhook Stripe tidak mengaktivasi membership (api-dev)
+
+Pembayaran Stripe berhasil (test card `4242 4242 4242 4242`, redirect balik ke `/payment/success`), tapi backend tidak pernah berpindah status. Dipantau 2,5 menit setelah pembayaran, dua akun, hasil identik:
+
+```
+GET /auth/me         → status=pending_payment  billing_status=inactive  requires_payment=true  current_cycle=null
+GET /billing/status  → billing_status=inactive  stripe_customer_id=null  stripe_subscription_id=null
+GET /billing/invoices→ []
+GET /payments/me     → []
+GET /memberships/me  → billingStatus=INACTIVE  activatedAt=null
+```
+
+`stripe_customer_id` **null** padahal checkout session pasti dibuat oleh backend — jadi kegagalannya di sisi pemrosesan webhook/persistensi, bukan sekadar lag. Tidak ada cycle, invoice, maupun payment record yang terbentuk.
+
+**Dampak FE:** halaman `/payment/success` polling `GET /billing/status` 10×2 detik lalu jatuh ke layar "Payment Received — activation is taking a moment". Itu perilaku yang benar untuk data yang diterima; FE tidak bisa menembus ini.
+
+**Yang diminta:** pastikan endpoint webhook di api-dev menerima event `checkout.session.completed` / `invoice.paid` dan menuliskan customer + subscription + cycle + invoice.
+
+### Lampiran — akun test (RULES.md §5)
+
+| Email                               | user_id                              | Stripe customer     | Stripe subscription | Tier / sub-tier | Dibuat (UTC)     |
+| ----------------------------------- | ------------------------------------ | ------------------- | ------------------- | --------------- | ---------------- |
+| vepak91228@ebflyai.com              | 01a03c49-c8bc-731c-b4fb-4d27dc4e892c | — (tidak terbentuk) | — (tidak terbentuk) | blue / b10      | 2026-08-26 04:17 |
+| slrfe-verify-1787718542@ebflyai.com | 01a03c54-2941-7628-a248-b8bc1c6bbf22 | — (tidak terbentuk) | — (tidak terbentuk) | red / r1        | 2026-08-26 09:09 |
+
+Keduanya dibayar lunas lewat Stripe Checkout test mode dari `https://dev.smartliferewards.com.au`.
