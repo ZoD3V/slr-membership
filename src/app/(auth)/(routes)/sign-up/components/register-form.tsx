@@ -113,16 +113,6 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
 
                 return;
             }
-            // Auto log in via NextAuth so the session is active before they go to Stripe
-            try {
-                await signIn('credentials', {
-                    email: data.email,
-                    password: data.password,
-                    redirect: false
-                });
-            } catch (signInErr) {
-                console.error('Auto sign-in failed:', signInErr);
-            }
             setCheckoutToken(res.access_token ?? null);
             goPay(res.spin_available);
         } catch (err) {
@@ -188,18 +178,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
                     <StepOtp
                         email={data.email}
                         userId={userId ?? ''}
-                        onNext={async () => {
-                            try {
-                                await signIn('credentials', {
-                                    email: data.email,
-                                    password: data.password,
-                                    redirect: false
-                                });
-                            } catch (signInErr) {
-                                console.error('Auto sign-in failed after OTP verification:', signInErr);
-                            }
-                            setStep('success');
-                        }}
+                        onNext={() => setStep('success')}
                         onBack={() => setStep('tier')}
                     />
                 );

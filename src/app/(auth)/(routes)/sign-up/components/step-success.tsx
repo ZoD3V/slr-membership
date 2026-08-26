@@ -83,12 +83,12 @@ const StepSuccess = ({ data, spinPrize }: StepSuccessProps) => {
                 </div>
             </div>
 
-            <Link href='/member' className='w-full'>
+            <Link href='/sign-in' className='w-full'>
                 <Button
                     type='button'
                     style={goldButtonStyle}
                     className='h-12 w-full rounded-xl font-bold uppercase shadow-md transition-opacity hover:opacity-90'>
-                    Go to my dashboard
+                    Sign in to your account
                 </Button>
             </Link>
         </div>

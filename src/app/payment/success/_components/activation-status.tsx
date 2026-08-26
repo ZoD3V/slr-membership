@@ -40,9 +40,7 @@ export function ActivationStatus() {
             setDetail(res);
 
             if (!res.authed) return setPhase('unauthed');
-            if (res.active) {
-                return setPhase('active');
-            }
+            if (res.active) return setPhase('active');
 
             tries += 1;
             if (tries >= MAX_TRIES) return setPhase('timeout');
@@ -82,8 +80,8 @@ export function ActivationStatus() {
                 description={`Your ${tier} membership is now active — tokens and draw entries are allocated for this cycle.${renewal}`}
                 action={
                     <div className='flex flex-col items-center gap-3'>
-                        <GoldCtaButton href='/member' className='w-full max-w-xs'>
-                            Go to Dashboard
+                        <GoldCtaButton href='/api/auth/logout' className='w-full max-w-xs'>
+                            Sign In to Dashboard
                         </GoldCtaButton>
                     </div>
                 }
@@ -117,8 +115,8 @@ export function ActivationStatus() {
             description='Your payment went through — activation is taking a moment. Head to your dashboard; it’ll update shortly.'
             action={
                 <div className='flex flex-col items-center gap-3'>
-                    <GoldCtaButton href='/member' className='w-full max-w-xs'>
-                        Go to Dashboard
+                    <GoldCtaButton href='/api/auth/logout' className='w-full max-w-xs'>
+                        Sign In to Dashboard
                     </GoldCtaButton>
                 </div>
             }
