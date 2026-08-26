@@ -1,144 +1,195 @@
-import { Metadata } from 'next';
+import { ReactNode } from 'react';
 
-import LegalDoc, { LegalSection } from '../_components/legal-doc';
+import { Metadata } from 'next';
+import Link from 'next/link';
+
+import LegalDoc, { LegalContactCard, LegalSection, LegalList as List } from '../_components/legal-doc';
 import PageHero from '../_components/page-hero';
 
 export const metadata: Metadata = {
-    title: 'Giveaway Rules · SLR Rewards',
-    description: 'The rules that apply to all Smart Life Rewards prize draws and giveaways.'
+    title: 'Competition Rules · SLR Rewards',
+    description:
+        'Competition Rules for the Smart Life Rewards Early Stage Member Promotion — promoter, prize pool, eligibility, entries and draw method.'
 };
+
+/**
+ * The draw-specific figures at the top of the document. These change every
+ * 28-day cycle, so they are grouped here rather than scattered through the
+ * clauses — clause 10 covers subsequent draws.
+ */
+const DRAW_DETAILS: { label: string; value: string }[] = [
+    { label: 'Promotion opens', value: '24 August 2026' },
+    { label: 'Entries close', value: '4 September 2026 @ 7:30 PM AEST' },
+    { label: 'Draw date', value: '4 September 2026' },
+    { label: 'Draw time', value: '8:00 PM AEST' },
+    { label: 'Prize pool', value: '$2,100' },
+    { label: 'Eligible area', value: 'Victoria only' }
+];
+
+const DrawDetails = () => (
+    <div className='rounded-xl border border-[#FFD147]/30 bg-[#FFD147]/5 p-4 md:p-5'>
+        <p className='text-slr-gold-label text-xs font-semibold tracking-widest uppercase'>Current draw details</p>
+        <dl className='mt-3 grid gap-x-6 gap-y-3 sm:grid-cols-2'>
+            {DRAW_DETAILS.map((row) => (
+                <div key={row.label}>
+                    <dt className='text-slr-dim text-xs tracking-wide uppercase'>{row.label}</dt>
+                    <dd className='mt-0.5 text-sm font-semibold text-white'>{row.value}</dd>
+                </div>
+            ))}
+        </dl>
+    </div>
+);
+
+/** Label/value pair used inside clauses 4 and 7. */
+const Fact = ({ label, children }: { label: string; children: ReactNode }) => (
+    <p>
+        <span className='text-slr-dim'>{label}:</span> <span className='font-semibold text-white/90'>{children}</span>
+    </p>
+);
 
 const sections: LegalSection[] = [
     {
-        heading: 'The promoter',
+        heading: 'Promoter',
+        body: <p>The Promoter is SLR Life Pty Ltd trading as Smart Life Rewards (SLR).</p>
+    },
+    {
+        heading: 'Promotion',
         body: (
-            <p>
-                All prize draws (&ldquo;Draws&rdquo;) on Smart Life Rewards are promoted by Smart Life Rewards Pty Ltd
-                (&ldquo;SLR&rdquo;). Draws are conducted in conjunction with TPAL, an independent authorised provider,
-                under the relevant state and territory permit conditions.
-            </p>
+            <>
+                <p>The promotion is the Smart Life Rewards Early Stage Member Promotion.</p>
+                <p>
+                    Participation in this draw is available to eligible Victorian members in accordance with these
+                    Competition Rules and the Smart Life Rewards{' '}
+                    <Link href='/terms' className='text-[#FFDC75] hover:underline'>
+                        Terms &amp; Conditions
+                    </Link>
+                    .
+                </p>
+            </>
+        )
+    },
+    {
+        heading: 'Prize pool',
+        body: (
+            <>
+                <Fact label='Total prize pool'>$2,100</Fact>
+                <p>
+                    The individual prizes making up the $2,100 prize pool will be published by Smart Life Rewards for
+                    the applicable draw.
+                </p>
+                <p>The published prize schedule will identify the number, type and value of prizes available.</p>
+            </>
+        )
+    },
+    {
+        heading: 'Promotion period',
+        body: (
+            <>
+                <Fact label='Promotion commences'>24 August 2026</Fact>
+                <Fact label='Entries close'>4 September 2026 @ 7:30 PM AEST</Fact>
+                <Fact label='Draw date'>4 September 2026</Fact>
+                <Fact label='Draw time'>8:00 PM AEST</Fact>
+                <p>Only valid entries received before the closing time will be included in the draw.</p>
+                <Fact label='Next draw cycle commences'>2 October 2026, for a 28-day cycle</Fact>
+            </>
         )
     },
     {
         heading: 'Eligibility',
         body: (
             <>
-                <p>To be eligible to enter a draw, you must:</p>
-                <ul className='ml-5 list-disc space-y-1'>
-                    <li>Be 18 years of age or older</li>
-                    <li>Be a permanent resident of Australia</li>
-                    <li>Hold an active SLR account that matches the tier of the draw</li>
-                    <li>For paid-tier draws, have an active monthly subscription with a successful payment</li>
-                </ul>
-                <p>Employees of SLR, TPAL, and their immediate family members are not eligible to win.</p>
+                <p>To participate, a person must:</p>
+                <List
+                    items={[
+                        'Be aged 18 years or over;',
+                        'Be a resident of Victoria;',
+                        'Hold an eligible Smart Life Rewards membership;',
+                        'Have an active and eligible membership at the applicable closing time; and',
+                        'Comply with these Competition Rules and the Smart Life Rewards Terms & Conditions.'
+                    ]}
+                />
+                <p>
+                    Employees, officers and other persons excluded under the Smart Life Rewards Terms &amp; Conditions
+                    are not eligible to participate.
+                </p>
             </>
         )
     },
     {
-        heading: 'How entries are allocated',
+        heading: 'Entries',
         body: (
             <>
                 <p>
-                    Entries are calculated automatically by the SLR platform based on your membership tier and assigned
-                    only after a successful monthly Stripe payment.
+                    Eligible members receive the applicable number of entries/chances according to their Smart Life
+                    Rewards membership tier and the entry allocation applying to the draw.
                 </p>
-                <p>
-                    Entries are <strong>not cumulative</strong>. They are valid only for the current draw cycle and
-                    reset at the end of each cycle. If a payment fails, no new entries are assigned for that cycle.
-                </p>
+                <p>Only valid entries recorded before 7:30 PM AEST on 4 September 2026 will be included.</p>
             </>
         )
     },
     {
-        heading: 'Draw pools',
-        body: (
-            <p>
-                Each member belongs to one draw pool determined by their state or territory and tier (for example,
-                &ldquo;SLR Red VIC&rdquo; or &ldquo;SLR Blue NSW&rdquo;). Winners are selected from within each pool.
-                State cannot be changed after registration without admin approval.
-            </p>
-        )
-    },
-    {
-        heading: 'Draw process',
+        heading: 'Draw method',
         body: (
             <>
-                <p>At the close of a draw cycle:</p>
-                <ol className='ml-5 list-decimal space-y-1'>
-                    <li>SLR generates a TPAL-compliant data export for each tier</li>
-                    <li>TPAL processes the data and randomly selects winners under permit conditions</li>
-                    <li>Winners are notified by email and SMS</li>
-                    <li>Winners are excluded from any remaining draws in the same cycle</li>
-                    <li>Entries reset and the next cycle begins</li>
-                </ol>
+                <p>Winners will be selected electronically using the TPAL digital draw system.</p>
+                <p>
+                    The draw will be conducted in accordance with these Competition Rules and applicable regulatory
+                    requirements.
+                </p>
+                <Fact label='Draw date'>4 September 2026</Fact>
+                <Fact label='Draw time'>8:00 PM AEST</Fact>
+                <Fact label='Location'>Victoria, Australia</Fact>
+                <p>
+                    Each valid entry has an equal opportunity of being randomly selected, subject to the applicable
+                    entry allocation and draw rules.
+                </p>
             </>
         )
     },
     {
-        heading: 'Prizes',
+        heading: 'Winner notification & publication',
         body: (
             <>
+                <p>Winners will be contacted using the details registered with Smart Life Rewards.</p>
                 <p>
-                    Prizes for each draw are described on the relevant draw page. Prize values are correct at the time
-                    of publication. SLR reserves the right to substitute a prize of equal or greater value if a specific
-                    prize becomes unavailable.
+                    Members are responsible for keeping their name, email address, telephone number and membership
+                    details accurate and up to date.
                 </p>
                 <p>
-                    Prizes are awarded directly to the winner (cash credits, gift cards, or physical items) — SLR does
-                    not operate a wallet system that you need to claim from. Prizes are not transferable and cannot be
-                    exchanged for cash unless stated.
+                    Winner details will be published on the Smart Life Rewards website and/or official social media
+                    channels, subject to applicable privacy and regulatory requirements.
                 </p>
             </>
         )
     },
     {
-        heading: 'Spin Wheel',
+        heading: 'Prize claim & verification',
         body: (
             <>
                 <p>
-                    Paid-tier members receive one Spin Wheel attempt per draw cycle. The wheel outcome is randomly
-                    generated and may include:
+                    Winners may be required to verify their identity and membership eligibility before receiving a
+                    prize.
                 </p>
-                <ul className='ml-5 list-disc space-y-1'>
-                    <li>Bonus entries added to your current cycle</li>
-                    <li>Discount credit toward partner offers</li>
-                    <li>A percentage discount applied to your next Stripe invoice</li>
-                    <li>No prize</li>
-                </ul>
-                <p>The wheel resets at the start of each new cycle. Spins cannot be transferred or carried over.</p>
+                <p>Prizes will be awarded in accordance with the published prize conditions and applicable laws.</p>
             </>
         )
     },
     {
-        heading: 'Winner verification and forfeiture',
+        heading: 'Subsequent draws',
         body: (
-            <p>
-                SLR may require winners to verify their identity and eligibility before a prize is released. If a winner
-                cannot be contacted within 30 days, fails verification, or is found to be ineligible, the prize may be
-                forfeited and a re-draw conducted under permit conditions.
-            </p>
-        )
-    },
-    {
-        heading: 'Privacy',
-        body: (
-            <p>
-                Entry data shared with TPAL (name, email, state, entry count, tier) is used solely for the purpose of
-                conducting the draw and verifying winners. See our{' '}
-                <a href='/privacy' className='text-[#FFDC75] hover:underline'>
-                    Privacy Policy
-                </a>{' '}
-                for more.
-            </p>
-        )
-    },
-    {
-        heading: 'Changes',
-        body: (
-            <p>
-                SLR may update these giveaway rules from time to time. Material changes will be communicated by email
-                and posted on this page with a new &ldquo;Last updated&rdquo; date.
-            </p>
+            <>
+                <p>
+                    The applicable opening date, entry closing date/time, draw date/time and prize schedule will be
+                    published for each subsequent Smart Life Rewards draw cycle.
+                </p>
+                <p>
+                    These Competition Rules are to be read together with the Smart Life Rewards{' '}
+                    <Link href='/terms' className='text-[#FFDC75] hover:underline'>
+                        Terms &amp; Conditions
+                    </Link>{' '}
+                    and the prize schedule applying to the relevant draw.
+                </p>
+            </>
         )
     }
 ];
@@ -148,16 +199,30 @@ const GiveawayRulesPage = () => {
         <>
             <PageHero
                 eyebrow='Legal'
-                title='Giveaway Rules'
-                description='How SLR prize draws, entries, and the Spin Wheel work — and the conditions that apply.'
+                title='Competition Rules'
+                description='The rules that apply to the current Smart Life Rewards prize draw.'
             />
             <LegalDoc
-                lastUpdated='15 May 2026'
+                lastUpdated='24 August 2026'
                 intro={
-                    <p>
-                        These rules apply to all prize draws, giveaways, and Spin Wheel outcomes operated by Smart Life
-                        Rewards. By participating you agree to be bound by them.
-                    </p>
+                    <>
+                        <LegalContactCard title='SLR Life Pty Ltd t/a Smart Life Rewards'>
+                            <p className='mt-1'>
+                                ABN 99 696 467 473
+                                <br />
+                                28 Welcome Parade, Wyndham, Victoria 3024
+                            </p>
+                            <p className='mt-2'>
+                                Email:{' '}
+                                <a href='mailto:cs@smartliferewards.com.au' className='text-[#FFDC75] hover:underline'>
+                                    cs@smartliferewards.com.au
+                                </a>
+                            </p>
+                        </LegalContactCard>
+                        <div className='mt-4'>
+                            <DrawDetails />
+                        </div>
+                    </>
                 }
                 sections={sections}
             />

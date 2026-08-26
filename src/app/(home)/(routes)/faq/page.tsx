@@ -6,7 +6,8 @@ import { getFAQPageSchema } from '@/lib/seo/structured-data';
 import { goldButtonStyle } from '@/lib/styles';
 
 import PageHero from '../_components/page-hero';
-import FaqList, { categories } from './_components/faq-list';
+import FaqList from './_components/faq-list';
+import { categories } from './faq-data';
 
 export const metadata: Metadata = {
     title: 'FAQ · SLR Rewards',
