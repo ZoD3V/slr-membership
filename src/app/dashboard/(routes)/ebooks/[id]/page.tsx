@@ -37,7 +37,7 @@ export default async function EditEbookPage({ params }: EditEbookPageProps) {
         pdfUrl: ebookListItem.pdf_url || '',
         category: ebookListItem.category || '',
         footnote: ebookListItem.footnote || '',
-        tierAccess: 'RED' as const, // default since listing doesn't return the tier
+        tierAccess: 'RED' as const,
         readingTimeMinutes: ebookListItem.reading_time_minutes || 0,
         chapters
     };

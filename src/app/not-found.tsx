@@ -29,7 +29,6 @@ export default function NotFound() {
                 <GoldCtaButton href='/'>Back to Home</GoldCtaButton>
             </div>
 
-            {/* Bottom fade into the deep navy base */}
             <div className='pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(180deg,rgba(19,22,25,0)_0%,#131619_100%)]' />
         </main>
     );

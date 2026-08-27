@@ -15,7 +15,6 @@ const apps = [
 const SaveMoreWithBenySection = () => {
     return (
         <section className='bg-slr-ink relative isolate overflow-hidden py-16 md:py-24'>
-            {/* Center radial glow */}
             <div
                 aria-hidden='true'
                 className='pointer-events-none absolute top-1/2 left-1/2 -z-10 h-105 w-105 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(190,40,120,0.35)_0%,transparent_70%)] blur-3xl'
@@ -23,7 +22,6 @@ const SaveMoreWithBenySection = () => {
 
             <div className='mx-auto max-w-7xl px-4'>
                 <div className='grid grid-cols-1 items-center gap-10 lg:grid-cols-2'>
-                    {/* Left — copy */}
                     <div>
                         <div className='flex items-center gap-3'>
                             <span className='text-sm font-semibold tracking-[0.25em] text-white uppercase'>
@@ -36,7 +34,6 @@ const SaveMoreWithBenySection = () => {
                             </span>
                         </div>
 
-                        {/* Beny wordmark */}
                         <div className='relative mt-5 inline-block'>
                             <span className='block bg-[linear-gradient(91deg,#F4A6C0_0%,#ED5C97_45%,#E0309A_100%)] bg-clip-text text-[88px] leading-none font-extrabold text-transparent sm:text-[112px] lg:text-[128px]'>
                                 Beny
@@ -79,7 +76,6 @@ const SaveMoreWithBenySection = () => {
                         </div>
                     </div>
 
-                    {/* Right — phone */}
                     <div className='flex justify-center lg:justify-end'>
                         <Image
                             src='/images/slr-handphone.webp'

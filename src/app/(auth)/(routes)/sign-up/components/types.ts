@@ -12,12 +12,12 @@ export type SignUpFormData = {
     phone: string;
     dob: string;
     tier: TierKey | null;
-    sub_tier: SubTierCode | null; // R1/R4/R7/B1/B4/B7/B10 (or VISITOR)
+    sub_tier: SubTierCode | null;
 };
 
 export type SpinPrize = {
     label: string;
-    discountAmount: number; // $ off the first invoice (0 = no prize) — per PRD §4.1
+    discountAmount: number;
 };
 
 export const TIER_PRICE: Record<TierKey, number> = {
@@ -32,15 +32,12 @@ export const TIER_LABEL: Record<TierKey, string> = {
     blue: 'SLR Blue'
 };
 
-/** Shown as information only — checkout can't charge it, so it is never added to a total. */
 export const BENY_PRICE = 4;
 
-// ── Sub-tier presentation (levels + spin discount) ───────────────────────────
-// Levels match the home-page tier cards. Spin discounts per PRD §4.1 step 7.
 export interface SubTierOption {
     code: SubTierCode;
-    level: string; // Standard / Plus / Premium / Elite
-    spinDiscount: number; // $ off first invoice if the spin is won (0 = no spin)
+    level: string;
+    spinDiscount: number;
 }
 
 export const RED_SUB_TIERS: SubTierOption[] = [
@@ -64,10 +61,8 @@ export const subTiersForGroup = (group: TierKey): SubTierOption[] =>
 export const spinDiscountFor = (code: SubTierCode | null): number =>
     (code ? ALL_SUB_TIERS.find((s) => s.code === code)?.spinDiscount : 0) ?? 0;
 
-/** Spin wheel only for token-upgrade sub-tiers (R4/R7/B4/B7/B10). */
 export const isSpinEligible = (code: SubTierCode | null): boolean => spinDiscountFor(code) > 0;
 
-// Canonical price/tokens come from SUB_TIERS (single source of truth).
 export const subTierPrice = (code: SubTierCode): number => SUB_TIERS[code].price_cents / 100;
 export const subTierTokens = (code: SubTierCode): number => SUB_TIERS[code].tokens;
 

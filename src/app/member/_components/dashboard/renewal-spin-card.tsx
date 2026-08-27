@@ -13,14 +13,12 @@ import { Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 type RenewalSpinCardProps = {
-    /** Prize on offer for this sub-tier, in dollars. */
     discount: number;
-    /** ISO — the spin is forfeited at renewal time if unused (PRD §4.5 moment 2). */
+
     expiresAt: string | null;
     className?: string;
 };
 
-/** "2h 15m" until the deadline, or null once it has passed. */
 function timeLeft(expiresAt: string | null): string | null {
     if (!expiresAt) return null;
     const ms = Date.parse(expiresAt) - Date.now();
@@ -32,21 +30,12 @@ function timeLeft(expiresAt: string | null): string | null {
     return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
 }
 
-/**
- * PRD §4.5 moment 2 — the spin offered H-2 (48h) before auto-renewal. A win
- * discounts that one renewal invoice; losing or letting it expire renews at
- * full price.
- */
 export function RenewalSpinCard({ discount, expiresAt, className }: RenewalSpinCardProps) {
     const [open, setOpen] = useState(false);
     const [outcome, setOutcome] = useState<SpinOutcome | null>(null);
     const [remaining, setRemaining] = useState<string | null>(null);
     const [expired, setExpired] = useState(false);
 
-    // Rendered on the client only so the server and client agree on "now". A
-    // timeout flips `expired` the instant the deadline passes, instead of
-    // waiting for the next 60s display tick (which left the "Spin now"
-    // button clickable for up to a minute after the window closed).
     useEffect(() => {
         if (!expiresAt) {
             setRemaining(null);
@@ -145,7 +134,6 @@ export function RenewalSpinCard({ discount, expiresAt, className }: RenewalSpinC
             <Dialog
                 open={open}
                 onOpenChange={(next) => {
-                    // Keep it open while the wheel is mid-flight so the result is seen.
                     setOpen(next);
                 }}>
                 <DialogContent className='border-slr-navy-border bg-card-dark-navy sm:max-w-md'>

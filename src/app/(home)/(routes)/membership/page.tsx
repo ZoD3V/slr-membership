@@ -28,7 +28,6 @@ const formatPrice = (cents: number) => {
     return `$${Number.isInteger(dollars) ? dollars : dollars.toFixed(2)}`;
 };
 
-// Live display data keyed by sub_tier (R1/R4/…) — API returns lowercase codes.
 const toDisplayMap = (options: TierOption[]): Record<string, TierDisplay> =>
     options.reduce<Record<string, TierDisplay>>((map, t) => {
         map[t.sub_tier.toUpperCase()] = {
@@ -41,7 +40,6 @@ const toDisplayMap = (options: TierOption[]): Record<string, TierDisplay> =>
         return map;
     }, {});
 
-// Cheapest price in a group — for the hero "Start From" figure.
 const startFrom = (options: TierOption[]): string => formatPrice(Math.min(...options.map((t) => t.price_cents)));
 
 const MembershipPage = async () => {
@@ -64,14 +62,16 @@ const MembershipPage = async () => {
         },
         {
             name: 'Smart Life Rewards Red',
-            description: 'SLR Red Membership - starting from $10/month. Access to Red draws, partner discounts, and digital e-books.',
+            description:
+                'SLR Red Membership - starting from $10/month. Access to Red draws, partner discounts, and digital e-books.',
             price: '10.00',
             priceCurrency: 'AUD',
             billingPeriod: 'P28D'
         },
         {
             name: 'Smart Life Rewards Premium (Blue)',
-            description: 'SLR Premium Blue Membership - starting from $26/month. Full access to premium blue draws, complete discounts directory, e-books library, and BENY add-on.',
+            description:
+                'SLR Premium Blue Membership - starting from $26/month. Full access to premium blue draws, complete discounts directory, e-books library, and BENY add-on.',
             price: '26.00',
             priceCurrency: 'AUD',
             billingPeriod: 'P28D'

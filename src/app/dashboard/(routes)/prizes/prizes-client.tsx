@@ -21,9 +21,7 @@ const formSchema = z.object({
     prize_count: z.string().min(1, 'Required'),
     stage_label: z.string().min(1, 'Required'),
     odds: z.string().min(1, 'Required'),
-    // Breakdown copy is multi-line: a newline is how the admin splits one slot
-    // into two prize lines. Trimmed so a stray trailing Enter doesn't render as
-    // an empty line on the public page.
+
     visitor_prize: z.string().trim().min(1, 'Required'),
     red_weekly: z.string().trim().min(1, 'Required'),
     red_monthly: z.string().trim().min(1, 'Required'),
@@ -61,8 +59,7 @@ export function PrizesClient({ content }: { content: PrizeContent }) {
 
             if (result.ok) {
                 toast.success(result.message);
-                // Reset from the saved document, not the submitted values — any
-                // backend normalisation must be reflected, not silently dropped.
+
                 form.reset(toFormValues(result.data));
             } else {
                 toast.error(result.message, {

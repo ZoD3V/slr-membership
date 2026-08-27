@@ -12,12 +12,6 @@ type DashboardEmptyStateProps = {
     className?: string;
 };
 
-/**
- * Empty/error state for dashboard (admin) surfaces. Flat, data-tool styling —
- * dashed border, muted circle icon, sentence-case heading — deliberately
- * distinct from the premium public `EmptyState` (bebas + gold). Uses shadcn
- * theme tokens so it inherits the admin navy theme.
- */
 const DashboardEmptyState: FC<DashboardEmptyStateProps> = ({ icon: Icon, title, description, action, className }) => (
     <div
         className={cn(

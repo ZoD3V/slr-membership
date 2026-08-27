@@ -16,7 +16,6 @@ import { SignInSchema } from '@/lib/zod';
 import { EyeIcon, EyeOffIcon, Loader2Icon } from 'lucide-react';
 import { getSession, signIn } from 'next-auth/react';
 
-// Glassmorphism style per design system
 const glassStyle: React.CSSProperties = {
     background: 'linear-gradient(117.58deg, rgba(215, 237, 237, 0.16) -47.79%, rgba(204, 235, 235, 0) 100%)',
     border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -29,8 +28,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     const [email, setEmail] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    // `busy` covers both the sign-in request AND the redirect that follows, so the
-    // button never flips back to idle between success and the page swap.
+
     const [busy, setBusy] = useState(false);
 
     useEffect(() => {
@@ -47,9 +45,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
         setShowPassword(!showPassword);
     };
 
-    // Client-side login: signIn() hits the stable /api/auth route (NOT a build-hashed
-    // server action), so a redeploy can't strand this call — no post-update crash at
-    // the login gate. Redirect via full-page load so we land on the live deployment.
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setError(null);

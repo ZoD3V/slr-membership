@@ -45,8 +45,7 @@ const formSchema = z
         is_active: z.boolean(),
         manual_override: z.enum(['NONE', 'FORCE_LOCK', 'FORCE_UNLOCK'])
     })
-    // Safe as a plain string compare: both sides are always zero-padded
-    // 'HH:MM', so lexicographic order matches time-of-day order.
+
     .refine((values) => values.end_time > values.start_time, {
         message: 'End time must be after start time',
         path: ['end_time']

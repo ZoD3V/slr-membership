@@ -23,8 +23,6 @@ interface PersonalInfoSectionProps {
 
 const PHONE_PREFIX = '+61';
 
-// Backend validates the joined number against /^\+?[0-9]{8,15}$/, so the local
-// part (everything after +61) has to stay between 6 and 13 digits.
 const LOCAL_MIN = 6;
 const LOCAL_MAX = 13;
 

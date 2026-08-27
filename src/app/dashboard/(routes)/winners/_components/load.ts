@@ -5,16 +5,13 @@ import { formatShortDate } from '@/lib/member';
 
 import type { GiveawayOption } from './winner-form';
 
-/** Server-enforced ceiling: per_page above this returns 400 VALIDATION_ERROR. */
 const MAX_PER_PAGE = 100;
 
-/** Giveaway options for the winner form's picker. Degrades to an empty list. */
 export async function loadGiveawayOptions(): Promise<GiveawayOption[]> {
     const token = await getAccessToken();
     if (!token) return [];
 
     try {
-        // High per_page: the picker needs every giveaway, not just page one.
         const res = await getAdminGiveaways(token, { page: 1, perPage: MAX_PER_PAGE });
 
         return res.map((g) => ({

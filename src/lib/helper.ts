@@ -1,4 +1,3 @@
-/** Resolve a file field's existing value to a URL string (raw string, `{url}`, or `{image_path}`). */
 function toUrlIfMeta(input: any): string | null {
     if (!input) return null;
     if (typeof input === 'string') return input;
@@ -24,19 +23,12 @@ type FileFieldConfig = {
     mode?: FileFieldMode;
 };
 
-/** Wrap a single value (or pass through an array) so callers can treat both alike. */
 function normalizeToArray(value: any): any[] {
     if (value == null) return [];
 
     return Array.isArray(value) ? value : [value];
 }
 
-/**
- * Normalize a form's file value into FormData:
- * - single mode appends the first file (or its existing URL) under `formKey`/`existingKey`
- * - multiple mode appends every item with `[]`-suffixed keys
- * For updates, appends `_method: PUT` so the backend treats the POST as a PATCH.
- */
 export function buildFormData(
     data: Record<string, any>,
     isUpdate: boolean,

@@ -3,7 +3,6 @@ import type { GiveawayDrawType } from '@/types/member';
 
 import { CalendarDays } from 'lucide-react';
 
-/** Weekly/Monthly chip shown next to the tier badge on giveaway cards. */
 export function DrawTypeBadge({ type, className }: { type: GiveawayDrawType; className?: string }) {
     if (!type) return null;
 

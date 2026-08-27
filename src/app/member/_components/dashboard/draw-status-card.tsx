@@ -7,11 +7,11 @@ import { MapPin, Ticket, Trophy } from 'lucide-react';
 
 interface DrawStatusCardProps {
     draw: DrawStatus;
-    // Preformatted on the server so SSR and client markup match (timezone-safe).
+
     drawsAtLabel: string;
-    /** Section label — defaults to the giveaway framing; pass "Current Cycle" for the cycle/renewal view. */
+
     eyebrow?: string;
-    /** Prefix for the date footer, e.g. "Draws" (giveaway) or "Renews" (cycle). */
+
     dateWord?: string;
     className?: string;
 }
@@ -31,7 +31,6 @@ export function DrawStatusCard({
                 'bg-card-dark-navy border-slr-navy-border shadow-card-warm relative isolate overflow-hidden rounded-2xl border p-5 md:p-6',
                 className
             )}>
-            {/* decorative star field + glows */}
             <div aria-hidden className='slr-stars-overlay pointer-events-none absolute inset-0 -z-10 opacity-40' />
             <div
                 aria-hidden

@@ -106,12 +106,8 @@ const accentStyles = {
 const STATIC_PARTNER_LOGOS = Array.from({ length: 10 }, (_, i) => `/images/list-partner-logo-${i + 1}.webp`);
 
 const AboutPage = async () => {
-    // Real partner discount logos, same source as the membership page's
-    // Community Givebacks marquee. Non-fatal → [] → falls back to the static set.
     const publicDiscounts = await getPublicDiscounts().catch(() => [] as Discount[]);
-    const fetchedLogos = publicDiscounts
-        .map((d) => d.logo_url?.trim())
-        .filter((url): url is string => Boolean(url));
+    const fetchedLogos = publicDiscounts.map((d) => d.logo_url?.trim()).filter((url): url is string => Boolean(url));
     const partnerLogos = fetchedLogos.length > 0 ? fetchedLogos : STATIC_PARTNER_LOGOS;
 
     return (

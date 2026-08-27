@@ -42,15 +42,11 @@ export function Navbar({ user }: NavbarProps) {
 
     const toggleMenu = () => setIsOpen(!isOpen);
 
-    // Auth-gated items (e.g. E-Books) only appear once a session exists.
     const visibleMenuItems = menuItems.filter((item) => !item.authRequired || !!user);
 
-    // Members can't enter /dashboard (middleware bounces them to /member), so the
-    // account links point at each role's real home.
     const role = String((user?.user as { role?: string })?.role ?? '').toLowerCase();
     const homeHref = role.includes('admin') ? '/dashboard' : '/member';
 
-    // Track current hash so hash-based menu items can show their active state
     useEffect(() => {
         const updateHash = () => setActiveHash(window.location.hash || '');
         updateHash();
@@ -59,7 +55,6 @@ export function Navbar({ user }: NavbarProps) {
         return () => window.removeEventListener('hashchange', updateHash);
     }, []);
 
-    // Track scroll for subtle navbar shadow feedback
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 8);
         onScroll();
@@ -68,7 +63,6 @@ export function Navbar({ user }: NavbarProps) {
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
-    // Full glass treatment — always used by the mobile menu, and by the nav once scrolled
     const glassStyle: React.CSSProperties = {
         background:
             'linear-gradient(117.58deg, rgba(215, 237, 237, 0.16) -47.79%, rgba(204, 235, 235, 0) 100%), #000000',
@@ -79,7 +73,6 @@ export function Navbar({ user }: NavbarProps) {
         boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.4)'
     };
 
-    // Transparent at top of page — nav only flips to glass after scroll (or when mobile menu open)
     const transparentStyle: React.CSSProperties = {
         background: 'transparent',
         border: '1px solid transparent',
@@ -92,14 +85,13 @@ export function Navbar({ user }: NavbarProps) {
 
     const isActive = (url: string) => {
         if (!url) return false;
-        // hash-based item (e.g. "#pricing")
+
         if (url.startsWith('#')) {
             if (url === '#') return activeHash === '' || activeHash === '#';
 
             return activeHash === url;
         }
 
-        // pathname-based item
         return pathname === url;
     };
 
@@ -116,7 +108,6 @@ export function Navbar({ user }: NavbarProps) {
                         'relative mx-auto flex items-center justify-between px-5 py-4 transition-all duration-300 lg:mt-5 xl:py-3',
                         isOpen ? '' : 'rounded-b-2xl lg:rounded-[20px]'
                     )}>
-                    {/* Logo */}
                     <Link href='/' className='flex items-center gap-2'>
                         <Image
                             src='/images/slr-rewards-logo.webp'
@@ -129,7 +120,6 @@ export function Navbar({ user }: NavbarProps) {
                         <span className='sr-only'>SLR Rewards</span>
                     </Link>
 
-                    {/* Desktop Menu */}
                     <ul className='hidden items-center gap-1 xl:absolute xl:left-1/2 xl:flex xl:-translate-x-1/2'>
                         {visibleMenuItems.map((item) => {
                             const active = isActive(item.url);
@@ -185,7 +175,6 @@ export function Navbar({ user }: NavbarProps) {
                             </div>
                         )}
 
-                        {/* Logged-in avatar dropdown beside the hamburger (mobile/tablet) */}
                         {user ? (
                             <div className='dark xl:hidden'>
                                 <DropdownMenu>
@@ -214,7 +203,6 @@ export function Navbar({ user }: NavbarProps) {
                             </div>
                         ) : null}
 
-                        {/* Mobile toggler */}
                         <button
                             onClick={toggleMenu}
                             type='button'
@@ -232,7 +220,6 @@ export function Navbar({ user }: NavbarProps) {
                 </nav>
             </Container>
 
-            {/* Mobile Menu */}
             <Transition
                 show={isOpen}
                 enter='transition ease-out duration-200 transform'

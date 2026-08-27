@@ -39,8 +39,7 @@ export default async function MembershipPage() {
     let benyStatus: BenyStatusValue = 'inactive';
     let benyCancelledAt: string | null = null;
     let benyExpiresAt: string | null = null;
-    // Tracked separately from the data: a failed read must never render as "you
-    // have none" — a member who has paid would be told they never did.
+
     let invoicesFailed = false;
 
     if (token) {
@@ -97,7 +96,6 @@ export default async function MembershipPage() {
                 />
             </TierCard>
 
-            {/* Payment method */}
             <section className='bg-card-dark-navy border-slr-navy-border rounded-2xl border p-5 md:p-6'>
                 <div className='flex flex-wrap items-center justify-between gap-3'>
                     <div className='flex items-center gap-2'>
@@ -111,7 +109,6 @@ export default async function MembershipPage() {
                 </p>
             </section>
 
-            {/* BENY */}
             {isVisitor ? null : (
                 <BenySection
                     status={benyStatus}
@@ -121,7 +118,6 @@ export default async function MembershipPage() {
                 />
             )}
 
-            {/* Payment history */}
             <section className='bg-card-dark-navy border-slr-navy-border rounded-2xl border p-5 md:p-6'>
                 <div className='mb-4 flex items-center gap-2'>
                     <ReceiptText className='text-slr-gold-label size-5' />

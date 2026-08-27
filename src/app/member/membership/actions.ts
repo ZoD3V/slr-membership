@@ -14,9 +14,6 @@ import { ApiError, apiErrorMessage } from '@/lib/api/types';
 import { SAFE_HOURS_MESSAGE, isSafeHoursError } from '@/lib/safe-hours';
 import type { SubTierCode } from '@/types/member';
 
-// Opens the Stripe Billing Portal. Returns the hosted URL for the client to
-// redirect to (manage cards / cancel). Real members get a URL; seed dev accounts
-// return 400 "No such customer".
 export async function openBillingPortal(): Promise<{ ok: true; url: string } | { ok: false; message: string }> {
     const token = await getAccessToken();
     if (!token) return { ok: false, message: 'Not authenticated.' };
@@ -30,17 +27,6 @@ export async function openBillingPortal(): Promise<{ ok: true; url: string } | {
     }
 }
 
-// Starts a hosted Stripe Checkout for one specific paid sub-tier and returns the
-// URL for the client to redirect to. Stripe sends the member to
-// /payment/success (which polls until the webhook activates them) or
-// /payment/cancel.
-//
-// Sends `sub_tier`, not `tier` — a bare tier makes the backend pick the entry
-// sub-tier (r1/b1), so R4/R7/B4/B7/B10 would be unsellable from here.
-//
-// Only offer this to members with no live subscription (Visitor). A paid→paid
-// change is POST /memberships/upgrade (scheduled at renewal) — running checkout
-// for an existing subscriber would open a second subscription.
 export async function startSubTierCheckout(
     subTier: SubTierCode
 ): Promise<{ ok: true; url: string } | { ok: false; message: string }> {
@@ -56,10 +42,6 @@ export async function startSubTierCheckout(
     }
 }
 
-// Maps an API failure to a user-facing message. Business error codes live in
-// the envelope, exposed via ApiError.payload.code (the ApiError instance has no
-// `code` field). The Friday lockout gets the shared copy so the toast and the
-// on-page notice always say the same thing.
 function toActionMessage(error: unknown, fallback: string): string {
     if (error instanceof ApiError) {
         if (isSafeHoursError(error)) return SAFE_HOURS_MESSAGE;
@@ -70,9 +52,6 @@ function toActionMessage(error: unknown, fallback: string): string {
     return fallback;
 }
 
-// Schedule a paid tier upgrade/downgrade for the next renewal. Returns the
-// scheduled change so the UI can show it optimistically (memberships/me does
-// not yet expose pending_upgrade — docs/BACKEND-ISSUES.md A2).
 export async function scheduleTierChangeAction(
     targetSubTierId: MemberSubTierId
 ): Promise<{ ok: true; change: ScheduledTierChange } | { ok: false; message: string }> {
@@ -88,7 +67,6 @@ export async function scheduleTierChangeAction(
     }
 }
 
-// Cancel a scheduled (pending) tier change before it applies.
 export async function cancelScheduledTierChangeAction(): Promise<{ ok: true } | { ok: false; message: string }> {
     const token = await getAccessToken();
     if (!token) return { ok: false, message: 'Not authenticated.' };
@@ -102,8 +80,6 @@ export async function cancelScheduledTierChangeAction(): Promise<{ ok: true } | 
     }
 }
 
-// Cancel the membership at period end. On seed accounts the fake Stripe sub may
-// 400 — the message is surfaced to the user (docs/BACKEND-ISSUES.md C3).
 export async function cancelMembershipAction(): Promise<{ ok: true } | { ok: false; message: string }> {
     const token = await getAccessToken();
     if (!token) return { ok: false, message: 'Not authenticated.' };
@@ -117,9 +93,6 @@ export async function cancelMembershipAction(): Promise<{ ok: true } | { ok: fal
     }
 }
 
-// Start manual payment for a grace-period invoice → hosted Stripe checkout URL.
-// Grace state can't be reproduced on seed accounts (docs/BACKEND-ISSUES.md C3),
-// so this is built blind and guarded.
 export async function payGraceInvoiceAction(): Promise<{ ok: true; url: string } | { ok: false; message: string }> {
     const token = await getAccessToken();
     if (!token) return { ok: false, message: 'Not authenticated.' };

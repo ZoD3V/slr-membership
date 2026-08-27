@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 type StepCheckoutProps = {
     data: SignUpFormData;
     spinPrize: SpinPrize | null;
-    /** Session token from register — paid tiers get one without an OTP. */
+
     token: string | null;
     onBack: () => void;
 };
@@ -41,9 +41,6 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
 
     const stateLabel = AU_STATES.find((s) => s.code === data.state)?.label ?? data.state;
 
-    // Hosted Stripe: we only redirect. The webhook activates the membership and
-    // Stripe returns the member to /payment/success, so there is no local
-    // "success" step on the paid path.
     const handleCheckout = async () => {
         if (!token) {
             toast.error('Your sign-up session expired. Please start again.');
@@ -72,8 +69,7 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
                     url
                 });
             }
-            window.location.href = url; // redirect in the same tab
-            // Keep redirecting=true so the spinner stays active while navigating
+            window.location.href = url;
         } catch (err) {
             if (process.env.NODE_ENV === 'development') {
                 console.error('[SignUp Checkout Error]', {
@@ -85,8 +81,7 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
                             : String(err)
                 });
             }
-            // The window can open between render and submit, so the server's 403 is
-            // what actually decides — translate it instead of showing the raw message.
+
             if (isSafeHoursError(err)) toast.error(SAFE_HOURS_MESSAGE);
             else
                 toast.error(
@@ -128,7 +123,11 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
 
                     <div className='h-px w-full bg-white/10' />
 
-                    <SummaryRow label='Subtotal' value={`$${(subtotal + (addBeny ? BENY_PRICE : 0)).toFixed(2)}`} muted />
+                    <SummaryRow
+                        label='Subtotal'
+                        value={`$${(subtotal + (addBeny ? BENY_PRICE : 0)).toFixed(2)}`}
+                        muted
+                    />
                     {discount > 0 && (
                         <SummaryRow
                             label='Spin Wheel discount'
@@ -144,7 +143,8 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
                         <div>
                             <p className='font-bebas-neue text-xl tracking-wider text-white uppercase'>Due today</p>
                             <p className='text-slr-muted text-xs'>
-                                Then ${(subtotal + (addBeny ? BENY_PRICE : 0)).toFixed(2)}/month from your next billing date.
+                                Then ${(subtotal + (addBeny ? BENY_PRICE : 0)).toFixed(2)}/month from your next billing
+                                date.
                             </p>
                         </div>
                         <p className='font-bebas-neue text-3xl font-extrabold text-[#FFDC75]'>${total.toFixed(2)}</p>
@@ -152,7 +152,7 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
                 </div>
             </div>
 
-            <div className='rounded-xl border border-[#D4AF3759] bg-[#D4AF371A]/5 p-4 transition-all hover:bg-[#D4AF371A]/10 flex items-start gap-3'>
+            <div className='flex items-start gap-3 rounded-xl border border-[#D4AF3759] bg-[#D4AF371A]/5 p-4 transition-all hover:bg-[#D4AF371A]/10'>
                 <Checkbox
                     id='beny'
                     checked={addBeny}
@@ -162,12 +162,13 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
                 <div className='grid gap-1.5 leading-none'>
                     <label
                         htmlFor='beny'
-                        className='text-sm font-bold text-white cursor-pointer select-none uppercase tracking-wide'
-                    >
+                        className='cursor-pointer text-sm font-bold tracking-wide text-white uppercase select-none'>
                         Add BENY Add-on — +${BENY_PRICE.toFixed(2)}/month
                     </label>
                     <p className='text-slr-muted text-xs leading-relaxed'>
-                        Access premium brand discounts through the BENY app. Billed directly to your card on Stripe (+${BENY_PRICE.toFixed(2)}/mo). Access requires manual activation and confirmation by an SLR Admin after registration.
+                        Access premium brand discounts through the BENY app. Billed directly to your card on Stripe (+$
+                        {BENY_PRICE.toFixed(2)}/mo). Access requires manual activation and confirmation by an SLR Admin
+                        after registration.
                     </p>
                 </div>
             </div>

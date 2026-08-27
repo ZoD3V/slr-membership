@@ -33,9 +33,6 @@ type NavItem = {
     icon: LucideIcon;
 };
 
-// PRD §3.2 (Navigasi Admin), narrowed to the sections that exist as routes today.
-// No role filter: the PRD defines a single Admin role, and auth.config already
-// keeps non-admins out of /dashboard entirely.
 const ITEMS: NavItem[] = [
     { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
     { title: 'Members', href: '/dashboard/members', icon: ClipboardList },
@@ -60,8 +57,6 @@ export function NavMain() {
 
             <SidebarMenu>
                 {ITEMS.map((item) => {
-                    // Exact match for the index route, prefix match for the rest so a
-                    // detail page keeps its parent highlighted.
                     const isActive =
                         item.href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(item.href);
 

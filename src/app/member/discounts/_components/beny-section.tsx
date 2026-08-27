@@ -106,7 +106,6 @@ export function BenySection({
                 setStatus(res.status);
                 toast.success(res.message);
             } else {
-                // Log full error details to console in dev/local environments
                 if (process.env.NODE_ENV === 'development') {
                     console.error('[Cancel BENY Error]', {
                         endpoint: 'DELETE /api/v1/beny/subscribe',
@@ -159,8 +158,6 @@ export function BenySection({
             </div>
 
             <div className='mt-5 border-t border-white/5 pt-4'>
-                {/* PRD §2.3: "user bisa cancel kapan saja" — both active and pending
-                    subscriptions are cancellable (backend accepts pending since 2026-07-17). */}
                 {status === 'active' || status === 'pending_activation' ? (
                     <div className='flex flex-wrap items-center justify-between gap-3'>
                         {status === 'active' ? (
@@ -185,8 +182,6 @@ export function BenySection({
                     </div>
                 ) : null}
 
-                {/* Cancelled but still inside the paid period — access is live, so
-                    this must not read like the subscription is already gone. */}
                 {isBenyWindingDown(status) ? (
                     <span className='inline-flex items-start gap-2 text-sm text-white/90'>
                         <Clock className='text-slr-gold-label mt-0.5 size-4 shrink-0' />

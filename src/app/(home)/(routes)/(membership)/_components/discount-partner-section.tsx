@@ -42,7 +42,6 @@ const DiscountPartnerSection = () => {
                     </p>
                 </div>
 
-                {/* SLR Circle Badge */}
                 <div className='mt-4 flex justify-center'>
                     <Image
                         src='/images/slr-rewards-partner-program.webp'
@@ -53,7 +52,6 @@ const DiscountPartnerSection = () => {
                     />
                 </div>
 
-                {/* Category cards */}
                 <div className='mt-12 grid grid-cols-2 gap-4 md:grid-cols-5'>
                     {categories.map((cat) => (
                         <div className='flex w-full flex-col items-center' key={cat.title}>
@@ -73,7 +71,6 @@ const DiscountPartnerSection = () => {
                     ))}
                 </div>
 
-                {/* Star divider */}
                 <div className='my-16 md:my-24'>
                     <div className='flex w-full items-center justify-center gap-2'>
                         <div className='h-px w-75 bg-[linear-gradient(270deg,#E2B42B_0%,rgba(255,255,255,0)_100%)]' />

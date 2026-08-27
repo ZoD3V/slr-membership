@@ -19,7 +19,6 @@ import { type Resolver, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
-// UPPERCASE — the admin endpoints reject lowercase enums with a 400.
 const TIER_OPTIONS: { value: AdminGiveawayTier; label: string }[] = [
     { value: 'VISITOR', label: 'Visitor' },
     { value: 'RED', label: 'SLR Red' },
@@ -33,16 +32,12 @@ const TYPE_OPTIONS: { value: AdminGiveawayType; label: string }[] = [
 
 const TYPE_DURATION_DAYS: Record<AdminGiveawayType, number> = { WEEKLY: 7, MONTHLY: 28 };
 
-// Giveaway schedules are Sydney business events: every datetime-local value in
-// this form is Sydney wall-clock (AEST/AEDT), no matter where the admin's
-// browser sits. Conversion to/from UTC ISO happens only at the edges below.
 const SYDNEY_TZ = 'Australia/Sydney';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
 const INPUT_RE = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/;
 
-/** Sydney wall-clock parts of a UTC instant. */
 const sydneyParts = (date: Date) => {
     const parts = new Intl.DateTimeFormat('en-US', {
         timeZone: SYDNEY_TZ,
@@ -58,10 +53,6 @@ const sydneyParts = (date: Date) => {
     return { y: +p.year, mo: +p.month, d: +p.day, h: +p.hour, mi: +p.minute };
 };
 
-/**
- * Same wall-clock time `days` later. Pure calendar math on the string — the
- * AEST/AEDT switch only matters when converting to an instant (`toIso`).
- */
 const addDaysLocal = (local: string, days: number): string => {
     const m = local.match(INPUT_RE);
     if (!m) return '';
@@ -70,7 +61,6 @@ const addDaysLocal = (local: string, days: number): string => {
     return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
 };
 
-// All three dates are required server-side; a partial body is rejected.
 const formSchema = z
     .object({
         name: z.string().min(1, 'Name is required'),
@@ -83,7 +73,7 @@ const formSchema = z
     })
     .refine(
         (data) => {
-            if (!data.opensAt || !data.closesAt) return true; // Let required validation handle empty fields
+            if (!data.opensAt || !data.closesAt) return true;
 
             return data.closesAt === addDaysLocal(data.opensAt, TYPE_DURATION_DAYS[data.type]);
         },
@@ -106,7 +96,6 @@ export interface GiveawayFormInitialData {
     drawsAt: string;
 }
 
-/** UTC ISO → the Sydney wall-clock `YYYY-MM-DDTHH:mm` a datetime-local input expects. */
 const toLocalInput = (iso: string | null | undefined): string => {
     if (!iso) return '';
     const d = new Date(iso);
@@ -116,11 +105,6 @@ const toLocalInput = (iso: string | null | undefined): string => {
     return `${p.y}-${pad(p.mo)}-${pad(p.d)}T${pad(p.h)}:${pad(p.mi)}`;
 };
 
-/**
- * Sydney wall-clock `YYYY-MM-DDTHH:mm` → UTC ISO. Two-pass correction: start
- * from the wall time read as UTC, then shift by however far Sydney renders it
- * off — converges across the AEST/AEDT offset change.
- */
 const toIso = (local: string): string => {
     const m = local.match(INPUT_RE);
     if (!m) return '';
@@ -160,7 +144,7 @@ export function GiveawayForm({ initialData }: { initialData?: GiveawayFormInitia
     const type = form.watch('type');
 
     useEffect(() => {
-        if (initialData) return; // Edit mode: schedule fields are read-only
+        if (initialData) return;
 
         const closes = opensAt ? addDaysLocal(opensAt, TYPE_DURATION_DAYS[type]) : '';
         form.setValue('closesAt', closes, { shouldValidate: !!closes });
@@ -171,7 +155,6 @@ export function GiveawayForm({ initialData }: { initialData?: GiveawayFormInitia
         const closes = toIso(values.closesAt);
         const draws = toIso(values.drawsAt);
 
-        // Entries close before the draw runs, and the window has to open first.
         if (opens >= closes) {
             form.setError('closesAt', { message: 'Closing time must be after the opening time' });
 
@@ -255,7 +238,10 @@ export function GiveawayForm({ initialData }: { initialData?: GiveawayFormInitia
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Tier</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!!initialData}>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            defaultValue={field.value}
+                                            disabled={!!initialData}>
                                             <FormControl>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder='Select tier' />
@@ -279,7 +265,10 @@ export function GiveawayForm({ initialData }: { initialData?: GiveawayFormInitia
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Type</FormLabel>
-                                        <Select value={field.value} onValueChange={field.onChange} disabled={!!initialData}>
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                            disabled={!!initialData}>
                                             <FormControl>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder='Select type' />

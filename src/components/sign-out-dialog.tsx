@@ -17,8 +17,6 @@ export function SignOutDialog({ open, onOpenChange }: SignOutDialogProps) {
             confirmText='Sign out'
             destructive
             handleConfirm={logoutAction}
-            // Only mounted from the admin sidebar/header (NavUser, ProfileDropdown).
-            // Without an admin class ConfirmDialog defaults to the member theme.
             className='dashboard-theme dark sm:max-w-sm'
         />
     );

@@ -15,7 +15,6 @@ import { startMembershipCheckout } from '../actions';
 import { Loader2Icon } from 'lucide-react';
 import { toast } from 'sonner';
 
-/** Paid sub-tiers only — Visitor is free and never reaches checkout. */
 const PAID_CODES: SubTierCode[] = ['R1', 'R4', 'R7', 'B1', 'B4', 'B7', 'B10'];
 
 const priceLabel = (code: SubTierCode) => `$${(SUB_TIERS[code].price_cents / 100).toFixed(0)}`;
@@ -27,10 +26,9 @@ const planLabel = (code: SubTierCode) => {
 };
 
 type CompletePaymentClientProps = {
-    /** Live sub-tier from memberships/me — the session copy goes stale after a change. */
     subTier: SubTierCode;
     ctaLabel?: string;
-    /** Off on the expired-link screen, which only offers a fresh checkout. */
+
     showChangePlan?: boolean;
 };
 
@@ -41,8 +39,7 @@ const CompletePaymentClient = ({
 }: CompletePaymentClientProps) => {
     const [busy, setBusy] = useState<string | null>(null);
     const [picking, setPicking] = useState(false);
-    // Finishing a pending payment is a sign-up action, so it sits behind the same
-    // Friday lockout as a fresh checkout.
+
     const safeHoursLocked = useSafeHours();
 
     const go = async (code: SubTierCode) => {
@@ -61,7 +58,7 @@ const CompletePaymentClient = ({
 
             return;
         }
-        window.open(res.url, '_blank', 'noopener,noreferrer'); // open hosted Stripe checkout in new tab
+        window.open(res.url, '_blank', 'noopener,noreferrer');
         setBusy(null);
     };
 

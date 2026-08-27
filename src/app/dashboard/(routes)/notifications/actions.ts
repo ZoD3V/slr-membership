@@ -28,7 +28,6 @@ export type ActionError = {
 export type ActionResult<T> = { ok: true; data: T; message: string } | ActionError;
 
 function toActionError(error: unknown): ActionError {
-    // 401 (expired/invalid session) → redirect('/api/auth/logout'), never returns.
     handleApiAuthError(error);
 
     if (error instanceof ApiError) {
@@ -63,9 +62,6 @@ export async function saveNotificationTemplateAction(
     }
 }
 
-/** One page of the picker. Paged server-side: the platform has thousands of
- *  members, so returning only the first page and calling it the total would
- *  make everyone past it unreachable. */
 export async function searchRecipientsAction(search: string, page = 1): Promise<ActionResult<RecipientSearchResult>> {
     const token = await getAccessToken();
     if (!token) return { ok: false, message: 'Not authenticated.' };
@@ -77,9 +73,6 @@ export async function searchRecipientsAction(search: string, page = 1): Promise<
             perPage: RECIPIENT_PAGE_SIZE
         });
 
-        // Projects away draw_pass, which must never reach any UI. `status` is
-        // kept on purpose — an admin about to email a suspended account
-        // should be able to see that.
         const rows = members.map((m) => ({
             user_id: m.user_id,
             name: m.full_name,

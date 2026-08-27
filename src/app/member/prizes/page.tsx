@@ -18,9 +18,6 @@ export const metadata: Metadata = {
 
 const TIER_ORDER: TierGroup[] = ['visitor', 'red', 'blue'];
 
-// Marketing price line per tier group, e.g. 'from $10/month' — sourced from
-// the cheapest sub-tier in the group rather than typed by the CMS, since
-// PrizeContent carries no price field (pricing is a system fact, not copy).
 function priceLabel(group: TierGroup): string {
     if (group === 'visitor') return 'Free to join';
 
@@ -55,7 +52,7 @@ export default async function PrizesPage() {
         try {
             content = await getPrizePool(token);
         } catch (error) {
-            handleApiAuthError(error); // expired session → force logout
+            handleApiAuthError(error);
             failed = true;
         }
     }
@@ -77,7 +74,6 @@ export default async function PrizesPage() {
                 />
             ) : (
                 <>
-                    {/* Prize pool hero */}
                     <section className='slr-section-bg border-slr-navy-border relative overflow-hidden rounded-2xl border p-6 text-center md:p-10'>
                         <p className='text-slr-gold-label text-xs font-semibold tracking-widest uppercase md:text-sm'>
                             {content.stage_label}
@@ -94,7 +90,6 @@ export default async function PrizesPage() {
                         </div>
                     </section>
 
-                    {/* Prize breakdown by tier */}
                     <section>
                         <div className='mb-3 flex flex-wrap items-center justify-between gap-2'>
                             <h2 className='font-bebas-neue text-xl tracking-wide text-white uppercase md:text-2xl'>

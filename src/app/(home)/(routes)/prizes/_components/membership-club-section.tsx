@@ -19,7 +19,6 @@ const MembershipClubSection = ({ content }: { content: PrizeContent }) => {
                     </span>
                 </h2>
 
-                {/* Prize Pool card */}
                 <div
                     className='relative mx-auto mt-12 w-full max-w-xs rounded-2xl p-0.5'
                     style={{ background: GOLD_GRADIENT }}>

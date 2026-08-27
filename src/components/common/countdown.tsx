@@ -29,8 +29,6 @@ function Box({ value, label, mounted }: { value: number; label: string; mounted:
     );
 }
 
-/** Four equal-width boxes (Days/Hrs/Min/Sec). Capped at max-w-xs so it never
- *  overflows a narrow card yet stays compact on wide ones. */
 export function CountdownBoxes({ targetIso, className }: { targetIso: string; className?: string }) {
     const { days, hours, minutes, seconds, done, mounted } = useCountdown(targetIso);
 
@@ -46,7 +44,6 @@ export function CountdownBoxes({ targetIso, className }: { targetIso: string; cl
     );
 }
 
-/** Inline single-line countdown, e.g. "2d 14h 33m" — for cards and tight rows. */
 export function CountdownCompact({ targetIso, className }: { targetIso: string; className?: string }) {
     const { days, hours, minutes, done, mounted } = useCountdown(targetIso);
 

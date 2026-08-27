@@ -51,7 +51,6 @@ export function RecipientPickerDialog({
         if (open) setDraft(selected);
     }, [open, selected]);
 
-    // Debounced so typing a name doesn't fire a request per keystroke.
     useEffect(() => {
         if (!open) return;
 
@@ -67,11 +66,6 @@ export function RecipientPickerDialog({
                 setTotal(res.data.total);
                 setError(null);
 
-                // Repair any placeholder already in the draft. A resend seeds a
-                // recipient from a log row that may carry no email; as soon as
-                // a page contains that member, fill in the real record. Doing
-                // it here rather than on click keeps the checkbox a plain
-                // toggle — repairing on click made the first click look dead.
                 setDraft((current) =>
                     current.map((entry) => {
                         if (entry.email) return entry;
@@ -120,7 +114,6 @@ export function RecipientPickerDialog({
                     return (
                         <Checkbox
                             checked={checked}
-                            // A full selection must not silently swallow a click.
                             disabled={!checked && isFull}
                             onCheckedChange={() => toggle(row as RecipientOption)}
                             aria-label={`Select ${row.email}`}

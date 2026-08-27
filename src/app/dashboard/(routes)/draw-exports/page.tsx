@@ -16,7 +16,7 @@ export default async function DrawExportsPage() {
     try {
         history = token ? await getDrawCsvHistory(token) : [];
     } catch (error) {
-        handleApiAuthError(error); // 401 only → force logout; others fall through
+        handleApiAuthError(error);
         failed = true;
     }
 

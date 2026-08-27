@@ -9,12 +9,8 @@ import { updateMyProfile } from '@/lib/api/resources/users';
 import { getAccessToken } from '@/lib/api/server';
 import { ApiError, apiErrorMessage } from '@/lib/api/types';
 
-// A 'use server' module may only export async functions, so shared constants
-// live in @/constant/password — exporting one here breaks every action in the file.
 type ActionResult = { ok: true } | { ok: false; message: string };
 
-// Only name, phone and date of birth are self-editable. Email and state are
-// admin-approval-only (state drives the draw pool), so they are never sent here.
 export async function updateProfileAction(input: {
     fullName: string;
     phone: string;
@@ -63,12 +59,8 @@ export async function changePasswordAction(input: {
             confirm_password: input.confirmPassword
         });
 
-        // No sign-out here: by design the backend keeps existing sessions alive
-        // on a password change, so the member's own token stays valid.
         return { ok: true };
     } catch (error) {
-        // A wrong current password also answers 401 — surface it in the form
-        // instead of force-logging the member out.
         if (error instanceof ApiError && (error.status === 400 || error.status === 401)) {
             return { ok: false, message: apiErrorMessage(error) || 'Current password is incorrect.' };
         }

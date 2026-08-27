@@ -29,12 +29,10 @@ import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { ChevronLeft, ChevronRight, MoreHorizontal, Pencil, Search, Trash2 } from 'lucide-react';
 
-// Types
-
 export interface Column {
     key: string;
     label: string;
-    /** Custom cell renderer. Takes precedence over the built-in key handling below. */
+
     render?: (row: any) => ReactNode;
 }
 
@@ -71,15 +69,11 @@ export interface DataTableProps {
     onPageChange?: (page: number) => void;
     onSearchChange?: (value: string) => void;
     isLoading?: boolean;
-    /** Keep the pager visible even on a single page, so the total is always readable. */
+
     alwaysShowPagination?: boolean;
-    /** Replaces the generic "No data found" row with context for this table. */
+
     emptyMessage?: ReactNode;
-    /**
-     * Keeps every cell on one line. Wide tables then overflow the container and
-     * scroll sideways (Table already wraps itself in `overflow-auto`) instead of
-     * wrapping long values onto a second row.
-     */
+
     nowrap?: boolean;
 
     filters?: ServerFilters;
@@ -100,18 +94,15 @@ export interface DataTableProps {
 function getPaginationRange(currentPage: number, totalPages: number) {
     const range: (number | '...')[] = [];
 
-    // Show every page when the total is small enough to fit.
     if (totalPages <= 5) {
         for (let i = 1; i <= totalPages; i++) range.push(i);
 
         return range;
     }
 
-    // Keep a window of 5 pages centred on the current one.
     let start = Math.max(1, currentPage - 2);
     let end = Math.min(totalPages, currentPage + 2);
 
-    // Clamp the window when the current page sits near either end.
     if (currentPage <= 3) {
         start = 1;
         end = 5;
@@ -127,8 +118,6 @@ function getPaginationRange(currentPage: number, totalPages: number) {
     return range;
 }
 
-// Pagination component
-
 const TablePagination = ({
     currentPage,
     totalPages,
@@ -143,7 +132,6 @@ const TablePagination = ({
     const pages = getPaginationRange(currentPage, totalPages);
     const [jumpPage, setJumpPage] = useState(currentPage.toString());
 
-    // Keep the jump input in sync when currentPage changes externally (prev/next buttons).
     useEffect(() => {
         setJumpPage(currentPage.toString());
     }, [currentPage]);
@@ -157,7 +145,7 @@ const TablePagination = ({
         if (!isNaN(page) && page >= 1 && page <= totalPages) {
             onPageChange(page);
         } else {
-            setJumpPage(currentPage.toString()); // Reset to the current page on invalid input
+            setJumpPage(currentPage.toString());
         }
     };
 
@@ -168,7 +156,6 @@ const TablePagination = ({
             </div>
 
             <div className='flex items-center gap-4'>
-                {/* Jump to Page Input */}
                 <div className='flex items-center gap-2'>
                     <span className='text-muted-foreground text-sm'>Jump to</span>
                     <Input
@@ -217,8 +204,6 @@ const TablePagination = ({
     );
 };
 
-// Table header
-
 const TableHeaderComponent = ({ columns }: { columns: Column[] }) => {
     return (
         <TableHeader>
@@ -234,8 +219,6 @@ const TableHeaderComponent = ({ columns }: { columns: Column[] }) => {
         </TableHeader>
     );
 };
-
-// Table row renderer
 
 const TableRowComponent = ({
     item,
@@ -382,8 +365,6 @@ const TableRowComponent = ({
     );
 };
 
-// Main data table component
-
 export function DataTable({
     columns,
     data,
@@ -416,7 +397,6 @@ export function DataTable({
 
     const itemsPerPage = externalLimit ?? 10;
 
-    // Search filter
     const filteredData = useMemo(() => {
         if (serverSide) return data;
 
@@ -427,7 +407,6 @@ export function DataTable({
 
     const totalItems = serverSide ? (externalTotal ?? data.length) : filteredData.length;
 
-    // Pagination
     const totalPages = Math.ceil(totalItems / itemsPerPage) === 0 ? 1 : Math.ceil(totalItems / itemsPerPage);
 
     const paginatedData = useMemo(() => {
@@ -496,8 +475,6 @@ export function DataTable({
 
     return (
         <div className='w-full'>
-            {/* Search Bar */}
-
             {isSearch && (
                 <div className='mb-6'>
                     <div className='relative'>
@@ -517,7 +494,6 @@ export function DataTable({
                     <div className='flex w-full flex-col items-start gap-2 xl:flex-row xl:items-center'>
                         <span>Filter</span>
                         <div className='grid w-full shrink-0 grid-cols-2 flex-col items-start gap-2 xl:flex xl:w-fit xl:flex-row xl:items-center'>
-                            {/* Commodity filter */}
                             {commodityOptions && (
                                 <Select
                                     value={filters?.commodity_id ?? 'all'}
@@ -543,7 +519,6 @@ export function DataTable({
                                 </Select>
                             )}
 
-                            {/* Region */}
                             {regionOptions && (
                                 <Select
                                     value={
@@ -574,7 +549,6 @@ export function DataTable({
                                 </Select>
                             )}
 
-                            {/* Year filter */}
                             {!useDatePicker && (
                                 <Select
                                     value={filters?.year ? String(filters.year) : 'all'}
@@ -599,7 +573,6 @@ export function DataTable({
                                 </Select>
                             )}
 
-                            {/* Month filter */}
                             {!useDatePicker && (
                                 <Select
                                     value={filters?.month ? String(filters.month) : 'all'}
@@ -629,7 +602,6 @@ export function DataTable({
                     <div className='flex items-center gap-2'>
                         <span>Urutkan</span>
 
-                        {/* Sort */}
                         <Select
                             value={filters?.sort ?? 'created_at'}
                             onValueChange={(v) => onFiltersChange({ ...filters, sort: v })}>
@@ -648,7 +620,6 @@ export function DataTable({
                 </div>
             )}
 
-            {/* Table */}
             <div className={cn('rounded-md border', nowrap && '[&_td]:whitespace-nowrap [&_th]:whitespace-nowrap')}>
                 <Table>
                     <TableHeaderComponent columns={columns} />
@@ -682,11 +653,9 @@ export function DataTable({
                             </TableRow>
                         )}
                     </TableBody>
-
                 </Table>
             </div>
 
-            {/* Pagination */}
             {(alwaysShowPagination || totalItems > itemsPerPage) && (
                 <TablePagination
                     currentPage={currentPage}

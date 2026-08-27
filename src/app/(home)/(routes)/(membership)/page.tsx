@@ -14,8 +14,6 @@ import WelcomeSection from './_components/welcome-section';
 import WhyJoinSection from './_components/why-join-section';
 
 const MembershipPage = async () => {
-    // Public partner logos for the Community Givebacks marquee. Non-fatal → [] →
-    // PartnersSection falls back to its static partner set.
     const publicDiscounts = await getPublicDiscounts().catch(() => [] as Discount[]);
     const partnerLogos = publicDiscounts.map((d) => d.logo_url?.trim()).filter((url): url is string => Boolean(url));
 

@@ -11,12 +11,6 @@ export type SessionIdentity = {
     state?: string;
 };
 
-/**
- * Identity of the logged-in member from the NextAuth session. Used to fill the
- * name/email/tier/state on the (still-mock) member data getters so the UI shows
- * the actual user, not the seed data. API `sub_tier` is lowercase → uppercased
- * to the `SubTierCode` the UI expects.
- */
 export async function getSessionIdentity(): Promise<SessionIdentity> {
     const session = await auth();
     const user = session?.user as

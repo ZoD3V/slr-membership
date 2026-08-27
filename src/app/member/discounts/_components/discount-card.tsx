@@ -31,7 +31,6 @@ export function DiscountCard({ discount, onSelect }: { discount: Discount; onSel
             </div>
 
             <div className='flex flex-col gap-2 p-4'>
-                {/* Fixed clamps (title 1 line, description 2 lines, reserved) keep every card the same height. */}
                 <h3 className='line-clamp-1 text-base font-semibold text-white'>{discount.title || '-'}</h3>
                 <p className='text-slr-muted truncate text-sm'>{discount.partner_name || '-'}</p>
 

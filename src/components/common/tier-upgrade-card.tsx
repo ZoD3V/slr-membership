@@ -5,33 +5,27 @@ import Image from 'next/image';
 type TierUpgradeCardProps = {
     iconSrc: string;
     iconAlt: string;
-    /** Tier name (e.g. "Red", "Gold", "Silver", "Platinum"). */
+
     label: string;
-    /** Price label (e.g. "$10", "$26"). Rendered in gold gradient. */
+
     price: string;
-    /** Period suffix (e.g. "/month"). Defaults to "/month". */
+
     period?: string;
-    /** Inner-badge headline (e.g. "1 chance", "4 Tokens"). */
+
     badgeLabel: string;
-    /** Color for the badge headline text. Defaults to gold. */
+
     badgeLabelColor?: string;
     badgeSubColor?: string;
     titleColor?: string;
     entryChanges?: string;
-    /** Inner-badge sub-text. Defaults to "MEMBER ENTRIES". */
+
     badgeSub?: string;
-    /** Outer card style — background gradient / border / shadow. */
+
     cardStyle: CSSProperties;
-    /** Inner badge style — background + border. */
+
     badgeStyle: CSSProperties;
 };
 
-/**
- * TierUpgradeCard — the small right-side card used to advertise an upgrade tier.
- * Visual structure (icon | label + price + period) is fixed; colours/gradients
- * are entirely controlled via the `cardStyle` and `badgeStyle` props so each tier
- * (Red/Gold/Black/Silver/Platinum/...) can have its own unique palette.
- */
 const TierUpgradeCard: FC<TierUpgradeCardProps> = ({
     iconSrc,
     iconAlt,

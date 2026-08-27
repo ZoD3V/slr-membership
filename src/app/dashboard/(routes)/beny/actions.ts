@@ -50,10 +50,6 @@ export async function getBenySubscriptionsAction(
         let total = 0;
 
         if (status === 'pending_deactivation') {
-            // Backend does not support ?status=PENDING_DEACTIVATION filter query.
-            // Walk every page (not just the backend's default first-20) and
-            // filter client side, so results stay complete as the account
-            // count grows past a single page.
             const all = await getAllBenySubscriptions(token);
             data = all.filter((item) => (item.status || '').toLowerCase() === 'pending_deactivation');
             total = data.length;
@@ -61,16 +57,18 @@ export async function getBenySubscriptionsAction(
         } else {
             const res = await getBenySubscriptions(status, token, page, limit);
 
-            // Normalize response since backend might return a direct array or a paginated object
             if (Array.isArray(res)) {
                 data = res;
             } else if (res && typeof res === 'object') {
                 data = res.items || res.data || res.subscriptions || [];
             }
 
-            total = typeof res.pagination?.total === 'number'
-                ? res.pagination.total
-                : (typeof res.total === 'number' ? res.total : data.length);
+            total =
+                typeof res.pagination?.total === 'number'
+                    ? res.pagination.total
+                    : typeof res.total === 'number'
+                      ? res.total
+                      : data.length;
         }
 
         return {

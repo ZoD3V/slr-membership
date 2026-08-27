@@ -23,8 +23,6 @@ import {
     Users
 } from 'lucide-react';
 
-// Cards with an href drill into the list they summarise; the rest stay static.
-// `group` drives the hover state on the arrow affordance inside each card.
 const CardLink: FC<{ href?: string; children: ReactNode }> = ({ href, children }) =>
     href ? (
         <Link href={href} className='group block h-full cursor-pointer'>
@@ -34,7 +32,6 @@ const CardLink: FC<{ href?: string; children: ReactNode }> = ({ href, children }
         <>{children}</>
     );
 
-/** Persistent "this navigates" cue — visible at rest, brightens on hover. */
 const DrillCue: FC<{ label: string }> = ({ label }) => (
     <span className='text-muted-foreground group-hover:text-primary mt-2 flex items-center gap-1 text-[10px] font-semibold tracking-wide uppercase transition-colors'>
         {label}
@@ -128,8 +125,6 @@ const SimpleCountsBreakdown: FC<{
 
 const formatMrr = (cents: number) => `$${Math.round(cents / 100).toLocaleString('en-AU')}`;
 
-// The API can return several rows sharing a label (e.g. r4 and b4 both map to
-// tier "Plus"). Merge them so counts sum and each row key stays unique.
 const aggregateByLabel = (rows: { label: string; count: number }[]) => {
     const totals = new Map<string, number>();
     for (const { label, count } of rows) {
@@ -143,10 +138,6 @@ const aggregateByLabel = (rows: { label: string; count: number }[]) => {
 export default async function DashboardHome() {
     const token = await getAccessToken();
 
-    // `members_by_tier` sends only marketing names, so r4 and b4 both arrive as
-    // \"Plus\" and merge into one meaningless row. /memberships/stats groups by
-    // sub-tier id instead, which keeps Red and Blue distinguishable — fetched
-    // alongside the metrics so the breakdown survives a metrics failure.
     const [metricsResult, statsResult] = await Promise.allSettled([
         token ? getAdminDashboardMetrics(token) : Promise.resolve(null),
         token ? getMembershipStats(token) : Promise.resolve<SubTierCount[]>([])
@@ -159,7 +150,7 @@ export default async function DashboardHome() {
     const subTierCounts: SubTierCount[] = statsResult.status === 'fulfilled' ? statsResult.value : [];
 
     const tierRows = subTierCounts
-        .filter((c) => (c.subTierId || '').toLowerCase() !== 'beny') // Saring keluar add-on BENY dari breakdown tier memberships
+        .filter((c) => (c.subTierId || '').toLowerCase() !== 'beny')
         .map((c) => ({ label: formatAdminTierName(subTierCodeOf(c.subTierId)), count: c.count }))
         .sort((a, b) => b.count - a.count);
 
@@ -210,7 +201,7 @@ export default async function DashboardHome() {
                     href='/dashboard/members'
                     drillLabel='View members'
                 />
-                {/* No drill-down: MRR is an aggregate with no matching list view. */}
+
                 <StatCard label='Monthly Recurring Revenue' value={formatMrr(data.mrr_cents)} icon={DollarSign} />
                 <StatCard
                     label='Failed Payments (30d)'

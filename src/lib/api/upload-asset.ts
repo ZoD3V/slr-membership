@@ -9,11 +9,6 @@ interface PresignErr {
     message: string;
 }
 
-/**
- * Upload one image via a presigned URL and return its public download URL.
- * `getPresigned` is the domain's server action (ebook or discount). Each call
- * mints a unique object key so repeated uploads never collide.
- */
 export async function uploadViaPresign(
     file: File,
     getPresigned: (filename: string, contentType: string, fileSize: number) => Promise<PresignOk | PresignErr>

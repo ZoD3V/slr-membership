@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 interface ImageUploadFieldProps {
     value?: string;
     onChange: (url: string) => void;
-    /** Uploads the picked file and resolves to its public URL. */
+
     onUpload: (file: File) => Promise<string>;
     placeholder?: string;
     disabled?: boolean;

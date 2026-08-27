@@ -8,8 +8,6 @@ const STATIC_PARTNERS = Array.from({ length: 10 }, (_, idx) => ({
     alt: `Partner Logo ${idx + 1}`
 }));
 
-// `logos` = public discount logo_urls (fetched server-side). Section-level fallback:
-// any real logos → show them; none (empty / fetch failed) → the static partner set.
 const PartnersSection = ({ logos }: { logos?: string[] }) => {
     const partners =
         logos && logos.length > 0

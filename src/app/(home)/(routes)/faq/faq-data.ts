@@ -1,13 +1,3 @@
-/**
- * FAQ copy, kept out of the client component on purpose.
- *
- * `faq-list.tsx` is a `'use client'` module. Anything exported from a client
- * module and imported by a Server Component crosses the RSC boundary and
- * arrives as a client-reference proxy rather than the value itself — so the
- * page's `categories.flatMap(...)` threw "flatMap is not a function" and the
- * route 500'd. Holding the data in a plain module lets the server page and the
- * client list share one source.
- */
 export type FaqCategory = {
     title: string;
     items: { question: string; answer: string }[];

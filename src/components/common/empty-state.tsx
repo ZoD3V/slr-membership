@@ -5,20 +5,14 @@ import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
 
 type EmptyStateProps = {
-    /** Optional icon shown in a gold-tint chip above the title. */
     icon?: LucideIcon;
     title: string;
     description?: string;
-    /** Optional CTA (button/link). */
+
     action?: ReactNode;
     className?: string;
 };
 
-/**
- * Reusable empty/error state for API-driven surfaces — dark card, gold accent.
- * Use when a fetch returns no data or fails. Works on both the public (slr-ink)
- * and admin themes since it uses absolute SLR tokens.
- */
 const EmptyState: FC<EmptyStateProps> = ({ icon: Icon, title, description, action, className }) => (
     <div
         className={cn(

@@ -2,15 +2,6 @@
 
 import { useEffect, useState } from 'react';
 
-// Deployment-skew recovery (Vercel free + Docker, no paid Skew Protection). After a
-// production update a still-open client can crash on the first interaction: stale JS
-// chunks, an RSC payload from a build that no longer exists, or — most commonly on
-// login — a **server-action id mismatch** ("Failed to find Server Action … from an
-// older or newer deployment"). We do NOT try to classify the error: in production
-// React strips the message to a bare `digest`, so any root error gets ONE reload
-// attempt. A fresh load pulls assets matching the live deployment and self-heals.
-// The cooldown guard stops a loop — if the same error survives the reload (recurs
-// within the window) we stop reloading and show the error UI instead.
 const RELOAD_KEY = 'slr_error_reloaded_at';
 const RELOAD_COOLDOWN_MS = 15_000;
 
@@ -33,8 +24,6 @@ function Spinner() {
 }
 
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
-    // Decide once on mount whether this is the first hit (→ reload) or a repeat
-    // within the cooldown (→ give up and show the error).
     const [reloading] = useState(() => {
         if (typeof window === 'undefined') return false;
         const last = Number(sessionStorage.getItem(RELOAD_KEY) ?? 0);
@@ -43,7 +32,6 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
     });
 
     useEffect(() => {
-        // Keep the real error in the console — production strips it from the UI.
         console.error(error);
         if (!reloading) return;
 
@@ -65,7 +53,6 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
                     fontFamily: 'ui-sans-serif, system-ui, sans-serif'
                 }}>
                 {reloading ? (
-                    // First hit → auto-reloading. Read as "updating", not a crash.
                     <div
                         style={{
                             display: 'flex',
@@ -86,7 +73,6 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
                         <p style={{ fontSize: 13, color: '#ADB0B5', margin: 0 }}>This only takes a moment.</p>
                     </div>
                 ) : (
-                    // Reload did not clear it → a real error. Show it once.
                     <div style={{ maxWidth: 420, padding: 24, textAlign: 'center' }}>
                         <h1 style={{ fontSize: 20, fontWeight: 700, margin: '0 0 8px' }}>Something went wrong</h1>
                         <p style={{ fontSize: 14, color: '#ADB0B5', margin: '0 0 20px' }}>

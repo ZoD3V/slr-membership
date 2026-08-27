@@ -58,7 +58,6 @@ export function ChapterDialog({ isOpen, onClose, ebookId, chapter, onSuccess }: 
 
     useEffect(() => {
         if (isOpen) {
-            // Collapse the optional-fields section every time the dialog opens.
             setShowAdvanced(false);
             if (chapter) {
                 form.reset({
@@ -133,7 +132,6 @@ export function ChapterDialog({ isOpen, onClose, ebookId, chapter, onSuccess }: 
                         onSubmit={form.handleSubmit(onSubmit)}
                         className='mt-4 flex flex-1 flex-col justify-between space-y-6'>
                         <div className='space-y-6'>
-                            {/* Basic Info Row */}
                             <div className='grid grid-cols-1 gap-4 sm:grid-cols-4'>
                                 <FormField
                                     control={form.control}
@@ -173,7 +171,6 @@ export function ChapterDialog({ isOpen, onClose, ebookId, chapter, onSuccess }: 
                                 </div>
                             </div>
 
-                            {/* Body Editor */}
                             <FormField
                                 control={form.control}
                                 name='body'
@@ -194,7 +191,6 @@ export function ChapterDialog({ isOpen, onClose, ebookId, chapter, onSuccess }: 
                                 )}
                             />
 
-                            {/* Collapsible Advanced Section */}
                             <div className='space-y-4'>
                                 <button
                                     type='button'
@@ -259,7 +255,6 @@ export function ChapterDialog({ isOpen, onClose, ebookId, chapter, onSuccess }: 
                             </div>
                         </div>
 
-                        {/* Footer Controls */}
                         <div className='border-border mt-auto flex items-center justify-end gap-3 border-t pt-6'>
                             <Button type='button' variant='outline' onClick={onClose} disabled={isPending}>
                                 Cancel

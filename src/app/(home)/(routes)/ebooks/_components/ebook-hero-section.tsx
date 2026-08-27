@@ -14,7 +14,6 @@ const EbookHeroSection = () => {
     return (
         <section className='bg-slr-ink relative isolate overflow-hidden py-12 md:py-20'>
             <div className='mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-4 lg:grid-cols-[1.4fr_1fr] lg:gap-14'>
-                {/* Left — title block */}
                 <div className='text-center lg:text-left'>
                     <div className='flex items-center justify-center gap-3 lg:justify-start'>
                         <span
@@ -54,7 +53,6 @@ const EbookHeroSection = () => {
                     </div>
                 </div>
 
-                {/* Right — featured ebook card (the complete designed asset, not re-wrapped in chrome) */}
                 <Link
                     href='#guide'
                     aria-label='Read the Smart Living Blueprint'

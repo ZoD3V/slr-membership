@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 export default async function DiscountsPage() {
     const member = await getCurrentMember();
-    // PRD §4.4: basic discounts are RED/BLUE only — Visitor sees an upgrade gate.
+
     const canAccess = tierGroupOf(member.sub_tier) !== 'visitor';
 
     let discounts: Discount[] = [];
@@ -28,10 +28,9 @@ export default async function DiscountsPage() {
         const token = await getAccessToken();
         if (token) {
             try {
-                // Only show discounts that actually carry data.
                 discounts = (await getDiscounts(token)).filter((d) => d.title?.trim() || d.partner_name?.trim());
             } catch (error) {
-                handleApiAuthError(error); // expired session → force logout
+                handleApiAuthError(error);
                 failed = true;
             }
         }

@@ -9,10 +9,7 @@ import type { PrizeContent } from '@/types/member';
 type Reward = {
     icon: string;
     period: string;
-    /** Prize copy straight off the CMS document — free-form, so it renders as
-     *  written rather than being split into an amount and a caption. Admins may
-     *  press Enter to list two prizes in one slot, so it renders
-     *  `whitespace-pre-line` and can be multi-line. */
+
     text: string;
 };
 
@@ -27,8 +24,6 @@ type Tier = {
     footerBg: string;
 };
 
-/** Everything about a paid tier card that isn't CMS-managed: brand palette,
- *  price, artwork, and the closing tagline. */
 const redTheme = {
     name: 'SLR Red',
     price: '$10 Month',
@@ -68,9 +63,6 @@ function toTier(theme: typeof redTheme, weekly: string, monthly: string): Tier {
 type StatLine = { text: string; kind?: 'accent' | 'big' };
 type Stat = { icon: string; iconClass: string; lines: StatLine[] };
 
-/** `stage_label` reads as 'For 100 Members • Stage 1' — the audience half sets
- *  the stat's first line, the stage half its accent line. Falls back to a
- *  single line when the CMS drops the separator. */
 function stageLines(stageLabel: string): StatLine[] {
     const [audience, stage] = stageLabel.split(/\s*[•·|]\s*/);
 
@@ -106,8 +98,6 @@ function buildStats(content: PrizeContent): Stat[] {
             lines: [{ text: 'Odds Vary' }, { text: 'Based on Membership' }, { text: 'Levels & Total Members' }]
         },
         {
-            // 90.7% stays static — the CMS document carries no percentage field,
-            // only the `odds` sentence underneath it.
             icon: '/icons/ic-trophy3d-gold.webp',
             iconClass: 'h-14 w-14',
             lines: [
@@ -238,7 +228,6 @@ const VisitorRedBlueSection = ({ content }: { content: PrizeContent }) => {
                     />
                 </div>
 
-                {/* Stats bar */}
                 <div className='mt-10 rounded-2xl p-0.5' style={statBarStyle}>
                     <div className='rounded-[calc(1rem-2px)] bg-[#F7F7F5] px-4 py-5'>
                         <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5 lg:gap-0 lg:divide-x lg:divide-black/10'>

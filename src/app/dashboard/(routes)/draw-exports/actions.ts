@@ -19,7 +19,6 @@ export async function generateDrawCsvAction(): Promise<ActionResult<DrawCsvGener
 
         return { ok: true, data, message: 'CSV files generated.' };
     } catch (error) {
-        // 401 (expired session) → redirect('/api/auth/logout'), never returns.
         handleApiAuthError(error);
 
         return { ok: false, message: error instanceof ApiError ? error.message : 'Could not generate the CSV files.' };

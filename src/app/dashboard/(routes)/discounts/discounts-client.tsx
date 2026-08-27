@@ -33,7 +33,6 @@ export function DiscountsClient({
         router.push(`/dashboard/discounts/${row.id}`);
     };
 
-    // DataTable's action column shows its own confirm dialog before calling this.
     const handleDelete = (row: DiscountRow) => {
         startTransition(async () => {
             const res = await deleteDiscountAction(row.id);

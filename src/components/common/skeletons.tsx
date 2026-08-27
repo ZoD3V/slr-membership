@@ -1,9 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Shared skeleton variants streamed as Suspense fallbacks (loading.tsx) so each
-// route shows a shape that matches its real layout instead of a blank/spinner.
-// bg is overridden to a light tint — the shadcn default (bg-primary/10) is too
-// faint on the dark navy surfaces.
 const SK = 'bg-white/[0.06]';
 const PAGE = 'mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 md:px-6 md:py-8';
 
@@ -16,7 +12,6 @@ function PageHeading() {
     );
 }
 
-/** Overview: greeting → two summary cards → quick actions → a card grid. (/member, /dashboard) */
 export function DashboardHomeSkeleton() {
     return (
         <div className={PAGE}>
@@ -40,7 +35,6 @@ export function DashboardHomeSkeleton() {
     );
 }
 
-/** Admin overview: heading → 4 stat cards → 2 breakdown cards → footnote. (/dashboard) */
 export function AdminDashboardSkeleton() {
     return (
         <div className='mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6'>
@@ -63,10 +57,6 @@ export function AdminDashboardSkeleton() {
     );
 }
 
-/**
- * Admin list: heading → search → bordered table with rows.
- * Wrapper must track DashboardPageShell (full width, gap-4) or the page jumps on hydration.
- */
 export function TableSkeleton() {
     return (
         <div className='flex h-full w-full flex-1 flex-col gap-4 px-4 py-6 md:px-6'>
@@ -87,7 +77,6 @@ export function TableSkeleton() {
     );
 }
 
-/** Member browse: search + filter chips → responsive card grid. */
 export function CardGridSkeleton() {
     return (
         <div className={PAGE}>
@@ -107,7 +96,6 @@ export function CardGridSkeleton() {
     );
 }
 
-/** Detail: back + header → two-column body (media/card + text). */
 export function DetailSkeleton() {
     return (
         <div className={PAGE}>
@@ -125,7 +113,6 @@ export function DetailSkeleton() {
     );
 }
 
-/** Board/list: heading → stacked rows/cards. */
 export function BoardListSkeleton() {
     return (
         <div className={PAGE}>

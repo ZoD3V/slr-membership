@@ -18,10 +18,8 @@ export default async function SafeHoursPage() {
         config = token ? await getAdminSafeHours(token) : SAFE_HOURS_SEED;
         if (!token) isPlaceholder = true;
     } catch (error) {
-        handleApiAuthError(error); // 401 → force logout; other errors fall through
-        // The endpoint is live but currently answers 500 (verified 2026-08-10),
-        // so this fallback is load-bearing. Render against the seed rather than
-        // blanking; saving still fails loudly via the action's toast.
+        handleApiAuthError(error);
+
         config = SAFE_HOURS_SEED;
         isPlaceholder = true;
     }

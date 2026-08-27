@@ -19,18 +19,13 @@ export const metadata: Metadata = {
 
 type SearchParams = { status?: string };
 
-// Signed up on a paid tier but never paid. Reachable by logging in (auth.config
-// routes them here) or by returning from Stripe without paying.
 export default async function CompletePaymentPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
     const { status } = await searchParams;
     const session = await auth();
     const token = await getAccessToken();
 
-    // The session's sub_tier is the registration-time value and goes stale after
-    // a plan change, so the plan on show comes from memberships/me.
     let subTierId: string | undefined;
-    // The JWT's requiresPayment is a login-time snapshot: a member who paid after
-    // signing in is still routed here until the token is rewritten.
+
     let alreadyPaid = false;
     if (token) {
         try {

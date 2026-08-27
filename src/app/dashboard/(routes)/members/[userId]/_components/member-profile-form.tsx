@@ -19,10 +19,6 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
-// Mirrors the server's own validation so bad input is caught before the
-// round-trip: full_name min 1 / max 200, email format, state enum. `phone` is
-// deliberately loose — the endpoint accepts anything (it stored 'abc123' in
-// testing), so this is the only guard the member's phone number gets.
 const formSchema = z.object({
     full_name: z.string().trim().min(1, 'Full name is required').max(200, 'Full name is too long'),
     email: z.string().trim().email('Enter a valid email address').max(255, 'Email is too long'),
@@ -51,7 +47,6 @@ export type MemberProfileInitialValues = {
 const toStateValue = (state: string): AuStateCode | '' =>
     AU_STATE_CODES.includes(state?.toUpperCase() as AuStateCode) ? (state.toUpperCase() as AuStateCode) : '';
 
-/** The API returns `dob` as an ISO date-time; the date input needs 'YYYY-MM-DD'. */
 const toDateInput = (dob: string): string => (dob ? dob.slice(0, 10) : '');
 
 export function MemberProfileForm({ userId, initial }: { userId: string; initial: MemberProfileInitialValues }) {
@@ -71,7 +66,6 @@ export function MemberProfileForm({ userId, initial }: { userId: string; initial
         defaultValues: defaults
     });
 
-    /** Only the fields the admin actually touched — the endpoint merges. */
     const changedFields = (values: FormValues): AdminMemberProfilePayload => {
         const payload: AdminMemberProfilePayload = {};
 
@@ -79,7 +73,7 @@ export function MemberProfileForm({ userId, initial }: { userId: string; initial
         if (values.email !== defaults.email) payload.email = values.email;
         if (values.phone !== defaults.phone) payload.phone = values.phone;
         if (values.state !== defaults.state && values.state) payload.state = values.state;
-        // Clearing the date is a real edit — the column is nullable.
+
         if (values.dob !== defaults.dob) payload.dob = values.dob || null;
 
         return payload;
@@ -117,10 +111,6 @@ export function MemberProfileForm({ userId, initial }: { userId: string; initial
             </CardHeader>
             <CardContent>
                 <Form {...form}>
-                    {/* `items-start` matters: FormItem is itself a grid, so a stretched
-                        row hands its spare height to that inner grid and the input drifts
-                        down — a field with a description would drag its row-neighbour out
-                        of line. Sizing each item to its content keeps the inputs level. */}
                     <form
                         onSubmit={form.handleSubmit(onSubmit)}
                         className='grid items-start gap-x-4 gap-y-3 sm:grid-cols-2'>
@@ -166,8 +156,6 @@ export function MemberProfileForm({ userId, initial }: { userId: string; initial
                             )}
                         />
 
-                        {/* The label already says what this is, so it carries no
-                            description — that keeps this row level with its neighbour. */}
                         <FormField
                             control={form.control}
                             name='state'

@@ -22,9 +22,6 @@ export default async function BenyPage({ searchParams }: { searchParams: Promise
         try {
             let items: any[] = [];
             if (initialTab === 'pending_deactivation') {
-                // Backend does not support ?status=pending_deactivation and 400s.
-                // Walk every page (not just the first) and filter client side, so
-                // results stay complete regardless of total account count.
                 items = await getAllBenySubscriptions(token);
                 items = items.filter((b: any) => (b.status || '').toLowerCase() === 'pending_deactivation');
             } else {
@@ -56,7 +53,7 @@ export default async function BenyPage({ searchParams }: { searchParams: Promise
                 deactivationReason: b.deactivation_reason || null
             }));
         } catch (error) {
-            handleApiAuthError(error); // 401 only → force logout; others fall through
+            handleApiAuthError(error);
             listError = toListError(error);
         }
     }

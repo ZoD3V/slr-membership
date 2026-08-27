@@ -5,9 +5,6 @@ import type { AuStateCode } from '@/constant/au-states';
 import { API } from '../endpoints';
 import { apiFetch, apiFetchPaginated } from '../http';
 
-// ── DTOs ──────────────────────────────────────────────────────────────────────
-
-// Mirrors the live GET /admin/dashboard response.
 export interface TierCount {
     tier: string;
     count: number;
@@ -42,15 +39,9 @@ export interface AdminMemberListItem {
     phone: string;
     dob?: string | null;
     state: string;
-    /**
-     * Live OpenAPI (2026-08-03) declares a bare `string` with no enum, and the
-     * values are not all documented — `pending_payment` (registered, never paid)
-     * shows up in the admin UI but appears nowhere in the spec. Typing it as a
-     * closed union hid that, so compare case-insensitively rather than assuming
-     * the set below is complete: 'active' | 'pending_payment' | 'suspended' | 'deactivated'.
-     */
+
     status: string;
-    tier: string; // e.g., 'RED R4'
+    tier: string;
     billing_status?: string;
     created_at: string;
     draw_pass?: number | null;
@@ -94,9 +85,7 @@ export interface AdminMemberDetail {
     email: string;
     phone: string;
     state: string;
-    // ISO date-time, nullable. Returned by the live endpoint but absent from
-    // its OpenAPI schema. `pay_id_email` is the reverse — writable via
-    // PUT /admin/members/{userId}, never returned here.
+
     dob: string | null;
     status: 'active' | 'suspended' | 'deactivated' | string;
     created_at: string;
@@ -106,43 +95,23 @@ export interface AdminMemberDetail {
     wins: AdminMemberDetailWin[];
 }
 
-// Live PUT /admin/members/{userId}/status accepts uppercase enum values.
 export type AdminMemberStatusValue = 'ACTIVE' | 'SUSPENDED' | 'DEACTIVATED';
 
-// Mirrors the live PUT /admin/members/{userId}/status response `data`.
 export interface AdminMemberStatusUpdate {
     user_id: string;
-    status: string; // lowercase, e.g. 'active'
+    status: string;
 }
 
-/**
- * Editable profile fields on PUT /admin/members/{userId}. Every key is
- * optional and the endpoint merges — sending one field leaves the rest
- * untouched (verified live 2026-08-22), so only send what actually changed.
- */
 export interface AdminMemberProfilePayload {
-    full_name?: string; // min 1 char, max 200
-    email?: string; // must be unique platform-wide — duplicates 409
+    full_name?: string;
+    email?: string;
     phone?: string;
     state?: AuStateCode;
-    dob?: string | null; // send date-only ('1990-05-14'); comes back ISO date-time
-    /**
-     * Accepted by the endpoint, but **no UI sends it**. The admin edit form
-     * deliberately leaves it out: `GET /admin/members/{userId}` doesn't return
-     * the field, so the input could only ever render blank — an admin would be
-     * typing over a value they cannot see. Its purpose was also never confirmed
-     * with the client (docs/BACKEND-ISSUES.md). Wire a control once the GET
-     * returns it and the requirement is settled.
-     */
+    dob?: string | null;
+
     pay_id_email?: string | null;
 }
 
-/**
- * Mirrors the live PUT /admin/members/{userId} response `data`. Note this
- * carries `pay_id_email`, which `GET /admin/members/{userId}` does NOT
- * return — the write response is currently the only way to read that field
- * back (see docs/BACKEND-ISSUES.md).
- */
 export interface AdminMemberProfileUpdate {
     user_id: string;
     full_name: string;
@@ -155,7 +124,6 @@ export interface AdminMemberProfileUpdate {
     created_at: string;
 }
 
-// Mirrors GET /admin/beny/pending items.
 export interface BenyPendingItem {
     beny_subscription_id: string;
     user_id: string;
@@ -166,7 +134,6 @@ export interface BenyPendingItem {
     created_at: string;
 }
 
-// Extends for the new 4-state cycle: pending_activation | active | pending_deactivation | cancelled
 export interface BenySubscriptionItem {
     beny_subscription_id: string;
     user_id: string;
@@ -186,16 +153,12 @@ export interface BenyListResult {
     total: number;
 }
 
-// Mirrors POST /admin/beny/{id}/activate response.
 export interface BenyActivateResult {
     beny_subscription_id: string;
     status: string;
     activated_at: string;
 }
 
-// ── Resource functions ──────────────────────────────────────────────────────
-
-/** Admin ops dashboard metrics (totals, MRR, tier/state breakdown, alerts). */
 export const getAdminDashboardMetrics = cache((token: string) => {
     return apiFetch<AdminDashboardMetrics>(API.admin.dashboard, { token, cache: 'no-store' });
 });
@@ -208,16 +171,12 @@ export interface AdminMemberListMeta {
 }
 
 export interface AdminMemberQuery {
-    /** Parent tier group. The list row carries only a marketing name ('Plus'),
-     *  so filtering per group is how the caller recovers which group a row is in. */
     tier?: 'visitor' | 'red' | 'blue';
     page?: number;
     perPage?: number;
     search?: string;
 }
 
-// Verified live 2026-08-02: `tier`, `search`, `page` and `per_page` all work
-// (an older comment here claimed every parameter 400'd — no longer true).
 export const getAdminMembers = cache((token: string, query: AdminMemberQuery = {}) => {
     const params = new URLSearchParams();
     if (query.tier) params.set('tier', query.tier);
@@ -233,11 +192,6 @@ export const getAdminMembers = cache((token: string, query: AdminMemberQuery = {
     });
 });
 
-/**
- * Same request as getAdminMembers, but keeps `meta` so a caller can page
- * server-side instead of pretending the first page is the whole platform.
- * Verified live 2026-08-11: `meta` is `{page, per_page, total, total_pages}`.
- */
 export function getAdminMembersPaginated(token: string, query: AdminMemberQuery = {}) {
     const params = new URLSearchParams();
     if (query.tier) params.set('tier', query.tier);
@@ -253,14 +207,8 @@ export function getAdminMembersPaginated(token: string, query: AdminMemberQuery 
     });
 }
 
-/** Server-enforced ceiling: per_page above this returns 400 VALIDATION_ERROR. */
 const MAX_PER_PAGE = 100;
 
-/**
- * Every member in one tier group, following pagination.
- * `apiFetch` unwraps `data` and drops `meta`, so the loop stops on the first
- * short page rather than reading `total_pages`.
- */
 export async function getAdminMembersByTier(
     token: string,
     tier: NonNullable<AdminMemberQuery['tier']>
@@ -276,17 +224,14 @@ export async function getAdminMembersByTier(
     return all;
 }
 
-/** Admin: one member's full detail (profile / membership / subscription / cycles / wins). */
 export const getAdminMemberDetail = cache((userId: string, token: string) => {
     return apiFetch<AdminMemberDetail>(API.admin.memberDetail(userId), { token, cache: 'no-store' });
 });
 
-/** Admin: delete a member account. */
 export const deleteAdminMember = (userId: string, token: string) => {
     return apiFetch<null>(API.admin.deleteMember(userId), { method: 'DELETE', token });
 };
 
-/** Admin: set a member's status (ACTIVE / SUSPENDED / DEACTIVATED). */
 export const updateAdminMemberStatus = (userId: string, status: AdminMemberStatusValue, token: string) => {
     return apiFetch<AdminMemberStatusUpdate>(API.admin.updateMemberStatus(userId), {
         method: 'PUT',
@@ -295,7 +240,6 @@ export const updateAdminMemberStatus = (userId: string, status: AdminMemberStatu
     });
 };
 
-/** Admin: edit a member's profile details. Merges — pass only changed fields. */
 export const updateAdminMemberProfile = (userId: string, payload: AdminMemberProfilePayload, token: string) => {
     return apiFetch<AdminMemberProfileUpdate>(API.admin.updateMemberProfile(userId), {
         method: 'PUT',
@@ -304,15 +248,10 @@ export const updateAdminMemberProfile = (userId: string, payload: AdminMemberPro
     });
 };
 
-/** Admin: BENY subscriptions waiting for manual activation. */
 export const getBenyPending = cache((token: string) => {
     return apiFetch<BenyPendingItem[]>(API.admin.benyPending, { token, cache: 'no-store' });
 });
 
-/** Admin: BENY subscriptions filtered by status, paginated. `per_page` is the
- *  backend's actual param name (capped at 100 server-side) — a prior version
- *  of this sent `limit`, which the backend silently ignores and falls back
- *  to its own default of 20, quietly dropping any rows beyond page 1. */
 export const getBenySubscriptions = cache((status: string, token: string, page = 1, perPage = 10) => {
     return apiFetch<any>(`${API.admin.benyList}?status=${status}&page=${page}&per_page=${Math.min(perPage, 100)}`, {
         token,
@@ -320,14 +259,6 @@ export const getBenySubscriptions = cache((status: string, token: string, page =
     });
 });
 
-/**
- * Admin: every BENY subscription regardless of status, in canonical
- * pagination order. The backend has no `pending_deactivation` status filter
- * (only PENDING_ACTIVATION/ACTIVE/CANCELLED are accepted), so that tab has
- * to fetch everything and filter client-side — this walks every page at the
- * backend's max page size so results stay complete as the account count
- * grows, instead of silently truncating at the backend's default of 20.
- */
 export async function getAllBenySubscriptions(token: string): Promise<BenySubscriptionItem[]> {
     const perPage = 100;
     const first = await apiFetchPaginated<BenySubscriptionItem[], { total_pages?: number }>(
@@ -349,12 +280,10 @@ export async function getAllBenySubscriptions(token: string): Promise<BenySubscr
     return items;
 }
 
-/** Admin: approve a pending BENY subscription (member gains access). */
 export const activateBeny = (id: string, token: string) => {
     return apiFetch<BenyActivateResult>(API.admin.benyActivate(id), { method: 'POST', token });
 };
 
-/** Admin: mark a BENY subscription deactivated (optional reason, e.g. refunded). */
 export const deactivateBeny = (id: string, token: string, reason?: string) => {
     return apiFetch<{ success?: boolean; status?: string }>(API.admin.benyDeactivate(id), {
         method: 'POST',
@@ -363,19 +292,13 @@ export const deactivateBeny = (id: string, token: string, reason?: string) => {
     });
 };
 
-// ── TPAL draw exports ─────────────────────────────────────────────────────────
-// DTOs mirrored from the live responses (the OpenAPI schemas are empty).
-// The draw itself runs externally at randomdraws.com/au: admin generates the 3
-// CSVs here, uploads them there, then records the winners back.
-
 export type DrawCsvTier = 'visitor' | 'red' | 'blue';
 
-// POST /admin/csv/generate → `data.files`
 export interface DrawCsvFile {
     tier: DrawCsvTier;
     filename: string;
     row_count: number;
-    /** Presigned, attachment-disposition URL. Short-lived (X-Amz-Expires=3600). */
+
     download_url: string;
 }
 
@@ -383,18 +306,15 @@ export interface DrawCsvGenerateResult {
     files: DrawCsvFile[];
 }
 
-// GET /admin/csv/history → `data` (flat array, one row per tier per run, newest first)
 export interface DrawCsvHistoryItem extends DrawCsvFile {
     id: string;
     generated_at: string;
 }
 
-/** Admin: audit history of generated TPAL CSVs (newest first). */
 export const getDrawCsvHistory = cache((token: string) => {
     return apiFetch<DrawCsvHistoryItem[]>(API.admin.csvHistory, { token, cache: 'no-store' });
 });
 
-/** Admin: generate the 3 tiered TPAL CSVs for the current draw. */
 export const generateDrawCsv = (token: string) => {
     return apiFetch<DrawCsvGenerateResult>(API.admin.csvGenerate, { method: 'POST', token });
 };

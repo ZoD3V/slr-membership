@@ -36,7 +36,7 @@ export function ProfileDropdown({ user }: { user: any }) {
                         </Avatar>
                     </Button>
                 </DropdownMenuTrigger>
-                {/* Re-assert the dashboard theme — the dropdown portals outside the scoped wrapper. */}
+
                 <DropdownMenuContent className='dashboard-theme dark w-56' align='end' forceMount>
                     <UserMenuContent user={user} />
                     <DropdownMenuSeparator />

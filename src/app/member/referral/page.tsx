@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default async function ReferralPage() {
     const token = await getAccessToken();
-    if (!token) return null; // handled by middleware/layout
+    if (!token) return null;
 
     let referral: ReferralStatus | null = null;
     let failed = false;

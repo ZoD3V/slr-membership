@@ -12,10 +12,6 @@ const OPTIONS: { value: TierFilterValue; label: string }[] = [
     { value: 'blue', label: 'SLR Blue' }
 ];
 
-/**
- * Parent-tier (group) filter shared by the Members and Draw Exports tables.
- * Filters on the group, not the sub-tier — R1/R4/R7 all match "SLR Red".
- */
 export function TierFilter({ value, onChange }: { value: TierFilterValue; onChange: (next: TierFilterValue) => void }) {
     return (
         <Select value={value} onValueChange={(v) => onChange(v as TierFilterValue)}>

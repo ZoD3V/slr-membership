@@ -43,10 +43,6 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
 
     const isAdmin = className?.includes('slr-admin') || className?.includes('dashboard-theme');
 
-    // The admin dashboard is shadcn-slate with Montserrat; the member/public areas
-    // are SLR brand (navy surface, Bebas Neue display, gold CTA). Styling the admin
-    // branch off theme tokens is what keeps a dashboard dialog from inheriting the
-    // member look — hardcoded `bg-slr-*` / `font-bebas-neue` would override it.
     const theme = isAdmin
         ? {
               content: 'dashboard-theme dark border-border bg-background text-foreground',

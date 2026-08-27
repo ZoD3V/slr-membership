@@ -62,26 +62,21 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
     const [data, setData] = useState<SignUpFormData>(initialData);
     const [spinPrize, setSpinPrize] = useState<SpinPrize | null>(null);
     const [step, setStep] = useState<Step>('account');
-    // The created account: Visitor verifies its OTP next, paid goes to Stripe.
+
     const [userId, setUserId] = useState<string | null>(null);
     const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
     const [registering, setRegistering] = useState(false);
-    // Session token returned by register on paid tiers — needed by Stripe Checkout.
+
     const [checkoutToken, setCheckoutToken] = useState<string | null>(null);
 
     const patchData = (patch: Partial<SignUpFormData>) => {
         setData((d) => ({ ...d, ...patch }));
     };
 
-    // Create the account, then route by what the API says is still owed: Visitor
-    // gets an OTP email, paid gets a session token and goes to Stripe (the
-    // payment itself verifies them). Skip re-registering if we already created
-    // this exact email (Back → forward must not 409 on a duplicate).
     const createAccount = async (patch: Partial<SignUpFormData>) => {
         const tier = patch.tier ?? data.tier;
         const subTier = patch.sub_tier ?? data.sub_tier;
-        // Spin only for token-upgrade sub-tiers (R4/R7/B4/B7/B10), and only if
-        // the API still offers it.
+
         const goPay = (spinAvailable: boolean) =>
             setStep(spinAvailable && isSpinEligible(subTier) ? 'spin' : 'checkout');
 
@@ -116,8 +111,6 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
             setCheckoutToken(res.access_token ?? null);
             goPay(res.spin_available);
         } catch (err) {
-            // Signed up before but never paid: the account is fine, so don't dead-end
-            // them on a duplicate error — send them to sign in and finish paying.
             if (err instanceof ApiError && apiErrorCode(err) === 'ACCOUNT_PENDING_PAYMENT') {
                 toast.info(apiErrorMessage(err));
                 router.push(`/sign-in?email=${encodeURIComponent(data.email)}`);
@@ -125,7 +118,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
                 return;
             }
             toast.error(err instanceof ApiError ? apiErrorMessage(err) : 'Registration failed. Please try again.');
-            // Send them back to the account step to fix the email/phone.
+
             setStep('account');
         } finally {
             setRegistering(false);

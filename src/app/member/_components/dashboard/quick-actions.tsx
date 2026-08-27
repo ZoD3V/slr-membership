@@ -10,7 +10,6 @@ interface QuickAction {
     desc: string;
 }
 
-// The four quick actions called out in PRD §4.2.
 const ACTIONS: QuickAction[] = [
     { title: 'Discounts', href: '/member/discounts', icon: TicketPercent, desc: 'Partner offers & BENY' },
     { title: 'Giveaways', href: '/member/giveaways', icon: Gift, desc: 'Active draws by tier' },
@@ -18,7 +17,6 @@ const ACTIONS: QuickAction[] = [
     { title: 'Profile', href: '/member/profile', icon: UserCircle, desc: 'Account & membership' }
 ];
 
-// Discounts are a RED/BLUE benefit — for Visitor the slot upsells the upgrade instead.
 const VISITOR_MEMBERSHIP_ACTION: QuickAction = {
     title: 'Membership',
     href: '/member/membership',

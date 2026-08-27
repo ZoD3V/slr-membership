@@ -1,15 +1,15 @@
 export type Chapter = {
     num: string;
-    /** Short label shown in the sidebar table of contents. */
+
     shortTitle: string;
-    /** Full chapter heading shown above the content. */
+
     heading: string;
-    /** Category eyebrow shown next to the read time. */
+
     tag: string;
     readMinutes: number;
-    /** Optional content image (square source, framed landscape). */
+
     image?: string;
-    /** Body paragraphs. The pull-quote is inserted after the first paragraph. */
+
     body: string[];
     quote?: string;
 };

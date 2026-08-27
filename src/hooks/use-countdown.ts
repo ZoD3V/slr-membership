@@ -7,9 +7,9 @@ export interface Countdown {
     hours: number;
     minutes: number;
     seconds: number;
-    total: number; // ms remaining
+    total: number;
     done: boolean;
-    mounted: boolean; // false during SSR / first paint
+    mounted: boolean;
 }
 
 function diff(target: number): Omit<Countdown, 'mounted'> {
@@ -25,11 +25,6 @@ function diff(target: number): Omit<Countdown, 'mounted'> {
     };
 }
 
-/**
- * Live countdown to an ISO datetime. SSR-safe: `mounted` is false on the first
- * paint so server and client markup match, then it ticks every second on the
- * client. Render a stable placeholder until `mounted` to avoid hydration drift.
- */
 export function useCountdown(targetIso: string): Countdown {
     const target = new Date(targetIso).getTime();
     const [state, setState] = useState<Omit<Countdown, 'mounted'>>(() => diff(target));

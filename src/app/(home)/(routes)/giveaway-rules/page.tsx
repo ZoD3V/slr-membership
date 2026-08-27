@@ -12,11 +12,6 @@ export const metadata: Metadata = {
         'Competition Rules for the Smart Life Rewards Early Stage Member Promotion — promoter, prize pool, eligibility, entries and draw method.'
 };
 
-/**
- * The draw-specific figures at the top of the document. These change every
- * 28-day cycle, so they are grouped here rather than scattered through the
- * clauses — clause 10 covers subsequent draws.
- */
 const DRAW_DETAILS: { label: string; value: string }[] = [
     { label: 'Promotion opens', value: '24 August 2026' },
     { label: 'Entries close', value: '4 September 2026 @ 7:30 PM AEST' },
@@ -40,7 +35,6 @@ const DrawDetails = () => (
     </div>
 );
 
-/** Label/value pair used inside clauses 4 and 7. */
 const Fact = ({ label, children }: { label: string; children: ReactNode }) => (
     <p>
         <span className='text-slr-dim'>{label}:</span> <span className='font-semibold text-white/90'>{children}</span>

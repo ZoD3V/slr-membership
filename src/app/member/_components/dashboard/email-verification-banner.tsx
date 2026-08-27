@@ -8,9 +8,6 @@ import { resendVerificationEmailAction } from '../../verification-actions';
 import { MailWarning } from 'lucide-react';
 import { toast } from 'sonner';
 
-/** Dashboard banner for a paid member (RED/BLUE) whose email is unverified —
- *  Visitor is OTP-verified at signup and never sees this (PRD: link-based
- *  verification is paid-tier only). */
 export function EmailVerificationBanner() {
     const [isPending, startTransition] = useTransition();
     const [sent, setSent] = useState(false);

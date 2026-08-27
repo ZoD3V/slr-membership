@@ -87,12 +87,6 @@ export async function changeMemberTierAction(
     }
 }
 
-/**
- * Edits a member's profile details. The endpoint merges, so the caller passes
- * only the fields the admin actually changed — that also keeps `email` out of
- * the body on an unrelated edit, which matters because resending the member's
- * own address is fine but any collision answers 409.
- */
 export async function updateMemberProfileAction(
     userId: string,
     payload: AdminMemberProfilePayload
@@ -115,11 +109,6 @@ export async function updateMemberProfileAction(
     }
 }
 
-/**
- * Draw-pool `state` used to move via PATCH /users/{id} through its own control.
- * `PUT /admin/members/{userId}` now sets it alongside the rest of the profile,
- * so the edit form owns it and there is no second place to change it.
- */
 export async function changeMemberStateAction(
     userId: string,
     state: AuStateCode

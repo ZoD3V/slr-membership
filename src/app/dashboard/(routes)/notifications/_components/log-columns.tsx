@@ -18,9 +18,6 @@ function formatSentAt(value: string) {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value || '—';
 
-    // Pinned locale and time zone: without them the server renders in UTC and
-    // the browser re-renders in the viewer's zone, which hydrates mismatched.
-    // AEST is the platform's operating zone.
     return date.toLocaleString('en-AU', {
         dateStyle: 'medium',
         timeStyle: 'short',
@@ -58,9 +55,6 @@ export function buildLogColumns(onResend: (row: NotificationLogRow) => void): Co
                     </span>
                 );
 
-                // `error` is only ever populated on a failure. Production has
-                // never produced a failed row, so this path is built from the
-                // contract and is unverified against live data.
                 if (!row.error) return badge;
 
                 return (

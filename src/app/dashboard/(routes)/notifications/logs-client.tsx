@@ -34,8 +34,6 @@ export function LogsClient({
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
 
-    // Filters and paging live in the URL so a filtered view is shareable and
-    // reloadable, matching (routes)/spin's history table.
     const pushParams = (next: { type?: string; status?: string; page?: number }) => {
         const nextType = next.type ?? type;
         const nextStatus = next.status ?? status;
@@ -55,8 +53,7 @@ export function LogsClient({
         () =>
             buildLogColumns((row) => {
                 const params = new URLSearchParams({ tab: 'send', user_id: row.user_id });
-                // Carry the address the log row already knows, so the Send tab
-                // can name the recipient instead of showing a bare id.
+
                 if (row.email) params.set('email', row.email);
                 if (row.template_id) params.set('template_id', row.template_id);
 
@@ -106,8 +103,6 @@ export function LogsClient({
                 data={rows}
                 isLoading={isPending}
                 serverSide
-                // Suppressed on failure: a "Total: 0 entries" footer would
-                // assert the very count the empty state disclaims.
                 alwaysShowPagination={!logsFailed}
                 nowrap
                 currentPage={meta.page}

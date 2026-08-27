@@ -4,7 +4,6 @@ interface Props {
     className?: string;
 }
 
-/** Page-width wrapper — mx-auto max-w-7xl with consistent horizontal padding. */
 const Container: React.FC<React.PropsWithChildren<Props>> = ({
     children,
     className

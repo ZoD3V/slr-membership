@@ -123,9 +123,6 @@ export function DiscountForm({ initialData }: DiscountFormProps) {
                     toast.error(res.code ? `${res.message} (${res.code})` : res.message);
                 }
             } catch {
-                // The server action can reject instead of resolving with
-                // { ok: false } — without this, the button is left stuck and
-                // the admin gets no feedback that the save failed.
                 toast.error('Something went wrong. Please try again.');
             }
         });

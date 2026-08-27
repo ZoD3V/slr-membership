@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+
 import {
     Dialog,
     DialogContent,
@@ -10,6 +11,7 @@ import {
     DialogTrigger
 } from '@/components/ui/dialog';
 import type { SubTierCode } from '@/types/member';
+
 import { MembershipCard } from './membership-card';
 import { ChevronRight, CreditCard } from 'lucide-react';
 
@@ -22,7 +24,6 @@ interface MembershipCardDialogProps {
 }
 
 export function MembershipCardDialog({ name, subTier, userId, state, joinedAt }: MembershipCardDialogProps) {
-    // Generates a mock format SLR-[STATE]-[UUID_SHORT] for partner cashiers
     const stateCode = state ? state.toUpperCase() : 'AU';
     const shortId = userId ? userId.substring(0, 8).toUpperCase() : 'MEMBER';
     const memberId = `SLR-${stateCode}-${shortId}`;
@@ -32,9 +33,8 @@ export function MembershipCardDialog({ name, subTier, userId, state, joinedAt }:
             <DialogTrigger asChild>
                 <button
                     type='button'
-                    className='bg-card-dark-navy border-slr-navy-border flex w-full items-center gap-3 rounded-2xl border p-4 text-left transition-colors cursor-pointer focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:outline-none'
-                >
-                    <span className='bg-white/5 flex size-11 shrink-0 items-center justify-center rounded-xl border border-white/10'>
+                    className='bg-card-dark-navy border-slr-navy-border flex w-full cursor-pointer items-center gap-3 rounded-2xl border p-4 text-left transition-colors focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:outline-none'>
+                    <span className='flex size-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5'>
                         <CreditCard className='text-slr-gold-label size-5' />
                     </span>
                     <span className='min-w-0'>
@@ -45,8 +45,7 @@ export function MembershipCardDialog({ name, subTier, userId, state, joinedAt }:
                 </button>
             </DialogTrigger>
 
-            {/* Explicit dark page dialog wrapper styling */}
-            <DialogContent className='border-slr-navy-border bg-[#131619] text-white sm:max-w-xl focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:outline-none'>
+            <DialogContent className='border-slr-navy-border bg-[#131619] text-white focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:outline-none sm:max-w-xl'>
                 <DialogHeader className='text-left'>
                     <DialogTitle className='font-bebas-neue text-2xl tracking-wide uppercase'>
                         Membership Card
@@ -56,12 +55,7 @@ export function MembershipCardDialog({ name, subTier, userId, state, joinedAt }:
                     </DialogDescription>
                 </DialogHeader>
                 <div className='w-full py-2'>
-                    <MembershipCard
-                        name={name}
-                        subTier={subTier}
-                        memberId={memberId}
-                        joinedAt={joinedAt}
-                    />
+                    <MembershipCard name={name} subTier={subTier} memberId={memberId} joinedAt={joinedAt} />
                 </div>
             </DialogContent>
         </Dialog>

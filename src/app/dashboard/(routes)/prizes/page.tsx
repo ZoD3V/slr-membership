@@ -18,10 +18,8 @@ export default async function PrizesPage() {
         content = token ? await getAdminPrizeContent(token) : PRIZE_CONTENT_SEED;
         if (!token) isPlaceholder = true;
     } catch (error) {
-        handleApiAuthError(error); // 401 → force logout; other errors fall through
-        // The endpoint is live, so reaching here means a real failure (network,
-        // or a 5xx). Render against the seed so the editor stays usable rather
-        // than blanking; saving still fails loudly via the action's toast.
+        handleApiAuthError(error);
+
         content = PRIZE_CONTENT_SEED;
         isPlaceholder = true;
     }

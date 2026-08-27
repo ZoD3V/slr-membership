@@ -30,7 +30,6 @@ export function WinnersClient({ rows, listError }: { rows: WinnerRow[]; listErro
 
     const handleEdit = (row: WinnerRow) => router.push(`/dashboard/winners/${row.id}`);
 
-    // DataTable's action column shows its own confirm dialog before calling this.
     const handleDelete = (row: WinnerRow) => {
         startTransition(async () => {
             const res = await deleteWinnerAction(row.id);
@@ -46,8 +45,6 @@ export function WinnersClient({ rows, listError }: { rows: WinnerRow[]; listErro
     return (
         <>
             <DataTable
-                // The endpoint ignores ?search=, so the page loads every row and
-                // DataTable searches/paginates client-side (same as ebooks).
                 searchKey='winner'
                 columns={winnersColumns}
                 data={rows}

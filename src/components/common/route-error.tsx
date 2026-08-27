@@ -12,17 +12,12 @@ type RouteErrorProps = {
     reset: () => void;
     title?: string;
     description?: string;
-    /** Secondary link rendered under the retry button (e.g. back to dashboard). */
+
     secondaryAction?: ReactNode;
-    /** Wrapper classes — lets each segment match its own page container. */
+
     className?: string;
 };
 
-/**
- * Segment-level error boundary body. `global-error.tsx` handles the root (and
- * deployment-skew reloads); this one keeps the shell — nav, sidebar — intact and
- * only replaces the failed segment, so a dead API call doesn't blank the app.
- */
 const RouteError = ({
     error,
     reset,
@@ -31,7 +26,6 @@ const RouteError = ({
     secondaryAction,
     className = 'mx-auto flex w-full max-w-7xl flex-1 items-center justify-center px-4 py-16 md:px-6'
 }: RouteErrorProps) => {
-    // Production strips the message from the UI, so keep the real one in the console.
     useEffect(() => {
         console.error(error);
     }, [error]);

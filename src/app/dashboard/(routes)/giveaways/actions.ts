@@ -29,7 +29,6 @@ export type ActionError = {
 export type ActionResult<T> = { ok: true; data: T; message: string } | ActionError;
 
 function toActionError(error: unknown): ActionError {
-    // 401 (expired/invalid session) → redirect('/api/auth/logout'), never returns.
     handleApiAuthError(error);
 
     if (error instanceof ApiError) {
@@ -37,8 +36,6 @@ function toActionError(error: unknown): ActionError {
             | { code?: string; requestId?: string; errors?: { field?: string; message?: string }[] }
             | undefined;
 
-        // Field-level validation detail is the only way to see WHICH field the
-        // API rejected — surfacing just the generic message hides it.
         const fields = (payload?.errors ?? [])
             .map((e) => [e.field, e.message].filter(Boolean).join(': '))
             .filter(Boolean)
@@ -67,8 +64,6 @@ async function withToken<T>(run: (token: string) => Promise<T>, message: string)
     }
 }
 
-// ─── Giveaways ───────────────────────────────────────────────────────────────
-
 export async function createGiveawayAction(payload: AdminGiveawayPayload): Promise<ActionResult<AdminGiveaway>> {
     const res = await withToken((t) => createGiveaway(t, payload), 'Giveaway created.');
     if (res.ok) revalidatePath('/dashboard/giveaways');
@@ -95,9 +90,6 @@ export async function deleteGiveawayAction(id: string): Promise<ActionResult<nul
 
     return res;
 }
-
-// ─── Winners ─────────────────────────────────────────────────────────────────
-// Top-level collection keyed by giveaway_id — no read-modify-write needed.
 
 export async function createWinnerAction(payload: AdminWinnerPayload): Promise<ActionResult<AdminWinner>> {
     const res = await withToken((t) => createWinner(t, payload), 'Winner recorded.');

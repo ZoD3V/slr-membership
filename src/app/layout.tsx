@@ -33,8 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
     const headersList = await headers();
     const host = headersList.get('x-forwarded-host') || headersList.get('host') || 'smartliferewards.com.au';
     const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? 'http' : 'https';
-    
-    // Dynamically resolved origin for meta tags base
+
     const dynamicSiteUrl = `${protocol}://${host}`;
 
     return {

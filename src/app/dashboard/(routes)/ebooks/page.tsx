@@ -33,7 +33,7 @@ export default async function EbooksPage() {
             locked: e.is_locked ? 'Yes' : 'No'
         }));
     } catch (error) {
-        handleApiAuthError(error); // 401 → force logout; other errors fall through
+        handleApiAuthError(error);
         listError = toListError(error);
     }
 

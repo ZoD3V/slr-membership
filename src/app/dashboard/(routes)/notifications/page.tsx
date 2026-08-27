@@ -39,10 +39,7 @@ export default async function NotificationsPage({
     const params = await searchParams;
 
     const tab: TabValue = params.tab && isTab(params.tab) ? params.tab : 'templates';
-    // Only forward filter values the API documents. An unrecognised value is
-    // dropped rather than sent: the logs endpoint ignores unknown query
-    // parameters silently, which would render as an active filter over
-    // unfiltered data.
+
     const type = params.type && KNOWN_NOTIFICATION_TYPES.includes(params.type as never) ? params.type : 'all';
     const status = params.status && LOG_STATUSES.includes(params.status) ? params.status : 'all';
     const parsedPage = Number(params.page);
@@ -67,9 +64,6 @@ export default async function NotificationsPage({
             })
         ]);
 
-        // Inspect rejections before any fallback runs: a 401 (expired admin
-        // session) must force a logout, not be swallowed and silently
-        // rendered as seed data.
         if (templatesResult.status === 'rejected') handleApiAuthError(templatesResult.reason);
         if (logsResult.status === 'rejected') handleApiAuthError(logsResult.reason);
 

@@ -56,8 +56,6 @@ export function SecuritySection() {
     const [saved, setSaved] = useState(false);
     const [pending, startTransition] = useTransition();
 
-    // Mirrors the server-side checks in changePasswordAction so the member gets
-    // feedback without a round-trip; the action stays authoritative.
     const validate = (): string => {
         if (pw.next.length < MIN_PASSWORD_LENGTH) {
             return `New password must be at least ${MIN_PASSWORD_LENGTH} characters.`;

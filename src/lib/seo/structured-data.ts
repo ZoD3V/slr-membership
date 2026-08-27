@@ -9,9 +9,6 @@ const socialMediaUrls = [
     'https://www.tiktok.com/@smartlife.rewards'
 ];
 
-/**
- * Returns Organization JSON-LD Schema
- */
 export function getOrganizationSchema() {
     return {
         '@context': 'https://schema.org',
@@ -21,7 +18,7 @@ export function getOrganizationSchema() {
         url: siteUrl,
         logo: `${siteUrl}/images/slr-rewards-logo-color.webp`,
         description:
-            "Smart Life Rewards is an Australian membership club built to help everyday Australians beat the cost of living through weekly draws, partner discounts, and digital offers.",
+            'Smart Life Rewards is an Australian membership club built to help everyday Australians beat the cost of living through weekly draws, partner discounts, and digital offers.',
         contactPoint: {
             '@type': 'ContactPoint',
             contactType: 'Customer Support',
@@ -32,9 +29,6 @@ export function getOrganizationSchema() {
     };
 }
 
-/**
- * Returns WebSite JSON-LD Schema for site-search
- */
 export function getWebSiteSchema() {
     return {
         '@context': 'https://schema.org',
@@ -49,17 +43,11 @@ export function getWebSiteSchema() {
     };
 }
 
-/**
- * Represents structured FAQ item
- */
 export interface FaqItem {
     question: string;
     answer: string;
 }
 
-/**
- * Returns FAQPage JSON-LD Schema
- */
 export function getFAQPageSchema(faqs: FaqItem[]) {
     return {
         '@context': 'https://schema.org',
@@ -75,16 +63,15 @@ export function getFAQPageSchema(faqs: FaqItem[]) {
     };
 }
 
-/**
- * Returns MembershipOffer JSON-LD Schema for membership tiers
- */
-export function getMembershipOfferSchema(tiers: {
-    name: string;
-    description: string;
-    price: string;
-    priceCurrency: string;
-    billingPeriod: string;
-}[]) {
+export function getMembershipOfferSchema(
+    tiers: {
+        name: string;
+        description: string;
+        price: string;
+        priceCurrency: string;
+        billingPeriod: string;
+    }[]
+) {
     return {
         '@context': 'https://schema.org',
         '@type': 'Product',
@@ -113,7 +100,7 @@ export function getMembershipOfferSchema(tiers: {
                     referenceQuantity: {
                         '@type': 'QuantitativeValue',
                         value: '1',
-                        unitCode: tier.billingPeriod // e.g. "MON" for month or "P28D" split
+                        unitCode: tier.billingPeriod
                     }
                 }
             }))

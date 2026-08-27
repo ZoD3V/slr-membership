@@ -24,9 +24,6 @@ import { MAX_SEND_RECIPIENTS } from './seed';
 import { TriangleAlert, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-/** A resend may arrive without an email (the log row had none). Label the chip
- *  by whatever identity we actually have rather than printing a uuid in the
- *  email slot. */
 function recipientLabel(recipient: RecipientOption) {
     return recipient.email || recipient.name || recipient.user_id;
 }
@@ -51,10 +48,6 @@ export function SendClient({
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [isSending, setIsSending] = useState(false);
 
-    // A Resend click lands here with the log row's user_id and, when the row
-    // had one, its email. Seed a chip so the recipient is identifiable
-    // immediately; re-picking the same member in the picker replaces this
-    // entry rather than deselecting it.
     useEffect(() => {
         if (!prefillUserId) return;
 
@@ -73,18 +66,11 @@ export function SendClient({
         );
     }, [prefillUserId, prefillEmail]);
 
-    // A resend can carry a template_id whose template is not in the loaded
-    // list (deleted, or the list itself failed to load). Don't leave the
-    // Select showing an id it can't resolve.
     const selectedTemplate = templates.find((t) => t.id === templateId) ?? null;
-    // Distinguish "the list loaded and is genuinely empty" from "the list
-    // failed to load" — the live endpoint answers 200 with [] today, which
-    // would otherwise render as a Select with no options and no explanation.
+
     const hasNoTemplates = !templatesArePlaceholders && templates.length === 0;
     const hasUnresolvedTemplate = templateId !== '' && selectedTemplate === null && !hasNoTemplates;
-    // Placeholder templates carry seed ids that exist nowhere on the server.
-    // Sending one would post a bogus template_id while telling the admin real
-    // members are about to be emailed.
+
     const canSend = recipients.length > 0 && selectedTemplate !== null && !templatesArePlaceholders && !isSending;
 
     const onSend = async () => {

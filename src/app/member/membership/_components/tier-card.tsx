@@ -15,7 +15,6 @@ const BILLING_TEXT: Record<string, string> = {
     canceled: 'text-red-400'
 };
 
-// Static benefits shown on the plan card (PRD §2.2 "Benefit Umum RED & BLUE").
 const PAID_BENEFITS = [
     '9 Draws Weekly/Monthly',
     'Monthly bonus prize',
@@ -24,8 +23,6 @@ const PAID_BENEFITS = [
     'Upgrade or cancel anytime'
 ];
 
-// Mirrors the public Free Visitors section — visitors get the visitor draw only:
-// no discounts, no bonus prize, no e-book content (listing preview only).
 const VISITOR_BENEFITS = [
     'Free to join — no credit card required',
     'Weekly visitor giveaways & bonus draws',
@@ -36,10 +33,10 @@ const VISITOR_BENEFITS = [
 interface TierCardProps {
     subTier: SubTierCode;
     priceCents: number;
-    /** `null` when neither billing nor membership could be read — say so instead of implying "active". */
+
     billingStatus: BillingStatus | string | null;
     nextRenewal?: string | null;
-    /** Manage actions rendered as the card footer (change plan / cancel / upgrade picker). */
+
     children?: ReactNode;
 }
 
@@ -52,7 +49,6 @@ export function TierCard({ subTier, priceCents, billingStatus, nextRenewal, chil
         <section className='bg-card-dark-navy border-slr-navy-border rounded-2xl border p-5 md:p-6'>
             <div className='flex flex-wrap items-start justify-between gap-3'>
                 <div className='flex items-start gap-3'>
-                    {/* Member-card artwork — same asset as the public tier hero cards */}
                     {visual.cardArt && (
                         <Image
                             src={visual.cardArt}
@@ -73,7 +69,6 @@ export function TierCard({ subTier, priceCents, billingStatus, nextRenewal, chil
                             <span className='text-gradient-gold font-semibold'>{formatAud(priceCents)}</span> / 28-day
                             cycle ·{' '}
                             {billingStatus ? (
-                                // memberships/me returns it UPPERCASE, billing/status lowercase.
                                 <span className={BILLING_TEXT[String(billingStatus).toLowerCase()] ?? 'text-slr-muted'}>
                                     {String(billingStatus).toLowerCase().replace('_', ' ')}
                                 </span>

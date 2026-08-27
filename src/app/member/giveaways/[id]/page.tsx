@@ -32,9 +32,6 @@ import {
     Trophy
 } from 'lucide-react';
 
-// getGiveaway is React.cache'd on (id, token) → one network call even though
-// metadata + the page both load it. ⚠️ giveaways/{id} is unverifiable while the
-// list 500s → any failure degrades to notFound (see SP1 spec / API-INTEGRATION).
 async function loadGiveaway(id: string): Promise<GiveawayDetail | null> {
     const member = await getCurrentMember();
     const token = await getAccessToken();
@@ -42,8 +39,6 @@ async function loadGiveaway(id: string): Promise<GiveawayDetail | null> {
     if (!token) return null;
 
     try {
-        // Detail lacks entry status + token count → pull the list item (entry status)
-        // and the cycle tokens (entries-per-giveaway) alongside; both non-fatal.
         const [detail, list, entries] = await Promise.all([
             getGiveaway(id, token),
             getGiveaways(token).catch(() => [] as ApiGiveaway[]),
@@ -59,7 +54,7 @@ async function loadGiveaway(id: string): Promise<GiveawayDetail | null> {
             entries?.current_cycle ?? null
         );
     } catch (error) {
-        handleApiAuthError(error); // expired session → force logout
+        handleApiAuthError(error);
 
         return null;
     }
@@ -96,7 +91,6 @@ export default async function GiveawayDetailPage({ params }: { params: Promise<{
                 <ArrowLeft className='size-4' /> Giveaways
             </Link>
 
-            {/* Hero */}
             <div
                 className='shadow-card-warm relative isolate overflow-hidden rounded-2xl border p-5 md:p-7'
                 style={{ background: visual.badgeBg, borderColor: visual.badgeBorder }}>
@@ -194,11 +188,8 @@ export default async function GiveawayDetailPage({ params }: { params: Promise<{
                 )}
             </div>
 
-            {/* Body */}
             <div className='grid gap-5 lg:grid-cols-3'>
                 <div className='space-y-5 lg:col-span-2'>
-                    {/* The live API has a single `prize` field, so the description usually just
-                        repeats the hero. Only render when the backend sends something richer. */}
                     {giveaway.prize_description !== giveaway.prize_label && (
                         <InfoCard title='The Prize'>
                             <p className='text-slr-muted text-sm leading-relaxed'>{giveaway.prize_description}</p>

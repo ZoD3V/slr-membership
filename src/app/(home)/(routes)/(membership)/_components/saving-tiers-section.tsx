@@ -12,11 +12,11 @@ type TierCardProps = {
     height: number;
     alt: string;
     href: string;
-    /** Accessible label for the transparent button link. */
+
     cta: string;
-    /** Width / elevation classes for the card wrapper. */
+
     className?: string;
-    /** Absolute-position classes placing the transparent link over the card's button. */
+
     buttonClassName: string;
 };
 

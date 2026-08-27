@@ -9,7 +9,7 @@ export function toGiveawayRow(g: AdminGiveaway): GiveawayRow {
         name: g.name || '-',
         tier: g.tier || '-',
         type: g.type || '-',
-        // Server-derived; don't recompute from the dates.
+
         status: g.status || '-',
         prize: g.prize || '-',
         entries: g.entry_count ?? 0,

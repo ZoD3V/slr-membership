@@ -22,18 +22,18 @@ const mainBenefits = [
 type TierRow = {
     icon: string;
     name: string;
-    /** Sub-tier code — used to map live prices from the API. */
+
     code: string;
     price: string;
     tokens: string;
-    /** Spin-wheel discount label, e.g. "$5 Off" — null for the standard tier. */
+
     spin: string | null;
     beny: boolean;
     cardStyle: CSSProperties;
     tokenBoxStyle: CSSProperties;
-    /** Token-count text colour class. */
+
     tokenClass: string;
-    /** "Member Entries" label colour class. */
+
     labelClass: string;
 };
 
@@ -133,14 +133,12 @@ const RedTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispla
                 </div>
 
                 <div className='mt-12 grid grid-cols-1 items-start gap-6 lg:grid-cols-2'>
-                    {/* LEFT — SLR RED hero card (gradient border via masked overlay) */}
                     <div className='shadow-card-warm-lg relative isolate h-full rounded-2xl p-1.25'>
                         <div
                             className='absolute inset-0 -z-10 rounded-2xl bg-[linear-gradient(180deg,#FF6B7A_10%,#C8152E_25%,#8B0010_75.24%,#C8152E_87.62%,#FF6B7A_100%)] mask-exclude p-1.25 [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)]'
                             aria-hidden='true'
                         />
                         <div className='relative flex h-full flex-col overflow-hidden rounded-[calc(1rem-5px)] bg-[linear-gradient(180deg,#530710_0%,#37040D_30%,#220408_60%,#470818_87.62%)] p-4 sm:p-6'>
-                            {/* Header */}
                             <div className='flex items-center gap-3'>
                                 <Image
                                     src='/icons/ic-slr-red-reward.webp'
@@ -168,7 +166,6 @@ const RedTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispla
 
                             <div className='my-4 h-px w-full bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.35)_50%,rgba(255,255,255,0)_100%)]' />
 
-                            {/* Benefits header row + add-on badge */}
                             <div className='flex items-center justify-between gap-3'>
                                 <p className='text-xs font-semibold tracking-widest text-white uppercase sm:text-sm'>
                                     Main Benefits
@@ -190,7 +187,6 @@ const RedTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispla
                                 </div>
                             </div>
 
-                            {/* Benefits list */}
                             <ul className='space-y-2.5'>
                                 {mainBenefits.map((item) => (
                                     <li key={item} className='flex items-start gap-2 text-white/90'>
@@ -212,7 +208,6 @@ const RedTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispla
                         </div>
                     </div>
 
-                    {/* RIGHT — tier rows */}
                     <div className='flex h-full flex-col gap-4'>
                         {tiers.map((tier) => {
                             const l = live?.[tier.code];
@@ -234,10 +229,6 @@ const RedTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispla
                                         />
                                         <div className='min-w-0'>
                                             <div className='flex flex-wrap items-center gap-x-1.5 gap-y-1 lg:gap-2'>
-                                                {/* Below lg the name claims its own row, so badges always wrap
-                                                    together and every card ends up the same height — sharing the
-                                                    row lets short names ("Plus") keep a badge inline while long
-                                                    ones ("Premium") push it down. */}
                                                 <span
                                                     className={cn(
                                                         'font-bebas-neue text-lg font-extrabold tracking-[0.18em] uppercase max-lg:basis-full max-lg:leading-none sm:text-xl xl:text-[22px] xl:leading-tight',

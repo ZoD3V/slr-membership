@@ -1,17 +1,5 @@
 import type { SpinConfig, SpinHistoryMeta } from '@/types/member';
 
-/**
- * Defensive fallbacks the panel renders against when the spin admin endpoints
- * cannot be read.
- *
- * `GET /api/v1/admin/spin/config` exists but answered 500 INTERNAL_ERROR when
- * verified against production on 2026-08-10, so SPIN_CONFIG_SEED is
- * load-bearing right now — see docs/BACKEND-ISSUES.md. `GET /admin/spin/history`
- * works; SPIN_HISTORY_META_SEED only covers its failure case.
- *
- * All five spin-eligible sub-tiers default to enabled with a $10 discount,
- * matching the real API doc's own r4 example.
- */
 export const SPIN_CONFIG_SEED: SpinConfig = {
     global_enabled: true,
     sub_tiers: [

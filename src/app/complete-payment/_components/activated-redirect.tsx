@@ -8,8 +8,6 @@ import { syncPaymentState } from '@/lib/session-actions';
 
 import { Loader2 } from 'lucide-react';
 
-// The backend already marks this member as paid, but the JWT still says
-// otherwise — refresh the token first, or the middleware sends them right back.
 const ActivatedRedirect = () => {
     const router = useRouter();
 

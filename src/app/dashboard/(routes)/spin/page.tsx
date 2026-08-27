@@ -30,10 +30,6 @@ function isSpinTierId(value: string): value is SpinTierId {
     return (TIER_VALUES as readonly string[]).includes(value);
 }
 
-// GET /admin/spin/config's exact set of sub_tier_ids on a fresh response isn't
-// confirmed (all 8 vs only the 5 eligible ones) — merge the eligible 5 over
-// the seed's shape so the config form always has a row to render for each,
-// and carry through anything else (ineligible codes) untouched.
 function normalizeSpinConfig(raw: Partial<SpinConfig> | null | undefined): SpinConfig {
     const rawSubTiers = raw?.sub_tiers ?? [];
 
@@ -45,11 +41,6 @@ function normalizeSpinConfig(raw: Partial<SpinConfig> | null | undefined): SpinC
         const seeded = SPIN_CONFIG_SEED.sub_tiers.find((t) => t.sub_tier_id === id);
         if (seeded) return seeded;
 
-        // Safety net, not expected to trigger: SPIN_ELIGIBLE_SUB_TIERS
-        // (constant/tiers.ts) and SPIN_CONFIG_SEED (./seed) are meant to list
-        // exactly the same five codes. If a code is ever added to one without
-        // the other, don't crash the page on a missing row — render it as a
-        // disabled, zero-discount row instead.
         return {
             sub_tier_id: id as SpinSubTierConfig['sub_tier_id'],
             marketing_name: SUB_TIERS[code].marketingName,
@@ -73,9 +64,7 @@ export default async function SpinPage({
     searchParams: Promise<{ tier?: string; moment?: string; page?: string }>;
 }) {
     const { tier: rawTier = 'all', moment: rawMoment = 'all', page: rawPage } = await searchParams;
-    // An unrecognised ?tier= must not be forwarded: the endpoint answers 200
-    // with an empty list for garbage rather than a validation error, which
-    // would read as "no spins" for a typo.
+
     const tier = rawTier === 'all' || isSpinTierId(rawTier) ? rawTier : 'all';
     const moment = rawMoment === 'all' || isSpinMoment(rawMoment) ? rawMoment : 'all';
     const parsedPage = Number(rawPage);
@@ -100,9 +89,6 @@ export default async function SpinPage({
             })
         ]);
 
-        // Inspect rejections before any fallback logic runs: a 401 (expired
-        // admin session) must force a logout, not be swallowed as "endpoint
-        // missing" and silently rendered as seed data.
         if (configResult.status === 'rejected') handleApiAuthError(configResult.reason);
         if (historyResult.status === 'rejected') handleApiAuthError(historyResult.reason);
 
@@ -117,10 +103,6 @@ export default async function SpinPage({
             history = historyResult.value.data;
             historyMeta = historyResult.value.meta;
         } else {
-            // On failure, history/historyMeta stay at their seeded defaults.
-            // historyFailed tells the table to render a "couldn't load"
-            // notice instead of its normal empty state, so a fetch failure
-            // is never presented as the factual claim "no spins yet".
             historyFailed = true;
         }
     } else {

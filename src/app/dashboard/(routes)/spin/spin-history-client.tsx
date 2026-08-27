@@ -41,8 +41,6 @@ export function SpinHistoryClient({
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
 
-    // All three filters live in the URL so the filtered/paged view is
-    // shareable/reloadable, matching (routes)/winners/page.tsx's ?giveaway=.
     const pushParams = (next: { tier?: string; moment?: string; page?: number }) => {
         const nextTier = next.tier ?? tier;
         const nextMoment = next.moment ?? moment;

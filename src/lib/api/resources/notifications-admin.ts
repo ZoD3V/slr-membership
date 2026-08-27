@@ -10,12 +10,6 @@ import type {
 import { API } from '../endpoints';
 import { apiFetch, apiFetchPaginated } from '../http';
 
-/**
- * Admin-only notification functions (OpenAPI 2026-08-11). Kept separate from
- * notifications.ts, which is the member-facing bell panel — different
- * audience, different auth, no shared code. Mirrors spin-admin.ts / spin.ts.
- */
-
 export interface NotificationLogFilters {
     userId?: string;
     type?: string;
@@ -53,7 +47,6 @@ export function updateNotificationTemplate(
     });
 }
 
-/** Server-paginated — the API returns `meta.total_pages`, not the full set. */
 export function getNotificationLogs(token: string, filters?: NotificationLogFilters) {
     return apiFetchPaginated<NotificationLogRow[], NotificationLogMeta>(
         `${API.admin.notificationLogs}${logsQuery(filters)}`,

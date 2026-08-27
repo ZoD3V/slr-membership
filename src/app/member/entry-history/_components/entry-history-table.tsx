@@ -7,9 +7,6 @@ function tokenText(value: number, prefix = ''): string {
     return value > 0 ? `${prefix}${value}` : '-';
 }
 
-// Cycles are ordered newest-first (current_cycle, then history[]), so the
-// previous cycle for row `i` is the next entry in the array. No dedicated
-// API field tracks tier changes — derive it from consecutive `tier` values.
 function tierChangeLabel(entries: EntryCycle[], index: number): string | null {
     const prevTier = entries[index + 1]?.tier;
     const currentTier = entries[index]?.tier;
@@ -18,8 +15,6 @@ function tierChangeLabel(entries: EntryCycle[], index: number): string | null {
     return `Changed from ${prevTier.toUpperCase()}`;
 }
 
-// Past-cycle rows from the API can omit start_at/end_at entirely (seen after a
-// plan swap mid-checkout) — never let a missing/invalid date crash the page.
 function formatDateRange(startStr: string | null | undefined, endStr: string | null | undefined): string {
     if (!startStr || !endStr) return '-';
 
@@ -37,7 +32,6 @@ export function EntryHistoryTable({ entries }: { entries: EntryCycle[] }) {
 
     return (
         <>
-            {/* Desktop table */}
             <div className='bg-card-dark-navy border-slr-navy-border hidden overflow-hidden rounded-2xl border md:block'>
                 <table className='w-full text-sm'>
                     <thead>
@@ -90,7 +84,6 @@ export function EntryHistoryTable({ entries }: { entries: EntryCycle[] }) {
                 </table>
             </div>
 
-            {/* Mobile cards */}
             <div className='space-y-3 md:hidden'>
                 {entries.map((e, index) => (
                     <div key={e.cycle_id} className='bg-card-dark-navy border-slr-navy-border rounded-2xl border p-4'>

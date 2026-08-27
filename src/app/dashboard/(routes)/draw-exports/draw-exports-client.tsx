@@ -56,7 +56,6 @@ export function DrawExportsClient({ initialHistory, failed }: DrawExportsClientP
 
     return (
         <>
-            {/* The API re-signs each download_url on every read, so links are valid ~1h from page load. */}
             <p className='text-slr-dim text-xs'>
                 Download links stay valid for about an hour — reload this page if one expires. Upload these to
                 randomdraws.com/au to run the draw, then record the winners.

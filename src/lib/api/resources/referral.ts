@@ -3,9 +3,6 @@ import { cache } from 'react';
 import { API } from '../endpoints';
 import { apiFetch } from '../http';
 
-// GET /referral/ — PRD §4.9. Two variants by `tier_type`: paid members earn
-// token bonuses automatically (bonus_history), Visitors get a manual admin
-// gift instead (gift_history) — never both populated at once.
 export interface ReferralBonusEntry {
     triggered_at: string;
     referral_count: number;

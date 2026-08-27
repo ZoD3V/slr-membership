@@ -12,32 +12,31 @@ import { ArrowRight, ArrowUp, Check, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export interface ReaderChapter {
-    /** Display number, e.g. "01". */
     num: string;
-    /** Short label shown in the sidebar table of contents. */
+
     shortTitle: string;
-    /** Full chapter heading shown above the content. */
+
     heading: string;
-    /** Optional category eyebrow shown next to the read time. */
+
     tag?: string;
-    /** Optional per-chapter read time (minutes). */
+
     readMinutes?: number;
-    /** Optional content image (framed landscape). */
+
     image?: string;
-    /** Body paragraphs. The pull-quote is inserted after the first paragraph. */
+
     body: string[];
-    /** Optional pull-quote. */
+
     quote?: string;
 }
 
 interface EbookReaderProps {
     chapters: ReaderChapter[];
-    /** Finish-state line shown in the footer. */
+
     finishLabel?: string;
-    /** Title used by the native share / clipboard fallback. */
+
     shareTitle?: string;
     shareText?: string;
-    /** Footer CTA target; the button is hidden when omitted. */
+
     nextHref?: string;
     nextLabel?: string;
 }
@@ -48,11 +47,6 @@ const DiamondSeparator = ({ className }: { className?: string }) => (
     </div>
 );
 
-/**
- * Long-form e-book reader (CLAUDE.md §"halaman baca"): sticky "In This Guide" TOC
- * with scroll progress, per-chapter image + body + pull-quote, and a finish footer.
- * Prop-driven so both the public marketing page and the member reader share it.
- */
 export function EbookReader({
     chapters,
     finishLabel = 'You Finished the Guide',
@@ -65,7 +59,6 @@ export function EbookReader({
     const visibleRef = useRef<Set<number>>(new Set());
     const contentRef = useRef<HTMLDivElement>(null);
 
-    // Track which chapter sits in the upper reading band; everything above it is "read".
     useEffect(() => {
         const sections = contentRef.current?.querySelectorAll<HTMLElement>('[data-chapter-index]');
         if (!sections?.length) return;
@@ -96,7 +89,7 @@ export function EbookReader({
             try {
                 await navigator.share({ title: shareTitle, text: shareText, url });
             } catch {
-                // Share dialog dismissed — nothing to do.
+                void 0;
             }
 
             return;
@@ -112,7 +105,6 @@ export function EbookReader({
 
     return (
         <div className='mx-auto max-w-7xl px-4'>
-            {/* Section accent — gradient line centered across the full section */}
             <div className='flex justify-center pb-10'>
                 <div
                     className='h-0.75 w-27 max-w-full'
@@ -125,7 +117,6 @@ export function EbookReader({
             </div>
 
             <div className='grid grid-cols-1 xl:grid-cols-[260px_minmax(0,1fr)]'>
-                {/* Sidebar — sticky table of contents with reading progress */}
                 <aside className='hidden xl:block xl:border-r xl:border-white/10 xl:pr-10'>
                     <div className='sticky top-30'>
                         <div className='flex items-center gap-2'>
@@ -201,7 +192,6 @@ export function EbookReader({
                     </div>
                 </aside>
 
-                {/* Main — chapter content */}
                 <div ref={contentRef} className='mx-auto max-w-2xl pb-16 md:pb-24'>
                     {chapters.map((chapter, index) => {
                         const isHtml = chapter.body.length === 1 && /<[a-z][\s\S]*>/i.test(chapter.body[0]);
@@ -326,7 +316,6 @@ export function EbookReader({
                         );
                     })}
 
-                    {/* Footer — finish state */}
                     <DiamondSeparator className='mt-12 md:mt-16' />
 
                     <div className='mt-10 flex flex-row items-center justify-between gap-4'>

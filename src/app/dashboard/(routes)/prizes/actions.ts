@@ -19,7 +19,6 @@ export type ActionError = {
 export type ActionResult<T> = { ok: true; data: T; message: string } | ActionError;
 
 function toActionError(error: unknown): ActionError {
-    // 401 (expired/invalid session) → redirect('/api/auth/logout'), never returns.
     handleApiAuthError(error);
 
     if (error instanceof ApiError) {
@@ -46,12 +45,6 @@ export async function savePrizeContentAction(payload: PrizeContentUpdatePayload)
 
         revalidatePath('/dashboard/prizes');
 
-        // The public /prizes page reads this same document through an
-        // hour-long ISR cache, so without this purge an edit would sit
-        // invisible on the marketing page until that window lapsed.
-        // `updateTag` (not `revalidateTag`) because this is a Server Action and
-        // the admin must see their own write straight away.
-        // (/member/prizes fetches uncached, so it needs no purge.)
         updateTag(PRIZE_CONTENT_TAG);
 
         return { ok: true, data, message: 'Prize content saved.' };

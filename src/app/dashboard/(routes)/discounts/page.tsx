@@ -18,9 +18,6 @@ export default async function DiscountsPage() {
     let rows: DiscountRow[] = [];
     let listError: ListError | null = null;
 
-    // Admin list returns 200 (tier-gate lifted 2026-07-09). The try/catch + error
-    // card stays as a defensive fallback so any future regression surfaces the
-    // exact backend error instead of a blank table.
     try {
         const discounts = token ? await getDiscounts(token) : [];
         rows = discounts.map((d) => ({
@@ -31,7 +28,7 @@ export default async function DiscountsPage() {
             featured: d.is_featured ? 'Yes' : 'No'
         }));
     } catch (error) {
-        handleApiAuthError(error); // 401 only → force logout; 403 falls through
+        handleApiAuthError(error);
         listError = toListError(error);
     }
 

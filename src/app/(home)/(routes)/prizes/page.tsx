@@ -15,14 +15,12 @@ const Page = async () => {
     try {
         content = await getPublicPrizeContent();
     } catch {
-        // Public page — render the last designed copy rather than an error state.
+        void 0;
     }
 
     return (
         <main className='bg-slr-ink pt-12'>
-            {/* Background wrapper that contains both MembershipClubSection and VisitorRedBlueSection */}
             <div className='relative isolate overflow-hidden'>
-                {/* Background image container with fixed height and bottom fade */}
                 <div className='absolute top-0 right-0 left-0 -z-20 h-[800px] md:h-[900px]'>
                     <Image
                         src='/images/bg-membership-club.webp'
@@ -31,7 +29,7 @@ const Page = async () => {
                         className='object-cover object-top opacity-45'
                         priority
                     />
-                    {/* Fade/blur gradient at the bottom of the background image */}
+
                     <div className='from-slr-ink via-slr-ink/75 absolute right-0 bottom-0 left-0 h-64 bg-gradient-to-t to-transparent md:h-80' />
                 </div>
 

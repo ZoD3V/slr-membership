@@ -62,8 +62,6 @@ export function TemplateEditDialog({
         setIsSaving(false);
 
         if (result.ok) {
-            // Re-seed from the server's own copy so a clamped or normalised
-            // value can't leave the form permanently dirty.
             form.reset(toFormValues(result.data));
             toast.success(result.message);
             onOpenChange(false);

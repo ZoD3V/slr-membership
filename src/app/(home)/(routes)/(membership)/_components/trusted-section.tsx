@@ -8,9 +8,9 @@ type Feature = {
     icon: string;
     title: string;
     description: string;
-    /** Single stat pill (cards 1–2). */
+
     stat?: { value: string; label: string };
-    /** Render the Red/Blue tier pills instead of a stat (card 3). */
+
     tiers?: boolean;
 };
 

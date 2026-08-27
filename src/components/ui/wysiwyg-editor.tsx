@@ -31,7 +31,7 @@ interface WysiwygEditorProps {
     onChange?: (value: string) => void;
     placeholder?: string;
     className?: string;
-    /** Upload the picked image and return its public URL. Each upload resolves to its own URL. */
+
     onImageUpload: (file: File) => Promise<string>;
 }
 
@@ -76,7 +76,6 @@ export function WysiwygEditor({
         }
     });
 
-    // Keep editor content in sync with external form state
     useEffect(() => {
         if (!editor) return;
 
@@ -182,10 +181,8 @@ export function WysiwygEditor({
                 }}
             />
 
-            {/* Hidden image upload input */}
             <input type='file' ref={fileInputRef} onChange={handleFileChange} accept='image/*' className='hidden' />
 
-            {/* Toolbar */}
             <div className='flex flex-wrap items-center gap-1 border-b border-white/10 bg-white/5 p-1.5'>
                 <button
                     type='button'
@@ -311,7 +308,6 @@ export function WysiwygEditor({
                 </button>
             </div>
 
-            {/* Editable Area */}
             <EditorContent editor={editor} />
         </div>
     );

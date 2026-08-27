@@ -13,7 +13,6 @@ import { goldButtonStyle } from '@/lib/styles';
 
 import { ArrowLeft, ArrowRight, BookOpen, Clock, Layers, Lock } from 'lucide-react';
 
-/** API chapters → the shared reader shape. `body` splits on blank lines into paragraphs. */
 function toReaderChapters(chapters: EbookChapter[]): ReaderChapter[] {
     return chapters.map((chapter) => {
         const bodyContent = chapter.body ?? '';
@@ -40,7 +39,6 @@ function toReaderChapters(chapters: EbookChapter[]): ReaderChapter[] {
     });
 }
 
-// getEbook is React.cache'd on (id, token) → one network call across metadata + page.
 async function loadEbookSafe(id: string): Promise<EbookDetail | null> {
     const token = await getAccessToken();
 
@@ -49,7 +47,7 @@ async function loadEbookSafe(id: string): Promise<EbookDetail | null> {
     try {
         return await getEbook(id, token);
     } catch {
-        return null; // metadata only — locked/missing both fall back to a generic title
+        return null;
     }
 }
 
@@ -100,23 +98,20 @@ export default async function EbookReaderPage({ params }: { params: Promise<{ id
     try {
         ebook = await getEbook(id, token);
     } catch (error) {
-        handleApiAuthError(error); // 401 → force logout
+        handleApiAuthError(error);
         if (error instanceof ApiError && error.status === 403) return <UpgradeGate />;
-        notFound(); // 404 / 500 / other
+        notFound();
     }
 
     const isPdf = Boolean(ebook.pdf_url);
     const chapters = isPdf ? [] : toReaderChapters(ebook.chapters);
 
-    // "Next Ebook" walks the same catalog order shown on /member/ebooks — the
-    // last item falls back to the listing rather than wrapping around.
     const list = await getEbooks(token);
     const currentIndex = list.findIndex((item) => item.ebook_id === id);
     const nextEbook = currentIndex >= 0 ? (list[currentIndex + 1] ?? null) : null;
 
     return (
         <div className='flex-1'>
-            {/* Hero */}
             <div className='mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-10'>
                 <Link
                     href='/member/ebooks'

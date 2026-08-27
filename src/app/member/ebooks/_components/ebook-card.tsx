@@ -13,7 +13,6 @@ export function EbookCard({ ebook }: { ebook: EbookListItem }) {
         <article className='bg-card-dark-navy border-slr-navy-border shadow-card-soft flex flex-col overflow-hidden rounded-2xl border'>
             <div className='relative aspect-16/10 w-full overflow-hidden'>
                 {cover_url ? (
-                    // CMS covers can be on any host → unoptimized to skip next/image's remote-host allowlist.
                     <Image
                         src={cover_url}
                         alt={title}
@@ -41,7 +40,6 @@ export function EbookCard({ ebook }: { ebook: EbookListItem }) {
 
             <div className='flex flex-1 flex-col gap-3 p-4 md:p-5'>
                 <div className='space-y-1'>
-                    {/* Fixed clamps (title 1 line, subtitle 2 lines, reserved) keep every card the same height. */}
                     <h3 className='line-clamp-1 text-base font-semibold text-white md:text-lg'>{title}</h3>
                     <p className='text-slr-muted line-clamp-2 min-h-[2lh] text-sm'>{subtitle}</p>
                 </div>

@@ -3,12 +3,6 @@ import type { SpinConfig, SpinHistoryMeta, SpinHistoryRow, SpinMoment, SpinTierI
 import { API } from '../endpoints';
 import { apiFetch, apiFetchPaginated } from '../http';
 
-/**
- * Admin-only spin wheel functions (real API, 2026-08-09). Kept separate from
- * spin.ts, which is the member-facing "check status / execute a spin" module —
- * different audience, different auth, no shared code.
- */
-
 export interface SpinHistoryFilters {
     tier?: SpinTierId;
     moment?: SpinMoment;
@@ -28,7 +22,6 @@ function historyQuery(filters?: SpinHistoryFilters): string {
     return query ? `?${query}` : '';
 }
 
-/** Server-paginated — the API returns `meta.total_pages`, not the full set. */
 export function getAdminSpinHistory(token: string, filters?: SpinHistoryFilters) {
     return apiFetchPaginated<SpinHistoryRow[], SpinHistoryMeta>(`${API.admin.spinHistory}${historyQuery(filters)}`, {
         token

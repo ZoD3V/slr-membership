@@ -78,7 +78,10 @@ export function ImagesField<TFieldValues extends FieldValues>({
 
                     <div className='h-20 w-20'>
                         <label className='flex h-full w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 transition-colors hover:border-gray-400'>
-                            <input type='file' accept={ACCEPTED_TYPES.join(',')} className='hidden'
+                            <input
+                                type='file'
+                                accept={ACCEPTED_TYPES.join(',')}
+                                className='hidden'
                                 disabled={disabled}
                                 onChange={(e) => {
                                     const files = Array.from(e.target.files || []);

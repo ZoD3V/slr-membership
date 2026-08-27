@@ -13,7 +13,6 @@ const PERKS = [
     { icon: Sparkles, label: 'BENY add-on' }
 ];
 
-/** Shown only on the Visitor dashboard — nudges the free member to a paid tier. */
 export function VisitorUpgradeBanner() {
     return (
         <section className='relative isolate rounded-2xl p-px'>
@@ -39,7 +38,6 @@ export function VisitorUpgradeBanner() {
                         </p>
                     </div>
 
-                    {/* RED + BLUE member-card fan — the cards the visitor is upgrading to */}
                     {TIER_VISUALS.red.cardArt && TIER_VISUALS.blue.cardArt && (
                         <div aria-hidden className='pointer-events-none hidden shrink-0 items-center xl:flex'>
                             <Image

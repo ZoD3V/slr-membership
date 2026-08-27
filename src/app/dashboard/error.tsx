@@ -4,8 +4,6 @@ import Link from 'next/link';
 
 import RouteError from '@/components/common/route-error';
 
-// Admin segment boundary — keeps the dashboard shell (sidebar, breadcrumbs) alive
-// when a single admin page throws, so an ops user can move to another screen.
 export default function DashboardError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
     return (
         <RouteError

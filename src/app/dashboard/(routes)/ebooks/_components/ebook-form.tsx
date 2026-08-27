@@ -32,9 +32,7 @@ const TIERS: EbookTier[] = ['VISITOR', 'RED', 'BLUE'];
 const formSchema = z.object({
     title: z.string().min(1, 'Title is required'),
     subtitle: z.string().optional(),
-    // The API rejects a missing cover with a generic, field-less validation
-    // error — catching it here up front gives the admin a clear inline
-    // message instead of a round trip to a vague toast.
+
     coverUrl: z.string().min(1, 'Cover image is required'),
     pdfUrl: z.string().optional(),
     description: z.string().optional(),
@@ -71,7 +69,6 @@ export function EbookForm({ initialData }: EbookFormProps) {
     const [selectedChapter, setSelectedChapter] = useState<EbookChapter | null>(null);
     const [chapterPendingDelete, setChapterPendingDelete] = useState<EbookChapter | null>(null);
 
-    // Content type is chosen at create time and locked on edit (derived from pdfUrl).
     const isPdfEbook = Boolean(initialData?.pdfUrl);
     const [contentMode, setContentMode] = useState<'chapters' | 'pdf'>(
         initialData ? (isPdfEbook ? 'pdf' : 'chapters') : 'chapters'
@@ -380,8 +377,8 @@ export function EbookForm({ initialData }: EbookFormProps) {
                                         </Select>
                                         {initialData ? (
                                             <p className='text-xs text-amber-400'>
-                                                ⚠ Not loaded from the server — confirm the correct tier before
-                                                saving, or you may change this ebook&apos;s access unintentionally.
+                                                ⚠ Not loaded from the server — confirm the correct tier before saving,
+                                                or you may change this ebook&apos;s access unintentionally.
                                             </p>
                                         ) : null}
                                         <FormMessage />

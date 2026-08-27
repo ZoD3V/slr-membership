@@ -32,7 +32,7 @@ export function MemberPickerDialog({
     open: boolean;
     onOpenChange: (open: boolean) => void;
     tier: TierGroup;
-    /** Human-readable draw pool, e.g. "SLR Red · VIC" — shown as the dialog subtitle. */
+
     poolLabel: string;
     onSelect: (member: WinnerMemberOption) => void;
 }) {
@@ -42,7 +42,6 @@ export function MemberPickerDialog({
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Debounced so typing a name doesn't fire a request per keystroke.
     useEffect(() => {
         if (!open) return;
 

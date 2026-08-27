@@ -7,7 +7,6 @@ const SlrRewardCarsSection = () => {
         <section className='bg-slr-ink relative py-16 md:py-24'>
             <div className='mx-auto max-w-7xl px-4'>
                 <div className='grid grid-cols-1 items-center gap-10 lg:grid-cols-[2fr_3fr]'>
-                    {/* Left — logo, headline, meta, CTA */}
                     <div className='flex flex-col items-center text-center lg:items-start lg:text-left'>
                         <Image
                             src='/images/slr-rewards-logo.webp'
@@ -33,7 +32,6 @@ const SlrRewardCarsSection = () => {
                         </GoldPillButton>
                     </div>
 
-                    {/* Right — reward scene */}
                     <Image
                         src='/images/bg-slr-car-reward.webp'
                         alt='SLR rewards — luxury car, cash and gift hamper giveaways'

@@ -22,8 +22,6 @@ const STATUS_OPTIONS: { value: AdminMemberStatusValue; label: string }[] = [
     { value: 'DEACTIVATED', label: 'Deactivated' }
 ];
 
-// Full sub-tier set accepted by POST /memberships/change-tier. Labels come from
-// formatAdminTierName so the select matches the members table and detail fields.
 const SUB_TIER_IDS: MemberSubTierId[] = ['visitor', 'r1', 'r4', 'r7', 'b1', 'b4', 'b7', 'b10'];
 
 const SUB_TIER_OPTIONS: { value: MemberSubTierId; label: string }[] = SUB_TIER_IDS.map((value) => ({
@@ -48,8 +46,7 @@ export function MemberAdminActions({
 }) {
     const router = useRouter();
     const [status, setStatus] = useState<AdminMemberStatusValue>(toStatusValue(currentStatus));
-    // The member-detail response exposes the base tier code only (not the exact
-    // sub-tier), so the sub-tier control starts unset and the admin selects one.
+
     const [subTier, setSubTier] = useState<MemberSubTierId | ''>('');
     const [statusPending, startStatus] = useTransition();
     const [tierPending, startTier] = useTransition();

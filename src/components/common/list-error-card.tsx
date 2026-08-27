@@ -7,8 +7,6 @@ export type ListError = {
     requestId: string | null;
 };
 
-// Surfaces the raw API failure (status/code/message/requestId) so it can be
-// copy-pasted straight into a backend bug report — see docs/BACKEND-ISSUES.md.
 export function ListErrorCard({
     error,
     title,

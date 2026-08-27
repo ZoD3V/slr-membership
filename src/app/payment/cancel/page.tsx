@@ -13,9 +13,6 @@ export const metadata: Metadata = {
     robots: { index: false }
 };
 
-// Stripe Checkout cancel return (STRIPE_CANCEL_URL). Public, but a member who
-// signed up and then backed out still has an account — send them where they can
-// finish paying instead of to the marketing page.
 export default async function PaymentCancelPage() {
     const session = await auth();
     if ((session?.user as { requiresPayment?: boolean } | undefined)?.requiresPayment) {

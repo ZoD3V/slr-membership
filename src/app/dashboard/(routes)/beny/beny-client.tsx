@@ -18,9 +18,6 @@ import { toast } from 'sonner';
 
 const ITEMS_PER_PAGE = 10;
 
-// The whole tab is fetched in one call so DataTable can search and paginate over
-// the full set — GET /admin/beny has no `search` param, and per-page rows would
-// mean the search box only ever matched the 10 rows already on screen.
 const FETCH_LIMIT = 200;
 
 export type BenyRow = {
@@ -32,15 +29,12 @@ export type BenyRow = {
     requestedAt: string;
     activatedAt?: string | null;
     accessEndsAt?: string | null;
-    /** Raw ISO alongside the display string — the paid period must actually be
-     *  over before access can be revoked, and that needs a real date to compare. */
+
     accessEndsAtIso?: string | null;
     deactivatedAt?: string | null;
     deactivationReason?: string | null;
 };
 
-// Mirrors the three triggers that move a subscription into pending_deactivation
-// (PRD §2.3), plus a free-text escape hatch.
 const EMPTY_TEXT: Record<BenyTab, { title: string; description: string }> = {
     pending_activation: {
         title: 'No pending activations',
@@ -75,13 +69,12 @@ export function BenyClient({
     const [isPending, startTransition] = useTransition();
 
     const loadData = (tab: BenyTab) => {
-        // Backend has no pending_deactivation status yet — requesting it can only 400.
         if (!isTabSupported(tab)) {
             setRows([]);
 
             return;
         }
-        if (!apiSupported && tab === DEFAULT_BENY_TAB) return; // served by the local fallback below
+        if (!apiSupported && tab === DEFAULT_BENY_TAB) return;
 
         startTransition(async () => {
             const res = await getBenySubscriptionsAction(tab, 1, FETCH_LIMIT);
@@ -102,8 +95,6 @@ export function BenyClient({
                 setRows(mapped);
                 setApiSupported(true);
             } else if (res.status === 404 || res.status === 400 || res.status === 405) {
-                // Paginated list endpoint isn't live yet — fall back to the server
-                // prefetch, which only covers the pending tab.
                 console.warn('Backend does not support paginated BENY lists endpoint, using fallback.');
                 setApiSupported(false);
                 setRows(tab === DEFAULT_BENY_TAB ? initialRows : []);
@@ -113,8 +104,6 @@ export function BenyClient({
         });
     };
 
-    // The server only prefetches the pending tab, so any other deep-linked tab
-    // has to fetch itself once on mount.
     const didMountFetch = useRef(false);
     useEffect(() => {
         if (didMountFetch.current || initialTab === DEFAULT_BENY_TAB) return;
@@ -125,7 +114,7 @@ export function BenyClient({
     const handleTabChange = (tab: BenyTab) => {
         setActiveTab(tab);
         loadData(tab);
-        // Keep the tab in the URL so it stays shareable and Back-navigable.
+
         router.replace(`/dashboard/beny?status=${tab}`, { scroll: false });
     };
 
@@ -187,21 +176,13 @@ export function BenyClient({
                 ))}
             </div>
 
-            {/* The table always renders — headers and the pager stay put at any row
-                count, and the per-tab copy lives inside the empty row rather than in
-                a second card stacked above it. */}
             <DataTable
                 isSearch={true}
                 searchKey='name'
                 columns={columns}
                 data={rows}
-                // Client-side on purpose: the whole tab is already in `rows`, and
-                // `serverSide` would disable DataTable's own filtering while there
-                // is no ?search= param to delegate to.
                 itemsPerPage={ITEMS_PER_PAGE}
                 isLoading={isPending}
-                // Tabs swap the row set constantly — keeping the pager pinned
-                // means the total is always readable, even on a single page.
                 alwaysShowPagination
                 emptyMessage={
                     <span className='flex flex-col items-center gap-1'>

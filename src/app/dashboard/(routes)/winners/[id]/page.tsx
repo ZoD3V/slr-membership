@@ -12,7 +12,6 @@ export default async function EditWinnerPage({ params }: { params: Promise<{ id:
     const token = await getAccessToken();
     if (!token) notFound();
 
-    // No per-winner GET exists, so find it in the list.
     let winner;
     try {
         const res = await getAdminWinners(token, { page: 1, perPage: 100 });

@@ -18,12 +18,11 @@ const SIZES = {
 interface TierBadgeProps {
     subTier: SubTierCode;
     size?: keyof typeof SIZES;
-    /** Show the tier group with the marketing name, e.g. "RED · Plus". Off → "Plus". */
+
     showGroup?: boolean;
     className?: string;
 }
 
-/** Tier pill supporting Visitor + every paid sub-tier (R1/R4/R7, B1/B4/B7/B10). */
 export function TierBadge({ subTier, size = 'md', showGroup = true, className }: TierBadgeProps) {
     const meta = SUB_TIERS[subTier];
     const visual = TIER_VISUALS[meta.group];
@@ -58,7 +57,6 @@ interface TierGroupBadgeProps {
     className?: string;
 }
 
-/** Tier pill keyed to a tier group only (no sub-tier) — e.g. for giveaway cards. */
 export function TierGroupBadge({ group, size = 'sm', className }: TierGroupBadgeProps) {
     const visual = TIER_VISUALS[group];
     const Icon = GROUP_ICON[group];

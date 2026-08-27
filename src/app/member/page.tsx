@@ -41,12 +41,8 @@ export default async function MemberDashboardPage() {
     const member = await getCurrentMember();
     const token = await getAccessToken();
 
-    // Spin status only exists for token-upgrade sub-tiers — below-eligible tiers
-    // (Visitor/R1/B1) get a 403, so skip the call instead of logging an error.
     const spinEligible = SPIN_ELIGIBLE_SUB_TIERS.has(member.sub_tier);
 
-    // Independent authed reads — allSettled so the giveaways 500 can't blank the
-    // membership/cycle cards (per API-INTEGRATION.md degradation rules).
     const [membershipR, entriesR, giveawaysR, spinR, billingR] = token
         ? await Promise.allSettled([
               getMyMembership(token),
@@ -61,45 +57,33 @@ export default async function MemberDashboardPage() {
           ])
         : [];
 
-    // Any expired-session failure → force logout (never returns).
     for (const result of [membershipR, entriesR, giveawaysR, spinR, billingR]) {
         if (result?.status === 'rejected') handleApiAuthError(result.reason);
     }
 
-    // Featured offers use the PUBLIC discounts endpoint (no tier gate). Discounts
-    // are a RED/BLUE benefit though — Visitor gets no access, so skip the fetch
-    // entirely for them. Failure is non-fatal → empty list.
     const publicDiscounts =
         tierGroupOf(member.sub_tier) === 'visitor' ? [] : await getPublicDiscounts().catch(() => [] as Discount[]);
 
     const membership = membershipR?.status === 'fulfilled' ? membershipR.value : null;
     const rawCycle = entriesR?.status === 'fulfilled' ? entriesR.value.current_cycle : null;
-    // G2 (docs/BACKEND-ISSUES-SPRINT3-GIVEAWAYS.md): the API can keep reporting a
-    // cycle as `current` + `entry_status: "active"` days after its own `end_at` —
-    // renewal not having run yet. Treat it as gone rather than show stale tokens /
-    // draw eligibility; the dashboard falls back to the no-active-draw empty state.
+
     const cycle =
         rawCycle && (rawCycle.tier || '').toLowerCase() !== 'beny' && !isCycleExpired(rawCycle) ? rawCycle : null;
     const giveaways = giveawaysR?.status === 'fulfilled' ? giveawaysR.value : [];
-    // A rejected read is not an empty read: keep them apart so a dead endpoint
-    // never renders as "you have no draws / no membership".
+
     const giveawaysFailed = giveawaysR?.status === 'rejected';
     const drawDataFailed = giveawaysFailed || entriesR?.status === 'rejected';
     const billing = billingR?.status === 'fulfilled' ? billingR.value : null;
 
-    // PRD §4.5 moment 2 — offered H-2 (48h) before auto-renewal, and only for
-    // the token-upgrade sub-tiers the API already gates on. A registration-
     const spin = spinR?.status === 'fulfilled' ? spinR.value : null;
-    const renewalSpin =
-        spin?.available && (spin.moment === 'renewal' || spin.moment === 'pre_renewal') ? spin : null;
+    const renewalSpin = spin?.available && (spin.moment === 'renewal' || spin.moment === 'pre_renewal') ? spin : null;
 
     const subTier = membership ? subTierCodeOf(membership.subTierId) : member.sub_tier;
     const memberGroup = tierGroupOf(subTier);
-    // Visitor is free with no billing/renewal and only the Visitor weekly draw (PRD §2.1).
+
     const isVisitor = memberGroup === 'visitor';
     const memberTokens = cycle?.total_token ?? 0;
 
-    // Summary (memberships/me + session state + cycle end for next-payment).
     const nextPayment = cycle?.end_at ?? (membership?.activatedAt ? cycleEndFrom(membership.activatedAt) : '');
     const summary: MembershipSummary = {
         sub_tier: subTier,
@@ -107,11 +91,10 @@ export default async function MemberDashboardPage() {
         billing_status: membership ? mapBillingStatus(membership.billingStatus) : null,
         price_cents: membership?.subTier.priceCents ?? SUB_TIERS[subTier].price_cents,
         next_payment_date: nextPayment,
-        beny_addon: null, // hidden until the BENY endpoint lands (SP4)
+        beny_addon: null,
         cancel_at_period_end: billing?.cancel_at_period_end ?? false
     };
 
-    // Live draw-cycle surface (entries/ current_cycle) — real entry_status + tokens + renewal.
     const cycleDraw: DrawStatus | null = cycle
         ? {
               giveaway_id: cycle.cycle_id,
@@ -124,9 +107,6 @@ export default async function MemberDashboardPage() {
           }
         : null;
 
-    // PRD §2.3 "Kartu status undian" — every tier sees their current active
-    // giveaway: one they're actually entered into (§4.3 — BLUE covers RED + BLUE)
-    // and not yet drawn, soonest first. Single pass: filter + earliest, no sort.
     const nowMs = Date.now();
     let activeGiveaway: ApiGiveaway | undefined;
     let activeDrawsAt = Infinity;
@@ -139,7 +119,7 @@ export default async function MemberDashboardPage() {
     }
 
     const activeMapped = activeGiveaway && toGiveaway(activeGiveaway, memberGroup, member.state, memberTokens);
-    // Nothing live (between giveaways, or all already drawn) → cycle framing.
+
     const giveawayDraw: DrawStatus | null = activeMapped
         ? {
               giveaway_id: activeMapped.id,
@@ -158,16 +138,10 @@ export default async function MemberDashboardPage() {
     const drawEyebrow = giveawayDraw ? 'Current Draw' : 'Current Cycle';
     const drawDateWord = isVisitor || isCancelled ? 'Ends' : giveawayDraw ? 'Draws' : 'Renews';
 
-    // Featured partner offers — ONLY discounts flagged is_featured, capped. Empty → hidden.
     const featuredDiscounts: Discount[] = publicDiscounts
         .filter((d) => d.is_featured && (d.title?.trim() || d.partner_name?.trim()))
         .slice(0, 6);
 
-    // Upcoming giveaways — every not-yet-drawn draw, soonest first. The active
-    // giveaway stays INCLUDED: the Current Draw card is an entries summary, not
-    // this grid, and a tier often has exactly one live draw — excluding it made
-    // this section claim "No Upcoming Giveaways" while /member/giveaways showed it.
-    // Missing draws_at → treated as upcoming, sorted last (the API allows null).
     const drawTimeMs = (g: ApiGiveaway) => {
         const t = Date.parse(g.draws_at ?? '');
 

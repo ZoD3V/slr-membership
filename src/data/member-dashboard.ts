@@ -5,16 +5,6 @@ import { subTierCodeOf } from '@/lib/member';
 import { getSessionIdentity } from '@/lib/session-member';
 import type { CurrentMember } from '@/types/member';
 
-/**
- * The logged-in member's identity (name / sub-tier / state), read live from
- * `GET /auth/me` so tier gates react to a plan change immediately. The session is
- * only a fallback: its `sub_tier` is written at login, so a member who upgrades
- * mid-session would keep hitting Visitor gates until signing in again.
- *
- * Consumed by the member header/sidebar and every page that gates on tier + state
- * (dashboard, giveaways, discounts, prizes). `getMe` is request-cached, so the
- * repeated calls collapse into one.
- */
 export async function getCurrentMember(): Promise<CurrentMember> {
     const identity = await getSessionIdentity();
     const token = await getAccessToken();
@@ -31,7 +21,7 @@ export async function getCurrentMember(): Promise<CurrentMember> {
                 email_verified_at: me.email_verified_at
             };
         } catch (error) {
-            handleApiAuthError(error); // expired session → force logout; otherwise fall through
+            handleApiAuthError(error);
         }
     }
 

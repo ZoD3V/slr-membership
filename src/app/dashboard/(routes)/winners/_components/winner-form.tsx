@@ -24,8 +24,6 @@ import { type Resolver, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
-// The API accepts only these three fields — name and state are read from the
-// member record behind user_id, so collecting them here would be ignored.
 const formSchema = z.object({
     giveawayId: z.string().min(1, 'Giveaway is required'),
     userId: z.string().min(1, 'Member is required'),
@@ -39,7 +37,7 @@ export interface WinnerFormInitialData {
     giveawayId: string;
     userId: string;
     prize: string;
-    /** Name/state of the already-recorded winner, so the edit form isn't a bare UUID. */
+
     memberName?: string;
     memberState?: string;
 }
@@ -48,7 +46,7 @@ export interface GiveawayOption {
     id: string;
     label: string;
     tier: AdminGiveawayTier;
-    /** Pre-formatted dates — the picker mirrors the giveaways table's Start/End/Draw. */
+
     opens: string;
     closes: string;
     draws: string;
@@ -78,8 +76,6 @@ export function WinnerForm({
             : { giveawayId: defaultGiveawayId ?? '', userId: '', prize: '' }
     });
 
-    // API Contract §13: recording a winner sets draw_pass = 0, which drops the member
-    // from the rest of the cycle's giveaways — admin must confirm before it happens.
     const [pendingValues, setPendingValues] = useState<FormValues | null>(null);
     const [pickerOpen, setPickerOpen] = useState(false);
     const [member, setMember] = useState<WinnerMemberOption | null>(
@@ -117,17 +113,12 @@ export function WinnerForm({
                     toast.error(res.message);
                 }
             } catch {
-                // The server action can reject instead of resolving with
-                // { ok: false } (e.g. the draw-date-not-passed check) — without
-                // this, that rejection is silently swallowed and the admin
-                // sees no feedback at all.
                 setPendingValues(null);
                 toast.error('Something went wrong. Please try again.');
             }
         });
     };
 
-    // Editing an existing row does not re-trigger the draw_pass side effect.
     const onSubmit = (values: FormValues) => (initialData ? submit(values) : setPendingValues(values));
 
     const giveawayById = (id: string) => giveaways.find((g) => g.id === id);
@@ -137,8 +128,6 @@ export function WinnerForm({
         return g ? `${g.label} (${g.tier})` : id;
     };
 
-    // The picker is scoped to the giveaway's draw pool, so a giveaway must be
-    // chosen before members can be listed at all.
     const selectedGiveawayId = form.watch('giveawayId');
     const selectedGiveaway = giveawayById(selectedGiveawayId);
     const selectedGroup = selectedGiveaway ? tierGroupFromApi(selectedGiveaway.tier) : null;
@@ -166,8 +155,6 @@ export function WinnerForm({
                                     <Select
                                         value={field.value}
                                         onValueChange={(next) => {
-                                            // A different giveaway means a different draw pool —
-                                            // the member picked from the old one no longer applies.
                                             if (next !== field.value) {
                                                 setMember(null);
                                                 form.setValue('userId', '');

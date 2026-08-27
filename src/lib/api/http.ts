@@ -4,21 +4,20 @@ import { type ApiEnvelope, ApiError } from './types';
 
 type ApiFetchOptions = {
     method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-    /** JSON body — serialized automatically. */
+
     body?: unknown;
-    /** Bearer token for authenticated calls. */
+
     token?: string;
     headers?: Record<string, string>;
-    /** Next.js fetch cache mode (server). */
+
     cache?: RequestCache;
-    /** ISR revalidate seconds, or false to opt out (server). */
+
     revalidate?: number | false;
-    /** Cache tags for on-demand revalidation (server). */
+
     tags?: string[];
     signal?: AbortSignal;
 };
 
-/** Shared request/parse/error/logging logic for apiFetch and apiFetchPaginated. */
 async function doFetch<T>(path: string, opts: ApiFetchOptions = {}): Promise<ApiEnvelope<T>> {
     const { method = 'GET', body, token, headers, cache, revalidate, tags, signal } = opts;
 
@@ -45,7 +44,6 @@ async function doFetch<T>(path: string, opts: ApiFetchOptions = {}): Promise<Api
             ...(next ? { next } : {})
         });
     } catch (networkError) {
-        // Request never reached the API (DNS, offline, aborted).
         logApi({
             method,
             path,
@@ -61,7 +59,7 @@ async function doFetch<T>(path: string, opts: ApiFetchOptions = {}): Promise<Api
     try {
         json = (await res.json()) as ApiEnvelope<T>;
     } catch {
-        // Non-JSON response (e.g. gateway error page).
+        void 0;
     }
 
     const ms = Date.now() - start;
@@ -85,22 +83,10 @@ async function doFetch<T>(path: string, opts: ApiFetchOptions = {}): Promise<Api
     return json;
 }
 
-/**
- * Single entry point for hitting the SLR API. Works in Server Components,
- * route handlers, server actions, and the client. Unwraps the `{ success,
- * message, data }` envelope and throws `ApiError` on failure.
- *
- * Build typed resource functions on top of this (see `resources/*`) rather
- * than calling it directly from components.
- */
 export async function apiFetch<T>(path: string, opts: ApiFetchOptions = {}): Promise<T> {
     return (await doFetch<T>(path, opts)).data;
 }
 
-/**
- * Same as apiFetch, but keeps the envelope's `meta` — for server-paginated
- * list endpoints that return `{ data: T[], meta: { page, total_pages, ... } }`.
- */
 export async function apiFetchPaginated<T, M = Record<string, unknown>>(
     path: string,
     opts: ApiFetchOptions = {}

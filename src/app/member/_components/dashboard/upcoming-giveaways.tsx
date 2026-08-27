@@ -11,11 +11,9 @@ import { SectionTitle } from './section-title';
 import { ArrowRight, CalendarClock, Lock, Trophy } from 'lucide-react';
 
 function GiveawayCard({ giveaway }: { giveaway: UpcomingGiveaway }) {
-    // Tier-coloured diagonal gradient + alpha border — same palette as the home tier cards.
     const visual = TIER_VISUALS[giveaway.tier_group];
 
     return (
-        // Whole card is the click target (same pattern as Quick Actions).
         <Link
             href={giveaway.locked ? '/member/membership' : `/member/giveaways/${giveaway.id}`}
             className='group shadow-card-warm flex flex-col gap-3 rounded-2xl border p-4 transition-shadow duration-200 hover:shadow-[0_0_28px_rgba(212,175,55,0.15)] sm:p-5'

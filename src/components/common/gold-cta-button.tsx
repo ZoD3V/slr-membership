@@ -8,16 +8,12 @@ import { cn } from '@/lib/utils';
 type GoldCtaButtonProps = {
     href: string;
     children: ReactNode;
-    /** Optional className for the wrapping <Link>. */
+
     className?: string;
-    /** Optional className passed through to the inner <Button>. */
+
     buttonClassName?: string;
 };
 
-/**
- * GoldCtaButton — the primary call-to-action button used across tier sections.
- * Gold gradient fill, dark-navy text, light-gold top edge.
- */
 const GoldCtaButton: FC<GoldCtaButtonProps> = ({ href, children, className, buttonClassName }) => (
     <Link href={href} className={cn('block', className)}>
         <Button

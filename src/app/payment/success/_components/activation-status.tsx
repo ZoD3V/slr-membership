@@ -24,9 +24,6 @@ const SecondaryLink = ({ href, children }: { href: string; children: string }) =
     </Link>
 );
 
-// Polls the backend until the Stripe webhook flips billing to active (webhook can
-// lag 1–5s). Confirms via GET /billing/status rather than parsing `session_id` —
-// same outcome, and it doesn't depend on the redirect carrying the id.
 export function ActivationStatus() {
     const [phase, setPhase] = useState<Phase>('polling');
     const [detail, setDetail] = useState<ActivationState | null>(null);
@@ -115,9 +112,6 @@ export function ActivationStatus() {
         );
     }
 
-    // timeout — the webhook still hasn't confirmed. While the backend keeps the
-    // account flagged unpaid, /member only redirects back to /complete-payment,
-    // so offer a re-check instead of a link that bounces.
     if (detail?.requiresPayment) {
         return (
             <EmptyState

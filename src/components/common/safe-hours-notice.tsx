@@ -3,7 +3,6 @@ import { cn } from '@/lib/utils';
 
 import { Clock } from 'lucide-react';
 
-/** Shown next to a Join / Upgrade / Downgrade control that the Friday draw window has disabled. */
 export function SafeHoursNotice({ className }: { className?: string }) {
     return (
         <div

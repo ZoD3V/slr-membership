@@ -26,9 +26,7 @@ type Status = 'loading' | 'success' | 'error';
 const VerifyEmailPanel = ({ token }: { token: string }) => {
     const [status, setStatus] = useState<Status>(token ? 'loading' : 'error');
     const [errorMessage, setErrorMessage] = useState('This link is missing its token.');
-    // A broken/expired link may be opened on a device where the member was
-    // never signed in, so resend can't read the email from a session — it
-    // has to be typed here. The API takes a bare email, no auth required.
+
     const [resendEmail, setResendEmail] = useState('');
     const [resendPending, setResendPending] = useState(false);
     const [resendSent, setResendSent] = useState(false);
@@ -44,9 +42,7 @@ const VerifyEmailPanel = ({ token }: { token: string }) => {
                 if (!cancelled) setStatus('success');
             } catch (err) {
                 if (cancelled) return;
-                // Backend now answers a proper 400 with a specific message
-                // (fixed 2026-08-12, was a generic 500 earlier the same day)
-                // — surface it as-is instead of a guessed generic string.
+
                 setErrorMessage(
                     err instanceof ApiError ? apiErrorMessage(err) : 'Could not verify your email. Please try again.'
                 );

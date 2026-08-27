@@ -19,11 +19,6 @@ import { ArrowLeft, CircleAlert } from 'lucide-react';
 const dash = (v: string | null | undefined) => (v && v.trim() ? v : '-');
 const day = (v: string | null | undefined) => (v ? v.slice(0, 10) : '-');
 
-/**
- * The detail response splits the tier across two fields — `tier_code` is the
- * group ('red') and `tier` the marketing name ('Plus') — so together they pin
- * the exact sub-tier. Falls back to the raw name if the pair doesn't resolve.
- */
 const tierName = (group: string | null | undefined, marketingName: string | null | undefined) => {
     const code = group ? subTierFromGroupAndName(group.toLowerCase() as TierGroup, marketingName) : null;
 
@@ -106,7 +101,7 @@ export default async function MemberDetailPage({ params }: { params: Promise<{ u
 
                 <InfoCard title='Membership'>
                     <Field label='Tier' value={tierName(membership?.tier_code, membership?.tier)} />
-                    {/* Raw backend code, kept verbatim for support lookups. */}
+
                     <Field label='Tier code' value={dash(membership?.tier_code)} />
                     <Field label='Billing status' value={dash(membership?.billing_status)} />
                     <Field label='Renews' value={day(membership?.renew_at)} />
@@ -166,7 +161,6 @@ export default async function MemberDetailPage({ params }: { params: Promise<{ u
                                 <TableBody>
                                     {cycles.map((c) => (
                                         <TableRow key={c.cycle_id}>
-                                            {/* Cycle rows carry no tier group (API sends ''), so show the raw value. */}
                                             <TableCell>{dash(c.tier)}</TableCell>
                                             <TableCell>{day(c.start_at)}</TableCell>
                                             <TableCell>{day(c.end_at)}</TableCell>

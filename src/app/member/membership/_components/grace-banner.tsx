@@ -14,8 +14,6 @@ interface GraceBannerProps {
     expiresAt: string | null;
 }
 
-// Shown when billing_status === 'grace'. "Pay now" opens the hosted Stripe
-// checkout for the overdue invoice; on success the browser redirects there.
 export function GraceBanner({ expiresAt }: GraceBannerProps) {
     const [pending, startTransition] = useTransition();
 
@@ -23,7 +21,7 @@ export function GraceBanner({ expiresAt }: GraceBannerProps) {
         startTransition(async () => {
             const res = await payGraceInvoiceAction();
             if (res.ok) {
-                window.open(res.url, '_blank', 'noopener,noreferrer'); // open hosted Stripe payment in new tab
+                window.open(res.url, '_blank', 'noopener,noreferrer');
             } else {
                 if (process.env.NODE_ENV === 'development') {
                     console.error('[Grace Payment Error]', {

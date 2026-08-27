@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-
 import Link from 'next/link';
 
 import EmptyState from '@/components/common/empty-state';
@@ -29,9 +28,6 @@ export default async function GiveawaysPage() {
     let nextRenewalIso: string | null = null;
 
     if (token) {
-        // Giveaways + entries in parallel — entries gives the cycle token count, which
-        // is the member's entries-per-giveaway (the API has no per-giveaway count).
-        // Billing feeds the locked-tab banner ("upgrade takes effect at your next cycle").
         const [giveawaysRes, entriesRes, billingRes] = await Promise.allSettled([
             getGiveaways(token),
             getEntryHistory(token),
@@ -44,7 +40,7 @@ export default async function GiveawaysPage() {
                 .map((g) => toGiveaway(g, memberGroup, member.state, tokens))
                 .sort(compareGiveaways);
         } else {
-            handleApiAuthError(giveawaysRes.reason); // expired session → force logout
+            handleApiAuthError(giveawaysRes.reason);
             failed = true;
         }
         if (billingRes.status === 'fulfilled') nextRenewalIso = billingRes.value.next_renewal_at ?? null;
@@ -67,7 +63,6 @@ export default async function GiveawaysPage() {
                     description='We couldn’t load the draws for your tier right now. Please try again shortly.'
                 />
             ) : giveaways.length === 0 ? (
-                // Open layout matching the Referral (ComingSoon) empty state — no card box.
                 <EmptyState
                     icon={Gift}
                     title='No Giveaways Right Now'

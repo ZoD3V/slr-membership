@@ -14,14 +14,8 @@ import { saveSpinConfigAction } from './actions';
 import { Loader2Icon } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Derived from the authoritative constant (also read by the member-side spin
-// flow) so admin and member eligibility can't silently drift apart.
 const ELIGIBLE_SUB_TIERS = Array.from(SPIN_ELIGIBLE_SUB_TIERS) as SubTierCode[];
 
-// marketingName alone is ambiguous — 'Plus' is both R4 and B4 (confirmed via
-// /membership/tiers: Standard = r1|b1, Plus = r4|b4, Premium = r7|b7). Prefix
-// the parent tier so the row reads "R4 · Red Plus", not two identical "Plus"
-// rows with no way to tell which is which.
 function fullTierLabel(code: SubTierCode): string {
     const { group, marketingName } = SUB_TIERS[code];
     const groupLabel = group === 'red' ? 'Red' : group === 'blue' ? 'Blue' : 'Visitor';
@@ -45,15 +39,11 @@ function toEditableRow(config: SpinConfig, code: SubTierCode) {
 export function SpinConfigClient({ config }: { config: SpinConfig }) {
     const [isPending, startTransition] = useTransition();
 
-    // No react-hook-form here: toggles + a small numeric field, no cross-field
-    // validation rules worth pulling in RHF+Zod for.
     const [globalEnabled, setGlobalEnabled] = useState(config.global_enabled);
     const [rows, setRows] = useState(() =>
         Object.fromEntries(ELIGIBLE_SUB_TIERS.map((code) => [code, toEditableRow(config, code)]))
     );
-    // Raw text per row so a blank/mid-edit discount field doesn't snap to 0
-    // while the admin is typing — see Prizes/Safe Hours for the same reasoning
-    // applied to a different value.
+
     const [discountText, setDiscountText] = useState(() =>
         Object.fromEntries(
             ELIGIBLE_SUB_TIERS.map((code) => [code, String(toEditableRow(config, code).spin_discount_cents / 100)])
@@ -75,9 +65,6 @@ export function SpinConfigClient({ config }: { config: SpinConfig }) {
         setRows((prev) => ({ ...prev, [code]: { ...prev[code], has_spin } }));
     };
 
-    // Mirrors setDiscount exactly: whenever the text is unusable, the committed
-    // cents stay at their last valid value, so the message must name that value
-    // rather than implying the field is simply blank.
     const discountError = (code: SubTierCode): string => {
         const trimmed = discountText[code].trim();
         const kept = `$${(rows[code].spin_discount_cents / 100).toFixed(2)}`;
@@ -94,11 +81,6 @@ export function SpinConfigClient({ config }: { config: SpinConfig }) {
     const setDiscount = (code: SubTierCode, text: string) => {
         setDiscountText((prev) => ({ ...prev, [code]: text }));
 
-        // A blank/whitespace field is treated the same as an invalid number
-        // (NaN, negative): keep the last valid cents value rather than
-        // committing $0.00. Number('') === 0 is finite and >= 0, so an empty
-        // string must be excluded explicitly — it doesn't fail the numeric
-        // checks below on its own.
         const trimmed = text.trim();
         const dollars = Number(trimmed);
         const cents =
@@ -110,9 +92,6 @@ export function SpinConfigClient({ config }: { config: SpinConfig }) {
     };
 
     const handleSave = () => {
-        // Preserve every sub_tier the last GET returned, even ones this form
-        // doesn't render (ineligible codes) — a save must never silently drop
-        // them from the document.
         const eligibleIds = new Set(ELIGIBLE_SUB_TIERS.map((code) => code.toLowerCase()));
         const untouched = config.sub_tiers.filter((t) => !eligibleIds.has(t.sub_tier_id));
         const edited: SpinSubTierConfig[] = ELIGIBLE_SUB_TIERS.map((code) => ({
@@ -130,11 +109,7 @@ export function SpinConfigClient({ config }: { config: SpinConfig }) {
 
             if (result.ok) {
                 toast.success(result.message);
-                // Re-seed from the saved document, not the submitted values —
-                // the backend may normalise/clamp (e.g. a discount cap), and
-                // without this the form keeps showing a value the server
-                // rejected while isDirty (computed against the new `config`
-                // prop) reports true, making Save look stuck on.
+
                 setGlobalEnabled(result.data.global_enabled);
                 setRows(Object.fromEntries(ELIGIBLE_SUB_TIERS.map((code) => [code, toEditableRow(result.data, code)])));
                 setDiscountText(
@@ -196,9 +171,7 @@ export function SpinConfigClient({ config }: { config: SpinConfig }) {
                                             />
                                         </div>
                                     </div>
-                                    {/* Always occupies a line so a row that becomes
-                                            invalid doesn't grow and shove the rows below
-                                            it down while the admin is still typing. */}
+
                                     <p
                                         id={`spin-tier-${code}-error`}
                                         className='text-destructive-foreground min-h-5 text-right text-xs'>

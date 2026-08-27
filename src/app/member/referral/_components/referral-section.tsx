@@ -41,7 +41,7 @@ export function ReferralSection({ referral }: { referral: ReferralStatus }) {
             try {
                 await navigator.share({ title: 'Smart Life Rewards', text });
             } catch {
-                // Share dialog dismissed — nothing to do.
+                void 0;
             }
 
             return;
@@ -58,12 +58,10 @@ export function ReferralSection({ referral }: { referral: ReferralStatus }) {
     const history =
         tier_type === 'paid'
             ? (bonus_history ?? [])
-            : // gift_history isn't chronologically guaranteed by the API — newest first for a Visitor's short list.
-              [...(gift_history ?? [])].sort((a, b) => Date.parse(b.triggered_at) - Date.parse(a.triggered_at));
+            : [...(gift_history ?? [])].sort((a, b) => Date.parse(b.triggered_at) - Date.parse(a.triggered_at));
 
     return (
         <div className='space-y-6'>
-            {/* Code card */}
             <section className='bg-card-dark-navy border-slr-navy-border rounded-2xl border p-5 md:p-6'>
                 <p className='text-slr-gold-label text-xs font-semibold uppercase md:text-sm'>Your Referral Code</p>
                 <div className='mt-3 flex flex-wrap items-center gap-3'>
@@ -92,7 +90,6 @@ export function ReferralSection({ referral }: { referral: ReferralStatus }) {
                 </p>
             </section>
 
-            {/* Progress */}
             <section className='bg-card-dark-navy border-slr-navy-border rounded-2xl border p-5 md:p-6'>
                 <div className='flex items-center justify-between gap-2'>
                     <div className='flex items-center gap-2'>
@@ -117,7 +114,6 @@ export function ReferralSection({ referral }: { referral: ReferralStatus }) {
                 </div>
             </section>
 
-            {/* History */}
             <section className='bg-card-dark-navy border-slr-navy-border rounded-2xl border p-5 md:p-6'>
                 <div className='mb-4 flex items-center gap-2'>
                     <Gift className='text-slr-gold-label size-5' />

@@ -22,7 +22,7 @@ export default async function EbooksPage() {
         try {
             ebooks = await getEbooks(token);
         } catch (error) {
-            handleApiAuthError(error); // expired session → force logout
+            handleApiAuthError(error);
             failed = true;
         }
     }

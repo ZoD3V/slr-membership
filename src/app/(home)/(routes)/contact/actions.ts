@@ -15,9 +15,7 @@ export type ActionResult<T> = { ok: true; data: T; message: string } | ActionErr
 
 function toActionError(error: unknown): ActionError {
     if (error instanceof ApiError) {
-        const payload = error.payload as
-            | { code?: string; details?: { field: string; message: string }[] }
-            | undefined;
+        const payload = error.payload as { code?: string; details?: { field: string; message: string }[] } | undefined;
 
         const fieldErrors = payload?.details?.reduce<Record<string, string>>((acc, d) => {
             acc[d.field] = d.message;

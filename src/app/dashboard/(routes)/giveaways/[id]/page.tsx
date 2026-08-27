@@ -37,7 +37,6 @@ export default async function EditGiveawayPage({ params }: { params: Promise<{ i
                 }}
             />
 
-            {/* Winners are edited in one place — /dashboard/winners. */}
             <div className='mx-auto flex w-full max-w-4xl items-center justify-between gap-4 px-4 pb-6'>
                 <span className='flex items-center gap-2 text-sm'>
                     <Trophy className='size-4' />

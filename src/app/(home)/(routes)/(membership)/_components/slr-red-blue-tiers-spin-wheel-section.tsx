@@ -11,22 +11,21 @@ type Tier = {
     label: string;
     price: string;
     token: string;
-    /** Spin-wheel prize icon, or null for the no-spin standard tier. */
+
     spin: string | null;
 };
 
 type TierTheme = {
-    /** Tier accent — used for the "X TIER" header and prices. */
     accent: string;
-    /** Gradient drawn as the 2px outer card border. */
+
     borderGradient: string;
-    /** Translucent inner fill of the outer card. */
+
     fill: string;
-    /** 1px border colour of each tier item card. */
+
     itemBorder: string;
-    /** Token pill background + border. */
+
     badge: CSSProperties;
-    /** Divider colour under the price. */
+
     divider: string;
     columns: string;
 };

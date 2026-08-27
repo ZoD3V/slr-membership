@@ -38,10 +38,8 @@ export function GiveawaysBoard({
     const memberGroup = tierGroupOf(memberSubTier);
     const tabs = visibleGiveawayTabs(memberGroup);
 
-    // Hooks must run unconditionally — default to the member's own tier tab.
     const [active, setActive] = useState<TierGroup>(tabs.includes(memberGroup) ? memberGroup : (tabs[0] ?? 'red'));
 
-    // Visitor (PRD §4.3): no RED/BLUE segmented control — only the weekly draw.
     if (tabs.length === 0) {
         return (
             <div className='space-y-4'>
@@ -55,7 +53,6 @@ export function GiveawaysBoard({
 
     return (
         <div className='space-y-5'>
-            {/* Tier segment control — RED / BLUE (PRD §4.3). */}
             <div
                 className='border-slr-navy-border inline-flex gap-1 rounded-xl border p-1'
                 role='tablist'
@@ -82,8 +79,6 @@ export function GiveawaysBoard({
                 })}
             </div>
 
-            {/* Locked-tab upsell — the active tab is above the member's tier (PRD: paid→paid
-                upgrades apply at the next renewal, so the date comes from billing). */}
             {isGiveawayLocked(active, memberGroup) && (
                 <div
                     className='flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4 md:p-5'

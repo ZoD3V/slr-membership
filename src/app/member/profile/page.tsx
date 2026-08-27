@@ -30,7 +30,6 @@ export default async function ProfilePage() {
 
     return (
         <div className='mx-auto w-full max-w-4xl flex-1 space-y-6 px-4 py-6 md:px-6 md:py-8'>
-            {/* Profile header */}
             <header className='flex flex-col items-center gap-3 text-center'>
                 <div className='bg-card-dark-navy border-slr-navy-border flex size-20 shrink-0 items-center justify-center rounded-full border text-2xl font-semibold text-white'>
                     {initials(profile.name)}
@@ -43,9 +42,7 @@ export default async function ProfilePage() {
                             <MapPin className='size-3' /> {profile.state}
                         </span>
                     </div>
-                    {/* No join date: /auth/me doesn't expose created_at, and the
-                        placeholder that used to sit here showed the same seeded
-                        date to every member. */}
+
                     <p className='text-slr-dim mt-1.5 text-xs'>{profile.email || '-'}</p>
                 </div>
             </header>

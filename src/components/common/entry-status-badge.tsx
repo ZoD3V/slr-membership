@@ -1,9 +1,6 @@
 import { cn } from '@/lib/utils';
 import type { EntryStatus } from '@/types/member';
 
-// entry_status is the public, frontend-safe projection of the internal-only
-// draw_pass value. Never render a draw_pass count anywhere — only this
-// active/inactive state. See CLAUDE.md §1.
 interface EntryStatusBadgeProps {
     status: EntryStatus;
     className?: string;

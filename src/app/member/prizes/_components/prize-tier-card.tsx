@@ -34,7 +34,7 @@ export function PrizeTierCard({ tier, isYours }: { tier: PrizeTierBreakdown; isY
                     </h3>
                     <p className='text-slr-dim text-xs'>{tier.price_label}</p>
                 </div>
-                {/* Member-card artwork — same asset as the public tier hero cards */}
+
                 {visual.cardArt && (
                     <Image
                         src={visual.cardArt}

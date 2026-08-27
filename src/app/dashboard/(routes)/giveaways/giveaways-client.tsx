@@ -41,7 +41,6 @@ export function GiveawaysClient({ rows, listError }: { rows: GiveawayRow[]; list
 
     const handleEdit = (row: GiveawayRow) => router.push(`/dashboard/giveaways/${row.id}`);
 
-    // DataTable's action column shows its own confirm dialog before calling this.
     const handleDelete = (row: GiveawayRow) => {
         startTransition(async () => {
             const res = await deleteGiveawayAction(row.id);

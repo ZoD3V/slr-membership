@@ -13,9 +13,6 @@ interface ManageTierProps {
     cancelAtPeriodEnd: boolean;
 }
 
-// Visitor → Stripe checkout (new subscription). Paid → schedule a tier change or
-// cancel, via ManageMembershipActions (POST/DELETE /memberships/upgrade +
-// POST /subscriptions/me/cancel). Rendered as the TierCard footer — no card of its own.
 export function ManageTier({
     isVisitor,
     currentSubTier,

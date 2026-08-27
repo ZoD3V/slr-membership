@@ -22,9 +22,6 @@ export async function subscribeBenyAction(payload: BenySubscribePayload): Promis
     const token = await getAccessToken();
     if (!token) return { ok: false, message: 'Not authenticated.' };
 
-    // PRD §1: the BENY add-on must redirect to Stripe Checkout ($4/mo). The live
-    // POST /beny/subscribe now returns `checkout_url` alongside the pending record
-    // — the caller must open it so the member actually pays.
     try {
         const data = await subscribeBeny(token, payload);
 
@@ -44,11 +41,6 @@ export async function cancelBenyAction(): Promise<BenyActionResult> {
     if (!token) return { ok: false, message: 'Not authenticated.' };
 
     try {
-        // The cancel response carries no beny_status. Cancelling does NOT end
-        // access — it moves the subscription to pending_deactivation and the
-        // member keeps BENY until the paid period ends and an admin revokes it
-        // in the BENY portal (PRD §2.3). Reporting 'cancelled' here would tell
-        // members their access is gone while they can still use it.
         await cancelBeny(token);
 
         return {

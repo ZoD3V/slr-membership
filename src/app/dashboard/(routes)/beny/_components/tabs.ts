@@ -1,4 +1,3 @@
-// Shared between the server page (validating ?status=) and the client tab bar.
 export const TABS = [
     { id: 'pending_activation', label: 'Pending Activation' },
     { id: 'active', label: 'Active' },
@@ -6,13 +5,6 @@ export const TABS = [
     { id: 'cancelled', label: 'Cancelled' }
 ] as const;
 
-/**
- * Statuses the API actually accepts today. Verified live 2026-08-02:
- * `?status=pending_deactivation` → 400 "Allowed values: PENDING_ACTIVATION,
- * ACTIVE, CANCELLED". The PRD §2.3 four-state flow is not implemented yet, so
- * that tab renders a notice instead of firing a request that can only fail.
- * Delete this set once the backend adds the status.
- */
 const SUPPORTED: ReadonlySet<string> = new Set(['pending_activation', 'active', 'pending_deactivation', 'cancelled']);
 
 export const isTabSupported = (tab: BenyTab): boolean => SUPPORTED.has(tab);

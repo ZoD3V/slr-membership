@@ -1,7 +1,6 @@
 import { API } from '../endpoints';
 import { apiFetch } from '../http';
 
-// POST /api/v1/contact — public (no auth), rate-limited 3 req/min per IP.
 export interface ContactPayload {
     firstName: string;
     lastName: string;

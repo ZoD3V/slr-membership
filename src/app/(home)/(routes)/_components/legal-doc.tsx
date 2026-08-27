@@ -5,12 +5,10 @@ export type LegalSection = {
     body: ReactNode;
 };
 
-/** Sub-heading inside a section (e.g. the numbered 3.1–3.8 groups). */
 export const LegalSub = ({ children }: { children: ReactNode }) => (
     <h3 className='mt-5 text-sm font-semibold tracking-wide text-white/90 uppercase'>{children}</h3>
 );
 
-/** Bulleted list — the recurring shape of these documents. */
 export const LegalList = ({ items }: { items: ReactNode[] }) => (
     <ul className='ml-5 list-disc space-y-1'>
         {items.map((item, idx) => (
@@ -19,14 +17,12 @@ export const LegalList = ({ items }: { items: ReactNode[] }) => (
     </ul>
 );
 
-/** A quoted defined term in a Definitions section. */
 export const LegalTerm = ({ term, children }: { term: string; children: ReactNode }) => (
     <p>
         <strong className='text-white/90'>&ldquo;{term}&rdquo;</strong> {children}
     </p>
 );
 
-/** SLR's postal + email contact block, reused across the legal pages. */
 export const LegalContactCard = ({ title, children }: { title: string; children: ReactNode }) => (
     <div className='text-slr-muted rounded-xl border border-white/10 bg-black/20 p-4 text-sm'>
         <p className='font-semibold text-white/90'>{title}</p>

@@ -33,11 +33,8 @@ export function MemberSidebar({ user, member }: MemberSidebarProps) {
     const getInitials = useInitials();
     const { isMobile, setOpenMobile } = useSidebar();
 
-    // Dashboard ('/member') is exact-match; deeper pages match by prefix.
     const isActive = (href: string) => (href === '/member' ? pathname === '/member' : pathname.startsWith(href));
 
-    // On mobile the sidebar is an overlay sheet — dismiss it once a destination is
-    // picked, otherwise it stays covering the page the user just navigated to.
     const closeOnMobile = () => {
         if (isMobile) setOpenMobile(false);
     };

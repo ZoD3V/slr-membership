@@ -2,8 +2,6 @@ import type { Column } from '@/components/data-table';
 import type { AdminGiveawayTier } from '@/lib/api/resources/giveaways';
 import { cn } from '@/lib/utils';
 
-// Same tier accents as the TPAL export and winners tables. Keys are UPPERCASE
-// here — the admin endpoints return 'RED', not 'red'.
 const TIER_STYLE: Record<AdminGiveawayTier, string> = {
     VISITOR: 'border-[#A0B4D259] text-slr-dim',
     RED: 'border-[#C8152E66] text-[#E88888]',

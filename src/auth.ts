@@ -16,7 +16,6 @@ export const { auth, handlers, signIn, signOut, unstable_update } = NextAuth({
                 const email = String(credentials.email);
                 const password = String(credentials.password);
 
-                // Dev-only bypass while integrating (gated by env).
                 const devLoginEnabled = process.env.NEXT_PUBLIC_ALLOW_DEV_LOGIN === 'true';
                 if (devLoginEnabled && email === 'SLRadmin' && password === 'SLRadmin') {
                     return {
@@ -34,7 +33,6 @@ export const { auth, handlers, signIn, signOut, unstable_update } = NextAuth({
                 }
 
                 try {
-                    // Login returns the token + minimal user; /auth/me fills name/email/state.
                     const session = await apiLogin(email, password);
                     const me = await getMe(session.access_token);
 
@@ -47,8 +45,7 @@ export const { auth, handlers, signIn, signOut, unstable_update } = NextAuth({
                         tier: me.tier,
                         sub_tier: me.sub_tier ?? null,
                         state: me.state,
-                        // Signed up but never paid → the app routes them to
-                        // /complete-payment instead of the member area.
+
                         requiresPayment: me.requires_payment === true,
                         accessToken: session.access_token,
                         refreshToken: session.refresh_token ?? null

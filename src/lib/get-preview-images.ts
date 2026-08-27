@@ -2,12 +2,6 @@ import React from 'react';
 
 import { ImageMeta } from '@/types/images';
 
-/**
- * Convert an array of strings / Blobs / ImageMeta into stable object-URL previews
- * for <img src>. Strings and `{url}` / `{image_path}` metas pass through as-is;
- * Blobs get a temporary object URL that is revoked on cleanup. Used by image
- * upload fields to preview a freshly picked file before it is uploaded.
- */
 export function useObjectURLPreviews(items: Array<string | File | Blob | ImageMeta | null | undefined>) {
     const [urls, setUrls] = React.useState<string[]>([]);
 
@@ -56,11 +50,10 @@ export function useObjectURLPreviews(items: Array<string | File | Blob | ImageMe
 
         return () => {
             for (const u of created) {
-                // One bad revoke must not skip the rest of the cleanup loop.
                 try {
                     URL.revokeObjectURL(u);
                 } catch {
-                    // no-op — the URL is simply left unreleased
+                    void 0;
                 }
             }
         };

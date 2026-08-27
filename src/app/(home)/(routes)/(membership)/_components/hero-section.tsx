@@ -7,7 +7,6 @@ const HeroSection = () => {
     return (
         <section className='bg-slr-ink relative overflow-hidden pt-28 pb-16 md:pt-32 md:pb-20'>
             <div className='relative z-20 mx-auto max-w-7xl px-4'>
-                {/* Logo */}
                 <div className='mb-8 flex justify-center'>
                     <Image
                         src='/images/slr-rewards-logo-color.webp'
@@ -19,7 +18,6 @@ const HeroSection = () => {
                     />
                 </div>
 
-                {/* Heading */}
                 <div className='mb-5 text-center'>
                     <h1 className='text-xl font-semibold text-white uppercase md:text-2xl xl:text-3xl'>
                         Australia&apos;s <span className='text-red-600'>Best Value</span>
@@ -39,7 +37,6 @@ const HeroSection = () => {
                     </div>
                 </div>
 
-                {/* Stat pills */}
                 <div className='mb-8 flex justify-center'>
                     <Image
                         src='/images/slr-list-reward.webp'
@@ -51,17 +48,17 @@ const HeroSection = () => {
                     />
                 </div>
 
-                {/* CTA */}
                 <div className='mx-auto mt-8 flex w-full max-w-xs flex-col items-center gap-3 sm:max-w-none sm:flex-row sm:justify-center'>
-                    <GoldPillButton href='/sign-up' className='w-full sm:w-auto'>JOIN NOW</GoldPillButton>
+                    <GoldPillButton href='/sign-up' className='w-full sm:w-auto'>
+                        JOIN NOW
+                    </GoldPillButton>
                     <Link
                         href='/membership'
-                        className='w-full inline-flex items-center justify-center rounded-xl border border-[#FFD147] bg-[#FFD1471A] px-8 py-2.5 text-base font-bold tracking-wide text-[#FFDC75] uppercase shadow-[inset_0_1px_5px_rgba(255,220,117,0.15)] transition-all hover:bg-[#FFD147]/20 sm:w-auto lg:px-10 lg:py-3 lg:text-lg'>
+                        className='inline-flex w-full items-center justify-center rounded-xl border border-[#FFD147] bg-[#FFD1471A] px-8 py-2.5 text-base font-bold tracking-wide text-[#FFDC75] uppercase shadow-[inset_0_1px_5px_rgba(255,220,117,0.15)] transition-all hover:bg-[#FFD147]/20 sm:w-auto lg:px-10 lg:py-3 lg:text-lg'>
                         View Membership
                     </Link>
                 </div>
 
-                {/* TV / Giveaway image */}
                 <div className='relative mt-12 flex justify-center'>
                     <div className='relative w-full max-w-7xl'>
                         <Image
@@ -73,7 +70,6 @@ const HeroSection = () => {
                             className='h-auto w-full object-contain'
                         />
 
-                        {/* Running ticker — clipped to the TV screen area */}
                         <div
                             aria-hidden='true'
                             className='pointer-events-none absolute overflow-hidden'

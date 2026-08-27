@@ -80,12 +80,6 @@ export function TemplatesClient({
                         <CardContent>
                             <div
                                 className='text-muted-foreground pointer-events-none max-h-32 overflow-hidden text-xs **:max-w-full **:text-white!'
-                                // Admin-authored template content, not user input — safe to render.
-                                // Clipped + non-interactive so a stray link/button in the markup
-                                // can't be clicked from the card preview. Templates are authored as
-                                // standalone emails with their own dark text (for a white email
-                                // background) — force white here since `!important` is the only
-                                // thing that beats an inline `style="color:#333"`.
                                 dangerouslySetInnerHTML={{ __html: template.body }}
                             />
                         </CardContent>

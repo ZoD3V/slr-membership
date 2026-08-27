@@ -8,7 +8,6 @@ import { LoginForm } from './components/login-form';
 const SignIn = () => {
     return (
         <div className='relative flex min-h-svh w-full items-center justify-center overflow-hidden bg-[#131619] p-6 md:p-10'>
-            {/* Decorative gradients — soft glow consistent with hero/welcome styling */}
             <div
                 aria-hidden='true'
                 className='pointer-events-none absolute -top-32 -left-32 h-105 w-105 rounded-full bg-[radial-gradient(circle,rgba(147,51,234,0.30)_0%,rgba(147,51,234,0.12)_45%,transparent_75%)] mix-blend-screen blur-3xl md:h-140 md:w-140'
@@ -19,7 +18,6 @@ const SignIn = () => {
             />
 
             <div className='relative z-10 w-full max-w-md'>
-                {/* Brand */}
                 <div className='mb-8 flex flex-col items-center gap-3 text-center'>
                     <Link href='/'>
                         <Image

@@ -1,16 +1,5 @@
 import type { PrizeContent } from '@/types/member';
 
-/**
- * Defensive fallback the editor renders against when `GET /api/v1/admin/prizes`
- * cannot be read (network error, or a non-401 API error).
- *
- * The endpoint is live — it answers 401 unauthenticated, verified 2026-08-10 —
- * so reaching this seed means something went wrong, not that the backend is
- * missing. Values are the real API doc's own Stage 1 example response.
- *
- * Scoped to this route on purpose — distinct from PrizePool's mock in
- * src/data/prizes.ts, which is a different, still-unconfirmed document.
- */
 export const PRIZE_CONTENT_SEED: PrizeContent = {
     prize_pool_headline: '$2,100',
     prize_count: '@ 22 Prizes • One Month',

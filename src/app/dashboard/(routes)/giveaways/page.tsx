@@ -21,11 +21,10 @@ export default async function GiveawaysPage() {
 
     try {
         if (token) {
-            // Full set: the admin list ignores ?search=, so DataTable searches/paginates client-side.
             rows = (await getAllAdminGiveaways(token)).map(toGiveawayRow);
         }
     } catch (error) {
-        handleApiAuthError(error); // 401 → force logout; others fall through
+        handleApiAuthError(error);
         listError = toListError(error);
     }
 

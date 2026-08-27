@@ -14,16 +14,9 @@ import { CircleAlert } from 'lucide-react';
 
 const TIER_GROUPS: TierGroup[] = ['visitor', 'red', 'blue'];
 
-// The list row carries only a marketing name ('Plus') with no group, so one
-// query per group is what tells us which group each row belongs to — far
-// cheaper than a detail fetch per member, and it also lifts the old 20-row
-// default page that hid most of the members.
-
 export default async function MembersPage() {
     const token = await getAccessToken();
 
-    // Independent fetches — parallel, and settle independently so a broken
-    // members list cannot blank the stats card.
     const [statsResult, ...groupResults] = await Promise.allSettled([
         token ? getMembershipStats(token) : Promise.resolve<SubTierCount[]>([]),
         ...TIER_GROUPS.map((tier) =>
@@ -47,8 +40,6 @@ export default async function MembersPage() {
         const group = TIER_GROUPS[i];
 
         return result.value.map((m) => {
-            // Group is known from WHICH request returned this row; the marketing
-            // name then pins the exact sub-tier ('red' + 'Plus' → R4).
             const code = subTierFromGroupAndName(group, m.tier);
 
             return {
@@ -58,7 +49,7 @@ export default async function MembersPage() {
                 phone: m.phone || '-',
                 dob: m.dob ? m.dob.slice(0, 10) : '-',
                 tier: code ? formatAdminTierName(code) : m.tier || '-',
-                // Not a column — drives the parent-tier filter in the client.
+
                 tierGroup: group,
                 state: m.state || '-',
                 status: m.status || '-',

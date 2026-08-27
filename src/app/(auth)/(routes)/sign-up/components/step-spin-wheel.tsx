@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 
 type StepSpinWheelProps = {
     winDiscount: number;
-    /** Session token from register — the spin is tied to the account, not the plan. */
+
     token: string | null;
     onNext: (prize: SpinPrize) => void;
     onBack: () => void;
@@ -27,9 +27,6 @@ const StepSpinWheel = ({ winDiscount, token, onNext, onBack }: StepSpinWheelProp
 
     const skip = useCallback(() => onNext({ label: 'No prize', discountAmount: 0 }), [onNext]);
 
-    // Eligibility lives on the server (one spin per user, per moment). If it's
-    // already been used — reload, or a plan change after spinning — skip straight
-    // to checkout rather than offering a spin that would be rejected.
     useEffect(() => {
         if (!token) {
             setLoadingCheck(false);
@@ -49,8 +46,6 @@ const StepSpinWheel = ({ winDiscount, token, onNext, onBack }: StepSpinWheelProp
                 }
                 if (status.discount_cents > 0) setOffer(status.discount_cents / 100);
             } catch {
-                // 403 = sub-tier isn't spin-eligible; any other failure must not
-                // block the signup either.
                 if (!cancelled) skip();
             } finally {
                 if (!cancelled) {

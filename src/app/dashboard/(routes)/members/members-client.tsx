@@ -21,7 +21,7 @@ export type MemberRow = {
     phone: string;
     dob: string;
     tier: string;
-    /** Parent tier group; null when the API sent a tier string we can't parse. */
+
     tierGroup: TierGroup | null;
     state: string;
     status: string;
@@ -41,8 +41,6 @@ export function MembersClient({ data }: { data: MemberRow[] }) {
     const [billing, setBilling] = useState<BillingFilterValue>('all');
     const [tpal, setTpal] = useState<TpalFilterValue>('all');
 
-    // Statuses the API actually sent, canonical order first. Case-insensitive
-    // because the DTO warns the backend is inconsistent about status casing.
     const statuses = useMemo(() => {
         const seen = new Set(data.map((r) => r.status?.toLowerCase()).filter(Boolean));
         const canonical = ['active', 'pending_payment', 'suspended', 'deactivated'];
@@ -65,6 +63,7 @@ export function MembersClient({ data }: { data: MemberRow[] }) {
                 if (tpal === 'eligible' && !isEligible) return false;
                 if (tpal === 'excluded' && isEligible) return false;
             }
+
             return true;
         });
     }, [data, tier, status, billing, tpal]);
@@ -93,7 +92,6 @@ export function MembersClient({ data }: { data: MemberRow[] }) {
                 <TierFilter value={tier} onChange={setTier} />
                 <StatusFilter value={status} onChange={setStatus} statuses={statuses} />
 
-                {/* Billing Filter */}
                 <Select value={billing} onValueChange={(v) => setBilling(v as BillingFilterValue)}>
                     <SelectTrigger className='w-40' aria-label='Filter by billing'>
                         <SelectValue placeholder='All billing' />
@@ -105,7 +103,6 @@ export function MembersClient({ data }: { data: MemberRow[] }) {
                     </SelectContent>
                 </Select>
 
-                {/* TPAL Entry Filter */}
                 <Select value={tpal} onValueChange={(v) => setTpal(v as TpalFilterValue)}>
                     <SelectTrigger className='w-40' aria-label='Filter by TPAL entry'>
                         <SelectValue placeholder='All TPAL' />

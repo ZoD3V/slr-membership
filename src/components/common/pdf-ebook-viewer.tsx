@@ -9,12 +9,6 @@ interface PdfEbookViewerProps {
     title: string;
 }
 
-/**
- * Renders a PDF ebook inline via a native <object>. When the browser can't
- * embed a PDF (common on mobile), the <object> fallback content shows a
- * branded open-in-new-tab CTA instead. No download affordance — PRD: no
- * download/offline reading on web (mobile-only).
- */
 export function PdfEbookViewer({ pdfUrl, title }: PdfEbookViewerProps) {
     return (
         <div className='mx-auto w-full max-w-5xl px-4 md:px-6'>

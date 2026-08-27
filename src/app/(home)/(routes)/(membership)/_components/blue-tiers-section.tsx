@@ -29,24 +29,24 @@ const extraSavings = [
 type TierRow = {
     icon: string;
     name: string;
-    /** Sub-tier code — used to map live prices from the API. */
+
     code: string;
     price: string;
     tokens: string;
-    /** Spin-wheel discount label, e.g. "$10 Off" — null for the standard tier. */
+
     spin: string | null;
     beny: boolean;
     cardStyle: CSSProperties;
     tokenBoxStyle: CSSProperties;
-    /** Token-count text colour class. */
+
     tokenClass: string;
-    /** Tier-name text colour class. */
+
     nameClass: string;
-    /** Price text colour class. */
+
     priceClass: string;
-    /** "/month" + "All Access" muted text colour class. */
+
     labelClass: string;
-    /** Light card surfaces (silver/gold) need dark-outline badges instead of gold. */
+
     lightSurface?: boolean;
 };
 
@@ -102,7 +102,7 @@ const tiers: TierRow[] = [
         tokenBoxStyle: { background: 'transparent', border: '1.5px solid #55606E' },
         tokenClass: 'text-[#0A0A0A]',
         nameClass: 'text-[#0A0A0A]',
-        // Light gold gradient washes out on the silver surface — use the darker brand gold.
+
         priceClass: 'text-[#8C660D]',
         labelClass: 'text-[#3D4654]',
         lightSurface: true
@@ -174,14 +174,12 @@ const BlueTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispl
                 </div>
 
                 <div className='mt-12 grid grid-cols-1 items-start gap-6 lg:grid-cols-2'>
-                    {/* LEFT — SLR BLUE PREMIUM hero card (gradient border via masked overlay) */}
                     <div className='shadow-card-warm-lg relative isolate h-full rounded-2xl p-1.25'>
                         <div
                             className='absolute inset-0 -z-10 rounded-2xl bg-[linear-gradient(180deg,#6AACFF_10%,#1A62C0_25%,#0A2E80_75.24%,#1A62C0_87.62%,#6AACFF_100%)] mask-exclude p-1.25 [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)]'
                             aria-hidden='true'
                         />
                         <div className='relative flex h-full flex-col overflow-hidden rounded-[calc(1rem-5px)] bg-[linear-gradient(180deg,#0F2F7A_0%,#0B205D_30%,#081640_60%,#0D2662_87.62%)] p-4 sm:p-6'>
-                            {/* Header */}
                             <div className='flex items-center gap-3'>
                                 <Image
                                     src='/icons/ic-slr-blue-reward.webp'
@@ -211,7 +209,6 @@ const BlueTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispl
 
                             <div className='my-4 h-px w-full bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.35)_50%,rgba(255,255,255,0)_100%)]' />
 
-                            {/* Benefits header row + add-on badge */}
                             <div className='flex items-center justify-between gap-3'>
                                 <p className='text-xs font-semibold tracking-widest text-white uppercase sm:text-sm'>
                                     Main Benefits
@@ -233,7 +230,6 @@ const BlueTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispl
                                 </div>
                             </div>
 
-                            {/* Benefits list */}
                             <ul className='space-y-2.5'>
                                 {mainBenefits.map((item) => (
                                     <li key={item} className='flex items-start gap-2 text-white/90'>
@@ -249,7 +245,6 @@ const BlueTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispl
                                 ))}
                             </ul>
 
-                            {/* Extra saving with Benny */}
                             <div className='mt-6'>
                                 <p className='text-center text-xs font-bold tracking-widest text-white uppercase sm:text-sm'>
                                     Extra Saving with Benny
@@ -273,7 +268,6 @@ const BlueTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispl
                         </div>
                     </div>
 
-                    {/* RIGHT — tier rows */}
                     <div className='flex h-full flex-col gap-4'>
                         {tiers.map((tier) => {
                             const l = live?.[tier.code];
@@ -294,10 +288,6 @@ const BlueTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispl
                                         />
                                         <div className='min-w-0'>
                                             <div className='flex flex-wrap items-center gap-x-1.5 gap-y-1 lg:gap-2'>
-                                                {/* Below lg the name claims its own row, so badges always wrap
-                                                    together and every card ends up the same height — sharing the
-                                                    row lets short names ("Plus") keep a badge inline while long
-                                                    ones ("Premium") push it down. */}
                                                 <span
                                                     className={cn(
                                                         'font-bebas-neue text-lg font-extrabold tracking-[0.18em] uppercase max-lg:basis-full max-lg:leading-none sm:text-xl xl:text-[22px] xl:leading-tight',

@@ -3,15 +3,13 @@ import type { SubTierCode, TierGroup } from '@/types/member';
 export interface SubTierMeta {
     code: SubTierCode;
     group: TierGroup;
-    label: string; // short code shown on the badge, e.g. 'R4'
-    marketingName: string; // customer-facing name, e.g. 'Plus' (never the code)
+    label: string;
+    marketingName: string;
     tokens: number;
-    price_cents: number; // 0 for Visitor; otherwise per 28-day cycle (AUD cents)
-    badgeIcon: string | null; // hexagonal medal asset from the public tier sections; null = no badge (Visitor)
+    price_cents: number;
+    badgeIcon: string | null;
 }
 
-// Pricing/tokens per CLAUDE.md §1 tier table. Badge icons mirror
-// red-tiers-section.tsx / blue-tiers-section.tsx on the public membership page.
 export const SUB_TIERS: Record<SubTierCode, SubTierMeta> = {
     VISITOR: {
         code: 'VISITOR',
@@ -87,20 +85,17 @@ export const SUB_TIERS: Record<SubTierCode, SubTierMeta> = {
     }
 };
 
-// Spin wheel is exclusive to the token-upgrade sub-tiers (PRD §4.5).
-// Visitor/R1/B1 are ineligible — /spin/status answers 403 for them, so don't call it.
 export const SPIN_ELIGIBLE_SUB_TIERS: ReadonlySet<SubTierCode> = new Set(['R4', 'R7', 'B4', 'B7', 'B10']);
 
 export interface TierVisual {
-    label: string; // group display name, e.g. 'RED'
-    poolLabel: string; // used inside the draw-pool string, e.g. 'Red'
+    label: string;
+    poolLabel: string;
     textClass: string;
-    badgeBg: string; // inline gradient for the tier pill (matches home-page cards)
-    badgeBorder: string; // inline border colour (alpha hex)
-    cardArt: string | null; // member-card artwork from the public tier sections; null = no art (Visitor)
+    badgeBg: string;
+    badgeBorder: string;
+    cardArt: string | null;
 }
 
-// Diagonal tier gradients + accents lifted from the home-page tier cards (CLAUDE.md §4.1).
 export const TIER_VISUALS: Record<TierGroup, TierVisual> = {
     visitor: {
         label: 'Visitor',

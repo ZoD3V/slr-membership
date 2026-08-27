@@ -32,11 +32,9 @@ export function MemberHeader({ user, member }: MemberHeaderProps) {
 
     return (
         <header className='bg-background/80 sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 px-4 backdrop-blur-md md:px-6'>
-            {/* Gold hairline bottom edge — the home-page divider motif */}
             <span aria-hidden className='slr-hairline-gold absolute inset-x-0 bottom-0 h-px opacity-70' />
             <SidebarTrigger className='-ml-1' />
 
-            {/* Mobile-only logo — on md+ the sidebar already carries it */}
             <Link href='/member' prefetch className='md:hidden'>
                 <Image
                     src='/images/slr-rewards-logo.webp'

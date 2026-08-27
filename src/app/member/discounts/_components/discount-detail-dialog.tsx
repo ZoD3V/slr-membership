@@ -32,7 +32,6 @@ export function DiscountDetailDialog({ discount, onClose }: { discount: Discount
             <DialogContent className='slr-member dark border-slr-navy-border bg-slr-navy-deep max-h-[90vh] overflow-y-auto sm:max-w-4xl lg:max-w-5xl'>
                 {discount ? (
                     <div className='grid gap-6 p-1 md:grid-cols-2 md:gap-8 md:p-2'>
-                        {/* Left: identity + code */}
                         <div className='space-y-4'>
                             <div
                                 className={
@@ -80,7 +79,6 @@ export function DiscountDetailDialog({ discount, onClose }: { discount: Discount
                             ) : null}
                         </div>
 
-                        {/* Right: category, long desc, links */}
                         <div className='space-y-4'>
                             <div className='flex flex-wrap items-center gap-2'>
                                 <span className='text-slr-dim inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/3 px-2.5 py-1 text-xs'>

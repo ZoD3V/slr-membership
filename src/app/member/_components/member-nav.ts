@@ -17,9 +17,6 @@ export interface MemberNavItem {
     icon: LucideIcon;
 }
 
-// Member-side navigation per PRD §3.1. Spin Wheel is intentionally NOT a nav
-// item — it fires at registration checkout and 24h before renewal, not as a
-// standalone page. Routes beyond /member are placeholders for upcoming pages.
 export const MEMBER_NAV: MemberNavItem[] = [
     { title: 'Dashboard', href: '/member', icon: LayoutDashboard },
     { title: 'Prizes', href: '/member/prizes', icon: Trophy },

@@ -61,12 +61,10 @@ const LinkColumn: FC<{ heading: string; links: FooterLink[] }> = ({ heading, lin
 const Footer: FC = () => {
     return (
         <footer className='bg-slr-ink relative'>
-            {/* Gold top hairline */}
             <div className='h-px w-full bg-[linear-gradient(90deg,rgba(176,138,32,0)_0%,#B08A20_50%,rgba(176,138,32,0)_100%)]' />
 
             <div className='mx-auto max-w-7xl px-6 py-14'>
                 <div className='grid grid-cols-1 gap-10 lg:grid-cols-12'>
-                    {/* Brand + socials */}
                     <div className='lg:col-span-3'>
                         <Image
                             src='/images/slr-rewards-logo-color.webp'
@@ -97,7 +95,6 @@ const Footer: FC = () => {
                         </div>
                     </div>
 
-                    {/* Navigation: 2 columns on mobile, single row on desktop */}
                     <div className='grid grid-cols-2 gap-x-6 gap-y-10 lg:col-span-9 lg:grid-cols-7 lg:gap-10'>
                         <div className='lg:col-span-2'>
                             <LinkColumn heading='Navigation' links={navigationLinks} />
@@ -113,7 +110,6 @@ const Footer: FC = () => {
             </div>
             <div className='h-px w-full bg-[linear-gradient(90deg,rgba(176,138,32,0)_0%,#B08A20_50%,rgba(176,138,32,0)_100%)]' />
 
-            {/* Copyright */}
             <p className='mx-auto max-w-7xl px-6 py-6 text-center text-xs text-[#8A8A8F]'>
                 © {new Date().getFullYear()} Smart Life Rewards Pty Ltd. All rights reserved. Australian Owned &amp;
                 Operated.

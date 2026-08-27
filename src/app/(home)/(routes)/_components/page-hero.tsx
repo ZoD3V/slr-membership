@@ -5,7 +5,7 @@ type PageHeroProps = {
     title: ReactNode;
     description?: ReactNode;
     accent?: 'gold' | 'red' | 'blue';
-    /** Base surface colour for the hero background + bottom fade. Defaults to navy-deep. */
+
     surface?: string;
 };
 

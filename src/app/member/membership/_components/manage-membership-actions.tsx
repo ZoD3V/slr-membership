@@ -22,7 +22,7 @@ import { toast } from 'sonner';
 interface ManageMembershipActionsProps {
     currentSubTier: SubTierCode;
     nextRenewalIso: string | null;
-    // Persisted scheduled change from memberships/me.pending_upgrade (A2, live 2026-07-26).
+
     scheduledChange: ScheduledTierChange | null;
     billingStatus: string | null;
     cancelAtPeriodEnd: boolean;
@@ -36,8 +36,6 @@ interface ChangeOption {
     badgeIcon: string | null;
 }
 
-// Paid sub-tiers a member may switch to. Visitor is intentionally excluded —
-// stopping payment is "Cancel membership", not a plan change.
 const PAID_CODES: SubTierCode[] = ['R1', 'R4', 'R7', 'B1', 'B4', 'B7', 'B10'];
 
 export function ManageMembershipActions({
@@ -54,9 +52,6 @@ export function ManageMembershipActions({
     const [justCancelled, setJustCancelled] = useState(false);
     const [pending, startTransition] = useTransition();
 
-    // A cancelled-but-in-grace subscription keeps billing_status "active" — only
-    // cancel_at_period_end flips. justCancelled covers the same tab, same
-    // session (no server refetch yet) right after confirming cancel.
     const isSubscriptionCanceledOrInactive = useMemo(() => {
         if (justCancelled || cancelAtPeriodEnd) return true;
         if (!billingStatus) return false;
@@ -64,8 +59,7 @@ export function ManageMembershipActions({
 
         return status === 'canceled' || status === 'cancelled' || status === 'inactive';
     }, [billingStatus, cancelAtPeriodEnd, justCancelled]);
-    // PRD locks sign-up, upgrade and downgrade during the Friday draw window.
-    // Cancelling is not on that list, so it stays available.
+
     const safeHoursLocked = useSafeHours();
 
     const options = useMemo<ChangeOption[]>(
@@ -129,7 +123,6 @@ export function ManageMembershipActions({
 
     return (
         <div className='mt-4 space-y-3'>
-            {/* Scheduled banner — hydrated from memberships/me.pending_upgrade (A2), updated optimistically on action. */}
             {scheduled ? (
                 <div className='flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#E2B42B4D] bg-[#E2B42B14] p-4'>
                     <span className='text-sm text-white/90'>
@@ -167,7 +160,6 @@ export function ManageMembershipActions({
                 )}
             </div>
 
-            {/* Change plan */}
             <ConfirmDialog
                 open={planOpen}
                 onOpenChange={setPlanOpen}
@@ -217,7 +209,6 @@ export function ManageMembershipActions({
                 </RadioGroup>
             </ConfirmDialog>
 
-            {/* Cancel membership */}
             <ConfirmDialog
                 open={cancelOpen}
                 onOpenChange={setCancelOpen}

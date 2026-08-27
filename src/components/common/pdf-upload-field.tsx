@@ -11,13 +11,12 @@ import { toast } from 'sonner';
 interface PdfUploadFieldProps {
     value?: string;
     onChange: (url: string) => void;
-    /** Uploads the picked file and resolves to its public URL. */
+
     onUpload: (file: File) => Promise<string>;
     placeholder?: string;
     disabled?: boolean;
 }
 
-/** Derive a human-readable filename from a storage URL. */
 function fileNameFromUrl(url: string): string {
     try {
         const path = new URL(url).pathname;

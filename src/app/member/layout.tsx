@@ -12,8 +12,6 @@ export default async function MemberLayout({ children }: { children: ReactNode }
     const session = await auth();
     const user = session?.user ?? null;
 
-    // Member identity (name, tier, state) from the session — state isn't on
-    // memberships/me, so it stays session-sourced.
     const member = await getCurrentMember();
 
     return (
@@ -21,7 +19,6 @@ export default async function MemberLayout({ children }: { children: ReactNode }
             <AppShell variant='sidebar'>
                 <MemberSidebar user={user} member={member} />
                 <AppContent variant='sidebar' className='isolate flex min-h-svh flex-col'>
-                    {/* Decorative backdrop — star field + radial glows echoing the home hero */}
                     <div aria-hidden className='absolute inset-0 -z-10 overflow-clip md:rounded-xl'>
                         <div className='slr-stars-overlay absolute inset-0 opacity-60' />
                         <div className='absolute inset-x-0 top-0 h-105 bg-[radial-gradient(ellipse_60%_100%_at_28%_0%,rgba(212,175,55,0.10),transparent_65%)]' />

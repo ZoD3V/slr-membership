@@ -10,10 +10,6 @@ type Handlers = {
     onDeactivate: (row: BenyRow) => void;
 };
 
-/**
- * Whether the paid period has actually elapsed. A missing date means the
- * subscription lapsed rather than being cancelled mid-period, so access ends now.
- */
 function isAccessEnded(iso: string | null | undefined): boolean {
     if (!iso) return true;
     const ends = new Date(iso).getTime();
@@ -21,9 +17,6 @@ function isAccessEnded(iso: string | null | undefined): boolean {
     return Number.isNaN(ends) ? true : ends <= Date.now();
 }
 
-// Columns differ per tab — a cancelled row has no action and carries a reason,
-// an active row carries an access-end date. Built per tab rather than as one
-// static array so empty cells never appear.
 export function benyColumnsFor(tab: BenyTab, { onActivate, onDeactivate }: Handlers): Column[] {
     const base: Column[] = [
         { key: 'name', label: 'Name', render: (row) => <span className='font-medium text-white'>{row.name}</span> },
@@ -36,17 +29,9 @@ export function benyColumnsFor(tab: BenyTab, { onActivate, onDeactivate }: Handl
     }
 
     if (tab === 'active') {
-        base.push(
-            { key: 'activatedAt', label: 'Activated At', render: (row) => row.activatedAt || '-' }
-        );
+        base.push({ key: 'activatedAt', label: 'Activated At', render: (row) => row.activatedAt || '-' });
     }
 
-
-
-
-
-    // `rowAction` rather than `action` — the latter is a DataTable magic key that
-    // renders the generic Edit/Delete dropdown, which BENY does not use.
     if (tab === 'pending_activation') {
         base.push({
             key: 'rowAction',
@@ -60,9 +45,6 @@ export function benyColumnsFor(tab: BenyTab, { onActivate, onDeactivate }: Handl
         });
     }
 
-    // Only pending_deactivation is actionable. Moving active → pending_deactivation
-    // is driven by the member cancelling, a failed payment, or a Stripe refund
-    // (PRD §2.3) — never by an admin click, so the Active tab stays read-only.
     if (tab === 'pending_deactivation') {
         base.push({
             key: 'rowAction',
@@ -72,7 +54,11 @@ export function benyColumnsFor(tab: BenyTab, { onActivate, onDeactivate }: Handl
 
                 return (
                     <span
-                        title={!due ? 'Cannot deactivate until paid access ends.' : 'Record that you have revoked this account in the BENY portal.'}>
+                        title={
+                            !due
+                                ? 'Cannot deactivate until paid access ends.'
+                                : 'Record that you have revoked this account in the BENY portal.'
+                        }>
                         <Button
                             size='sm'
                             variant='destructive'

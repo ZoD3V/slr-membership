@@ -19,7 +19,6 @@ export type ActionError = {
 export type ActionResult<T> = { ok: true; data: T; message: string } | ActionError;
 
 function toActionError(error: unknown): ActionError {
-    // 401 (expired/invalid session) → redirect('/api/auth/logout'), never returns.
     handleApiAuthError(error);
 
     if (error instanceof ApiError) {
