@@ -1,4 +1,4 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE ?? 'https://api.smartliferewards.com.au';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE ?? 'https://api-dev.smartliferewards.com.au';
 
 export const API = {
     auth: {
