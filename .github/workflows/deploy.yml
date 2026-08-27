@@ -100,6 +100,22 @@ jobs:
             type=sha,prefix=${{ needs.set-env.outputs.image_tag }}-
             type=raw,value=latest,enable=${{ needs.set-env.outputs.target_env == 'prod' }}
 
+      - name: Inject .env file for Docker build
+        run: |
+          TARGET_ENV="${{ needs.set-env.outputs.target_env }}"
+          if [ "$TARGET_ENV" = "prod" ]; then
+            ENV_CONTENT='${{ vars.ENV_FILE_PROD || secrets.ENV_FILE_PROD }}'
+          else
+            ENV_CONTENT='${{ vars.ENV_FILE_DEV || secrets.ENV_FILE_DEV }}'
+          fi
+
+          if [ -n "$ENV_CONTENT" ]; then
+            echo "$ENV_CONTENT" > .env
+            echo "[INFO] Successfully injected .env for ${TARGET_ENV} build."
+          else
+            echo "[WARNING] ENV_FILE_${TARGET_ENV^^} is NOT set in GitHub Variables/Secrets!"
+          fi
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
