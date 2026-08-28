@@ -79,19 +79,23 @@ const HeroSection = () => {
                                 top: '74%',
                                 height: '19%'
                             }}>
-                            <div className='animate-marquee flex h-full w-max items-center whitespace-nowrap will-change-transform'>
+                            <div
+                                className='animate-marquee flex h-full w-max items-center whitespace-nowrap will-change-transform'
+                                style={{ animationDuration: '65s' }}>
                                 {Array.from({ length: 2 }).map((_, group) => (
                                     <div key={group} className='flex items-center'>
-                                        {Array.from({ length: 6 }).map((_, i) => (
+                                        {Array.from({ length: 4 }).map((_, i) => (
                                             <span
                                                 key={i}
                                                 className='text-gradient-gold flex items-center gap-3 px-6 text-xl font-bold tracking-[0.18em] uppercase sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl'>
-                                                <span className='text-white/90'>Next Draw</span>
-                                                <span className='bg-gradient-gold inline-block h-1 w-1 rounded-full' />
-                                                <span>Weekly prize pool open now</span>
-                                                <span className='bg-gradient-gold inline-block h-1 w-1 rounded-full' />
-                                                <span className='text-white/90'>Weekly</span>
-                                                <span className='bg-gradient-gold inline-block h-1 w-1 rounded-full' />
+                                                <span>$2,100 PRIZE POOL</span>
+                                                <span className='bg-gradient-gold inline-block h-1.5 w-1.5 rounded-full' />
+                                                <span className='text-white/90'>ONLY 100 MEMBERS COMPETING</span>
+                                                <span className='bg-gradient-gold inline-block h-1.5 w-1.5 rounded-full' />
+                                                <span className='text-white/90'>ODDS 9 IN 10 P/A</span>
+                                                <span className='bg-gradient-gold inline-block h-1.5 w-1.5 rounded-full' />
+                                                <span className='text-white/90'>4-6 PRIZE DRAWS EVERY FRIDAY</span>
+                                                <span className='bg-gradient-gold inline-block h-1.5 w-1.5 rounded-full' />
                                             </span>
                                         ))}
                                     </div>
