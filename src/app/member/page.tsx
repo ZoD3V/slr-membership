@@ -84,7 +84,11 @@ export default async function MemberDashboardPage() {
     const isVisitor = memberGroup === 'visitor';
     const memberTokens = cycle?.total_token ?? 0;
 
-    const nextPayment = cycle?.end_at ?? (membership?.activatedAt ? cycleEndFrom(membership.activatedAt) : '');
+    // Stripe period end is the billing source of truth; cycle end_at can drift from it
+    const nextPayment =
+        billing?.next_renewal_at ??
+        cycle?.end_at ??
+        (membership?.activatedAt ? cycleEndFrom(membership.activatedAt) : '');
     const summary: MembershipSummary = {
         sub_tier: subTier,
         state: member.state,
