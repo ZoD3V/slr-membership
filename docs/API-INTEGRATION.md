@@ -129,10 +129,10 @@ Dev bypass: `NEXT_PUBLIC_ALLOW_DEV_LOGIN=true` → login `SLRadmin` / `SLRadmin`
     ```
     pdf_url empty              → chapters  → long-form <EbookReader>
     pathname ends with .pdf    → pdf       → <PdfEbookViewer>
-    any other http(s) URL      → external  → landing page + CTA opening the publisher site in a new tab
+    any other http(s) URL      → external  → summary page + “Read More” CTA opening the source site in a new tab
     ```
 
-    Single source of truth: [`src/lib/ebook-mode.ts`](../src/lib/ebook-mode.ts) (`resolveEbookMode`), unit-tested in `ebook-mode.test.ts`. The admin form refuses to save a `.pdf` link as an external one, so the two can never collide. **Stop-gap** — the proper fix is a dedicated `external_url` field, requested in [BACKEND-ISSUES.md](BACKEND-ISSUES.md). Migrating later touches `resolveEbookMode` plus one field in the admin form, nothing else.
+    Single source of truth: [`src/lib/ebook-mode.ts`](../src/lib/ebook-mode.ts) (`resolveEbookMode`), unit-tested in `ebook-mode.test.ts`. In `external` mode the admin form labels `description` as **Summary** and requires it — it is the whole member-facing page. The admin form refuses to save a `.pdf` link as an external one, so the two can never collide. **Stop-gap** — the proper fix is a dedicated `external_url` field, requested in [BACKEND-ISSUES.md](BACKEND-ISSUES.md). Migrating later touches `resolveEbookMode` plus one field in the admin form, nothing else.
 
 - **External e-books stay readable for every tier by design.** Their landing page is built entirely from the **list** item, never `GET /ebooks/{id}` — the detail endpoint has no `description` (which is the landing body) and `403`s on a locked tier. Locked members get the description plus an "Upgrade to read" CTA in place of the external link.
 - **Token refresh not implemented** — access token expires → 401 → forced logout. Wire `POST /auth/refresh` into NextAuth `jwt` callback (refresh_token in session) to auto-rotate.

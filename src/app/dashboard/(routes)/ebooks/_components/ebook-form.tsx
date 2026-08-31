@@ -157,6 +157,14 @@ export function EbookForm({ initialData }: EbookFormProps) {
         const externalUrl = values.pdfUrl?.trim() ?? '';
 
         if (contentMode === 'external') {
+            // The summary is the entire member-facing page for this mode, so an empty
+            // one would publish a landing page with nothing on it but a button.
+            if (!values.description?.replace(/<[^>]*>/g, '').trim()) {
+                form.setError('description', { message: 'Write the summary members read before following the link.' });
+
+                return;
+            }
+
             if (!externalUrl) {
                 form.setError('pdfUrl', { message: 'Paste the URL where members read this book.' });
 
@@ -227,7 +235,7 @@ export function EbookForm({ initialData }: EbookFormProps) {
                             <p className='text-xs text-white/40'>
                                 {isEditing
                                     ? 'Content type is fixed after creation.'
-                                    : 'Multi-chapter reader, a single uploaded PDF, or a landing page that sends members to another site to read.'}
+                                    : 'Multi-chapter reader, a single uploaded PDF, or a summary that sends members to the original source to read.'}
                             </p>
                         </div>
 
@@ -267,15 +275,13 @@ export function EbookForm({ initialData }: EbookFormProps) {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
-                                            {contentMode === 'external'
-                                                ? 'Description (landing page body)'
-                                                : 'Content / Description'}
+                                            {contentMode === 'external' ? 'Summary' : 'Content / Description'}
                                         </FormLabel>
                                         <FormControl>
                                             <WysiwygEditor
                                                 placeholder={
                                                     contentMode === 'external'
-                                                        ? 'Describe the book — this is the whole body of the member landing page...'
+                                                        ? 'Summarise the book — this is all members read before the Read More button...'
                                                         : 'Write the ebook content or description...'
                                                 }
                                                 onImageUpload={uploadEbookAsset}
@@ -314,7 +320,7 @@ export function EbookForm({ initialData }: EbookFormProps) {
                                 name='pdfUrl'
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>External read URL</FormLabel>
+                                        <FormLabel>Source URL</FormLabel>
                                         <FormControl>
                                             <Input
                                                 type='url'
@@ -324,9 +330,9 @@ export function EbookForm({ initialData }: EbookFormProps) {
                                             />
                                         </FormControl>
                                         <p className='text-xs text-white/40'>
-                                            Members see a landing page with the cover, title and description, then this
-                                            link opens in a new tab. A URL ending in .pdf is not accepted here — upload
-                                            it through the PDF mode instead.
+                                            Members read the summary above, then “Read More” opens this source site in a
+                                            new tab. A URL ending in .pdf is not accepted here — upload it through the
+                                            PDF mode instead.
                                         </p>
                                         <FormMessage />
                                     </FormItem>

@@ -70,10 +70,6 @@ export function ExternalEbookLanding({ ebook, readUrl }: { ebook: EbookListItem;
                             </span>
                         )}
                     </div>
-
-                    <div className='mt-4 hidden lg:block'>
-                        <ReadCta isLocked={is_locked} readUrl={readUrl} host={host} />
-                    </div>
                 </div>
             </div>
 
@@ -115,24 +111,24 @@ export function ExternalEbookLanding({ ebook, readUrl }: { ebook: EbookListItem;
                     </p>
                 )}
 
-                <div className='mt-8 lg:hidden'>
-                    <ReadCta isLocked={is_locked} readUrl={readUrl} host={host} />
+                <div className='mt-8'>
+                    <ReadCta isLocked={is_locked} readUrl={readUrl} />
                 </div>
             </div>
         </div>
     );
 }
 
-function ReadCta({ isLocked, readUrl, host }: { isLocked: boolean; readUrl: string; host: string }) {
+function ReadCta({ isLocked, readUrl }: { isLocked: boolean; readUrl: string }) {
     if (isLocked) {
         return (
             <div className='space-y-2'>
                 <Link
                     href='/member/membership'
-                    className='inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#FFD147] bg-[#FFD1471A] text-sm font-bold text-[#FFDC75] uppercase transition-opacity hover:opacity-90'>
+                    className='inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#FFD147] bg-[#FFD1471A] px-8 text-sm font-bold text-[#FFDC75] uppercase transition-opacity hover:opacity-90 sm:w-auto'>
                     <Lock className='size-4' /> Upgrade to read
                 </Link>
-                <p className='text-slr-dim text-center text-[11px] leading-relaxed'>
+                <p className='text-slr-dim text-[11px] leading-relaxed'>
                     Reading this title is unlocked for SLR RED and BLUE members.
                 </p>
             </div>
@@ -140,19 +136,14 @@ function ReadCta({ isLocked, readUrl, host }: { isLocked: boolean; readUrl: stri
     }
 
     return (
-        <div className='space-y-2'>
-            <a
-                href={readUrl}
-                target='_blank'
-                rel='noopener noreferrer'
-                style={goldButtonStyle}
-                className='inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-bold uppercase transition-opacity hover:opacity-90'>
-                Read this book online <ExternalLink className='size-4' />
-            </a>
-            <p className='text-slr-dim text-center text-[11px] leading-relaxed'>
-                Opens {host || 'the publisher site'} in a new tab.
-            </p>
-        </div>
+        <a
+            href={readUrl}
+            target='_blank'
+            rel='noopener noreferrer'
+            style={goldButtonStyle}
+            className='inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl px-8 text-sm font-bold uppercase transition-opacity hover:opacity-90 sm:w-auto'>
+            Read More <ExternalLink className='size-4' />
+        </a>
     );
 }
 
