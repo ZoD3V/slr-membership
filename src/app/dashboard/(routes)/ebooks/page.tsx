@@ -8,9 +8,16 @@ import { handleApiAuthError } from '@/lib/api/guard';
 import { toListError } from '@/lib/api/list-error';
 import { getEbooks } from '@/lib/api/resources/ebooks';
 import { getAccessToken } from '@/lib/api/server';
+import { type EbookContentMode, resolveEbookMode } from '@/lib/ebook-mode';
 
 import { type EbookRow, EbooksClient } from './ebooks-client';
 import { Plus } from 'lucide-react';
+
+const CONTENT_TYPE_LABEL: Record<EbookContentMode, string> = {
+    chapters: 'Chapters',
+    pdf: 'PDF',
+    external: 'Web'
+};
 
 export default async function EbooksPage() {
     const token = await getAccessToken();
@@ -27,6 +34,7 @@ export default async function EbooksPage() {
             description: e.description ?? '',
             coverUrl: e.cover_url ?? '',
             category: e.category || '-',
+            type: CONTENT_TYPE_LABEL[resolveEbookMode(e.pdf_url)],
             footnote: e.footnote ?? '',
             reading: e.reading_time_minutes ?? 0,
             chapters: e.chapter_count ?? 0,

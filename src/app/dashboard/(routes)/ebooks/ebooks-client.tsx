@@ -19,6 +19,7 @@ export type EbookRow = {
     description: string;
     coverUrl: string;
     category: string;
+    type: string;
     footnote: string;
     tier?: EbookTier;
     reading: number;

@@ -123,6 +123,18 @@ Dev bypass: `NEXT_PUBLIC_ALLOW_DEV_LOGIN=true` → login `SLRadmin` / `SLRadmin`
 - ❌ **BENY → Stripe still blocked** — `POST /beny/subscribe` still returns only `{beny_status}`, no checkout URL (re-checked against the live OpenAPI 2026-07-17). The `⚠️ BACKEND BLOCK` comments in [beny-actions.ts](<src/app/member/discounts/beny-actions.ts>) + [beny-section.tsx](<src/app/member/discounts/_components/beny-section.tsx>) stay until it does.
 
 ### Known gaps / deferred
+
+- **E-book mode `external` overloads `pdf_url`** (2026-08-31). E-books render in three modes; the mode is **derived, not stored**, because the API has no field for a third-party read link:
+
+    ```
+    pdf_url empty              → chapters  → long-form <EbookReader>
+    pathname ends with .pdf    → pdf       → <PdfEbookViewer>
+    any other http(s) URL      → external  → landing page + CTA opening the publisher site in a new tab
+    ```
+
+    Single source of truth: [`src/lib/ebook-mode.ts`](../src/lib/ebook-mode.ts) (`resolveEbookMode`), unit-tested in `ebook-mode.test.ts`. The admin form refuses to save a `.pdf` link as an external one, so the two can never collide. **Stop-gap** — the proper fix is a dedicated `external_url` field, requested in [BACKEND-ISSUES.md](BACKEND-ISSUES.md). Migrating later touches `resolveEbookMode` plus one field in the admin form, nothing else.
+
+- **External e-books stay readable for every tier by design.** Their landing page is built entirely from the **list** item, never `GET /ebooks/{id}` — the detail endpoint has no `description` (which is the landing body) and `403`s on a locked tier. Locked members get the description plus an "Upgrade to read" CTA in place of the external link.
 - **Token refresh not implemented** — access token expires → 401 → forced logout. Wire `POST /auth/refresh` into NextAuth `jwt` callback (refresh_token in session) to auto-rotate.
 - **Discounts member DTO** (`GET /discounts/` + `/{id}`) — ✅ `code` + `terms` now returned (member card shows the real copy-code + terms). `value_label` intentionally dropped — `title` already carries the offer text, so no separate field is needed.
 - ✅ **SP3 done** — admin discount **edit** (`PATCH /discounts/{id}`, partial merge) wired into `dashboard/(routes)/discounts` (reuses the create dialog; added the missing `action` column, which also revives the previously-unreachable **delete**). **Update 2026-07-09:** `GET /discounts/` + `/{id}` now return **200 for admin** (403 lifted) → the dashboard table **populates from the live list**, and edit prefill now uses a real **`getDiscount(id)`** for backend-listed rows (authoritative title/partner/category/description). `isActive` isn't exposed by list/GET, so it's sent only when known (session record) or the admin toggles it — PATCH's merge preserves the real value otherwise.

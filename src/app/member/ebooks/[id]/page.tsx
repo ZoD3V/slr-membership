@@ -5,12 +5,20 @@ import { notFound } from 'next/navigation';
 import { EbookReader, type ReaderChapter } from '@/components/common/ebook-reader';
 import { PdfEbookViewer } from '@/components/common/pdf-ebook-viewer';
 import { handleApiAuthError } from '@/lib/api/guard';
-import { type EbookChapter, type EbookDetail, getEbook, getEbooks } from '@/lib/api/resources/ebooks';
+import {
+    type EbookChapter,
+    type EbookDetail,
+    type EbookListItem,
+    getEbook,
+    getEbooks
+} from '@/lib/api/resources/ebooks';
 import { getAccessToken } from '@/lib/api/server';
 import { ApiError } from '@/lib/api/types';
+import { resolveEbookMode } from '@/lib/ebook-mode';
 import { formatShortDate } from '@/lib/member';
 import { goldButtonStyle } from '@/lib/styles';
 
+import { ExternalEbookLanding, NextEbookLink } from '../_components/external-ebook-landing';
 import { ArrowLeft, ArrowRight, BookOpen, Clock, Layers, Lock } from 'lucide-react';
 
 function toReaderChapters(chapters: EbookChapter[]): ReaderChapter[] {
@@ -51,20 +59,42 @@ async function loadEbookSafe(id: string): Promise<EbookDetail | null> {
     }
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-    const ebook = await loadEbookSafe((await params).id);
+async function loadListItemSafe(id: string): Promise<EbookListItem | null> {
+    const token = await getAccessToken();
 
-    return { title: ebook ? `${ebook.title} · SLR E-Books` : 'E-Book · SLR' };
+    if (!token) return null;
+
+    try {
+        return (await getEbooks(token)).find((item) => item.ebook_id === id) ?? null;
+    } catch {
+        return null;
+    }
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+    const { id } = await params;
+    const ebook = await loadEbookSafe(id);
+    // External-link e-books are readable by every tier, but `GET /ebooks/{id}` still
+    // 403s on a locked tier — fall back to the list, which is never gated.
+    const title = ebook?.title ?? (await loadListItemSafe(id))?.title;
+
+    return { title: title ? `${title} · SLR E-Books` : 'E-Book · SLR' };
+}
+
+function BackToLibraryLink() {
+    return (
+        <Link
+            href='/member/ebooks'
+            className='text-slr-muted hover:text-foreground inline-flex items-center gap-1 text-sm transition-colors'>
+            <ArrowLeft className='size-4' /> E-Books
+        </Link>
+    );
 }
 
 function UpgradeGate() {
     return (
         <div className='mx-auto w-full max-w-3xl flex-1 px-4 py-6 md:px-6 md:py-10'>
-            <Link
-                href='/member/ebooks'
-                className='text-slr-muted hover:text-foreground inline-flex items-center gap-1 text-sm transition-colors'>
-                <ArrowLeft className='size-4' /> E-Books
-            </Link>
+            <BackToLibraryLink />
 
             <div className='mt-6 flex flex-col items-center px-6 py-14 text-center'>
                 <span className='bg-gold-tint mb-4 flex size-14 items-center justify-center rounded-2xl border border-[#D4AF3759]'>
@@ -94,6 +124,36 @@ export default async function EbookReaderPage({ params }: { params: Promise<{ id
 
     if (!token) notFound();
 
+    let list: EbookListItem[] = [];
+    try {
+        list = await getEbooks(token);
+    } catch (error) {
+        handleApiAuthError(error);
+    }
+
+    const currentIndex = list.findIndex((item) => item.ebook_id === id);
+    const listItem = currentIndex >= 0 ? list[currentIndex] : null;
+    const nextEbook = currentIndex >= 0 ? (list[currentIndex + 1] ?? null) : null;
+    const nextHref = nextEbook ? `/member/ebooks/${nextEbook.ebook_id}` : '/member/ebooks';
+    const nextLabel = nextEbook ? `Next: ${nextEbook.title}` : 'More E-Books';
+
+    // The whole landing page is built from the list item: the detail endpoint has no
+    // `description` and 403s on a locked tier, while this page stays open to every tier.
+    if (listItem?.pdf_url && resolveEbookMode(listItem.pdf_url) === 'external') {
+        return (
+            <div className='flex-1'>
+                <div className='mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-10'>
+                    <BackToLibraryLink />
+
+                    <div className='mt-6'>
+                        <ExternalEbookLanding ebook={listItem} readUrl={listItem.pdf_url} />
+                        <NextEbookLink href={nextHref} label={nextLabel} />
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     let ebook: EbookDetail;
     try {
         ebook = await getEbook(id, token);
@@ -103,21 +163,13 @@ export default async function EbookReaderPage({ params }: { params: Promise<{ id
         notFound();
     }
 
-    const isPdf = Boolean(ebook.pdf_url);
+    const isPdf = resolveEbookMode(ebook.pdf_url) === 'pdf';
     const chapters = isPdf ? [] : toReaderChapters(ebook.chapters);
-
-    const list = await getEbooks(token);
-    const currentIndex = list.findIndex((item) => item.ebook_id === id);
-    const nextEbook = currentIndex >= 0 ? (list[currentIndex + 1] ?? null) : null;
 
     return (
         <div className='flex-1'>
             <div className='mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-10'>
-                <Link
-                    href='/member/ebooks'
-                    className='text-slr-muted hover:text-foreground inline-flex items-center gap-1 text-sm transition-colors'>
-                    <ArrowLeft className='size-4' /> E-Books
-                </Link>
+                <BackToLibraryLink />
 
                 <div className='mt-5 max-w-3xl'>
                     <h1 className='font-bebas-neue text-4xl tracking-wide text-white uppercase md:text-6xl'>
@@ -162,8 +214,8 @@ export default async function EbookReaderPage({ params }: { params: Promise<{ id
                         finishLabel={`You Finished ${ebook.title}`}
                         shareTitle={ebook.title}
                         shareText={`Read "${ebook.title}" on SLR Rewards.`}
-                        nextHref={nextEbook ? `/member/ebooks/${nextEbook.ebook_id}` : '/member/ebooks'}
-                        nextLabel={nextEbook ? `Next: ${nextEbook.title}` : 'More E-Books'}
+                        nextHref={nextHref}
+                        nextLabel={nextLabel}
                     />
                 </section>
             )}

@@ -2,12 +2,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import type { EbookListItem } from '@/lib/api/resources/ebooks';
+import { resolveEbookMode } from '@/lib/ebook-mode';
 import { goldButtonStyle } from '@/lib/styles';
 
-import { ArrowRight, BookOpen, Clock, Layers, Lock } from 'lucide-react';
+import { ArrowRight, BookOpen, Clock, Globe, Layers, Lock } from 'lucide-react';
 
 export function EbookCard({ ebook }: { ebook: EbookListItem }) {
     const { ebook_id, title, subtitle, cover_url, category, reading_time_minutes, chapter_count, is_locked } = ebook;
+    const isExternal = resolveEbookMode(ebook.pdf_url) === 'external';
 
     return (
         <article className='bg-card-dark-navy border-slr-navy-border shadow-card-soft flex flex-col overflow-hidden rounded-2xl border'>
@@ -49,14 +51,27 @@ export function EbookCard({ ebook }: { ebook: EbookListItem }) {
                         <Clock className='size-3.5' />
                         {reading_time_minutes} min
                     </span>
-                    <span className='inline-flex items-center gap-1'>
-                        <Layers className='size-3.5' />
-                        {chapter_count} {chapter_count === 1 ? 'chapter' : 'chapters'}
-                    </span>
+                    {isExternal ? (
+                        <span className='inline-flex items-center gap-1'>
+                            <Globe className='size-3.5' />
+                            Web
+                        </span>
+                    ) : (
+                        <span className='inline-flex items-center gap-1'>
+                            <Layers className='size-3.5' />
+                            {chapter_count} {chapter_count === 1 ? 'chapter' : 'chapters'}
+                        </span>
+                    )}
                 </div>
 
                 <div className='mt-auto pt-2'>
-                    {is_locked ? (
+                    {is_locked && isExternal ? (
+                        <Link
+                            href={`/member/ebooks/${ebook_id}`}
+                            className='inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-[#FFD147] bg-[#FFD1471A] text-sm font-bold text-[#FFDC75] uppercase transition-opacity hover:opacity-90'>
+                            View details <ArrowRight className='size-4' />
+                        </Link>
+                    ) : is_locked ? (
                         <Link
                             href='/member/membership'
                             className='inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-[#FFD147] bg-[#FFD1471A] text-sm font-bold text-[#FFDC75] uppercase transition-opacity hover:opacity-90'>

@@ -1231,6 +1231,27 @@ Nilai yang paling berguna untuk admin — orang yang mendaftar tapi tidak pernah
 
 ---
 
+## 🟡 2026-08-31 — E-book butuh field `external_url` (sekarang menumpang `pdf_url`)
+
+Klien meminta jenis e-book ketiga: kontennya **tidak** dihosting SLR, melainkan dibaca di situs penerbit. Halaman member menampilkan cover + judul + sub-judul + deskripsi panjang, lalu satu CTA yang membuka situs itu di tab baru.
+
+Skema e-book tidak punya tempat untuk URL tersebut — `POST/PATCH /ebooks/` hanya menerima `pdfUrl`, dan `GET /ebooks/` hanya mengembalikan `pdf_url`. FE untuk sementara **menyimpan link tersebut di `pdf_url`** dan membedakannya dari PDF asli lewat ekstensi:
+
+```
+pdf_url kosong                       → mode chapters
+pathname berakhiran .pdf             → mode pdf   (hasil upload presigned kita)
+http(s) lain                         → mode external (link baca)
+```
+
+**Yang diminta:** tambahkan kolom `external_url` (`externalUrl` di body mutasi, `external_url` di list + detail, nullable). Setelah ada, FE tinggal mengubah satu fungsi (`resolveEbookMode`) dan satu field di form admin; tidak ada perubahan lain.
+
+**Dua gap kecil yang menyertainya (bukan blocker, FE sudah menyiasati):**
+
+1. `GET /ebooks/{id}` **tidak mengembalikan `description`**, padahal `GET /ebooks/` mengembalikannya. Untuk mode external, deskripsi itu adalah seluruh isi halaman — jadi FE merender halaman dari item list, bukan dari detail. Mohon `description` ditambahkan ke response detail agar konsisten.
+2. `GET /ebooks/{id}` membalas **403** untuk tier yang tidak berhak. Untuk mode external itu terlalu ketat: deskripsi adalah materi promosi yang justru mendorong upgrade. FE mengakalinya dengan tidak memanggil detail sama sekali untuk mode ini (CTA-nya yang dikunci, bukan halamannya).
+
+---
+
 ## 🔴 2026-08-26 — Webhook Stripe tidak mengaktivasi membership (api-dev)
 
 Pembayaran Stripe berhasil (test card `4242 4242 4242 4242`, redirect balik ke `/payment/success`), tapi backend tidak pernah berpindah status. Dipantau 2,5 menit setelah pembayaran, dua akun, hasil identik:
