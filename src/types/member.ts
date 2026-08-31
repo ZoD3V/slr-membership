@@ -88,19 +88,11 @@ export interface GiveawayEntryRow {
     status: EntryStatus;
 }
 
-export interface PastWinner {
-    name: string;
-    state: string;
-    prize: string;
-    drawn_at: string;
-}
-
 export interface GiveawayDetail extends Giveaway {
     prize_description: string;
     rules: string[];
     tpal_note: string;
     entry_history: GiveawayEntryRow[];
-    past_winners: PastWinner[];
 }
 
 export interface PrizeTierBreakdown {

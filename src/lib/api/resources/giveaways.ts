@@ -1,15 +1,7 @@
 import { cache } from 'react';
 
 import { formatDrawPool, formatShortDate, isGiveawayLocked } from '@/lib/member';
-import type {
-    EntryStatus,
-    Giveaway,
-    GiveawayDetail,
-    GiveawayEntryRow,
-    GiveawayPhase,
-    PastWinner,
-    TierGroup
-} from '@/types/member';
+import type { EntryStatus, Giveaway, GiveawayDetail, GiveawayEntryRow, GiveawayPhase, TierGroup } from '@/types/member';
 
 import { API } from '../endpoints';
 import { apiFetch } from '../http';
@@ -89,15 +81,6 @@ export function tierGroupFromApi(tier: string | undefined): TierGroup {
     if (t === 'BLUE') return 'blue';
 
     return 'visitor';
-}
-
-function toPastWinner(w: ApiGiveawayWinnerRow): PastWinner {
-    return {
-        name: w.full_name?.trim() || '-',
-        state: w.state?.trim() || '-',
-        prize: w.prize?.trim() || '-',
-        drawn_at: w.recorded_at ?? ''
-    };
 }
 
 function toEntryHistory(cycle: EntryCycle | null, entered: boolean): GiveawayEntryRow[] {
@@ -195,8 +178,7 @@ export function toGiveawayDetail(
         prize_description: d.prize?.trim() || '-',
         rules: GIVEAWAY_RULES,
         tpal_note: TPAL_NOTE,
-        entry_history: toEntryHistory(currentCycle, base.entered),
-        past_winners: (d.winners ?? []).map(toPastWinner)
+        entry_history: toEntryHistory(currentCycle, base.entered)
     };
 }
 

@@ -20,7 +20,7 @@ export interface MemberNavItem {
 export const MEMBER_NAV: MemberNavItem[] = [
     { title: 'Dashboard', href: '/member', icon: LayoutDashboard },
     { title: 'Prizes', href: '/member/prizes', icon: Trophy },
-    { title: 'Giveaways', href: '/member/giveaways', icon: Gift },
+    { title: 'Prize Draws', href: '/member/giveaways', icon: Gift },
     { title: 'Discounts', href: '/member/discounts', icon: TicketPercent },
     { title: 'E-Books', href: '/member/ebooks', icon: BookOpen },
     { title: 'Entry History', href: '/member/entry-history', icon: History },

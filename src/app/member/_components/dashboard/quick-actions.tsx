@@ -12,7 +12,7 @@ interface QuickAction {
 
 const ACTIONS: QuickAction[] = [
     { title: 'Discounts', href: '/member/discounts', icon: TicketPercent, desc: 'Partner offers & BENY' },
-    { title: 'Giveaways', href: '/member/giveaways', icon: Gift, desc: 'Active draws by tier' },
+    { title: 'Prize Draws', href: '/member/giveaways', icon: Gift, desc: 'Active draws by tier' },
     { title: 'E-Books', href: '/member/ebooks', icon: BookOpen, desc: 'Digital library' },
     { title: 'Profile', href: '/member/profile', icon: UserCircle, desc: 'Account & membership' }
 ];

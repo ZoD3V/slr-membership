@@ -14,7 +14,7 @@ import { Lock } from 'lucide-react';
 
 function GiveawayGrid({ items }: { items: Giveaway[] }) {
     if (items.length === 0) {
-        return <p className='text-slr-dim py-10 text-center text-sm'>No active giveaways here right now.</p>;
+        return <p className='text-slr-dim py-10 text-center text-sm'>No active prize draws here right now.</p>;
     }
 
     return (

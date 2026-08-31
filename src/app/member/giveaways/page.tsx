@@ -6,16 +6,23 @@ import { getCurrentMember } from '@/data/member-dashboard';
 import { handleApiAuthError } from '@/lib/api/guard';
 import { getBillingStatus } from '@/lib/api/resources/billing';
 import { getEntryHistory } from '@/lib/api/resources/entries';
-import { compareGiveaways, getGiveaways, toGiveaway } from '@/lib/api/resources/giveaways';
+import {
+    type GiveawayWinner,
+    compareGiveaways,
+    getGiveawayWinners,
+    getGiveaways,
+    toGiveaway
+} from '@/lib/api/resources/giveaways';
 import { getAccessToken } from '@/lib/api/server';
 import { tierGroupOf } from '@/lib/member';
 import type { Giveaway } from '@/types/member';
 
 import { GiveawaysBoard } from './_components/giveaways-board';
+import { PastDraws } from './_components/past-draws';
 import { ArrowLeft, CircleAlert, Gift } from 'lucide-react';
 
 export const metadata: Metadata = {
-    title: 'Giveaways · SLR Member'
+    title: 'Prize Draws · SLR Member'
 };
 
 export default async function GiveawaysPage() {
@@ -26,12 +33,14 @@ export default async function GiveawaysPage() {
     let giveaways: Giveaway[] = [];
     let failed = false;
     let nextRenewalIso: string | null = null;
+    let pastWinners: GiveawayWinner[] = [];
 
     if (token) {
-        const [giveawaysRes, entriesRes, billingRes] = await Promise.allSettled([
+        const [giveawaysRes, entriesRes, billingRes, winnersRes] = await Promise.allSettled([
             getGiveaways(token),
             getEntryHistory(token),
-            getBillingStatus(token)
+            getBillingStatus(token),
+            getGiveawayWinners(token)
         ]);
 
         if (giveawaysRes.status === 'fulfilled') {
@@ -45,12 +54,17 @@ export default async function GiveawaysPage() {
         }
         if (billingRes.status === 'fulfilled') nextRenewalIso = billingRes.value.next_renewal_at ?? null;
         else handleApiAuthError(billingRes.reason);
+
+        // Past draws are supporting content — a failure here leaves the board intact
+        // and the section falls back to its empty state.
+        if (winnersRes.status === 'fulfilled') pastWinners = winnersRes.value;
+        else handleApiAuthError(winnersRes.reason);
     }
 
     return (
         <div className='mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 md:px-6 md:py-8'>
             <header className='space-y-1'>
-                <h1 className='font-bebas-neue text-3xl tracking-wide uppercase sm:text-4xl'>Giveaways</h1>
+                <h1 className='font-bebas-neue text-3xl tracking-wide uppercase sm:text-4xl'>Prize Draws</h1>
                 <p className='text-slr-muted text-sm md:text-base'>
                     Active draws for your tier. Entries are allocated automatically each cycle — no manual entry needed.
                 </p>
@@ -59,13 +73,13 @@ export default async function GiveawaysPage() {
             {failed ? (
                 <EmptyState
                     icon={CircleAlert}
-                    title='Giveaways Unavailable'
+                    title='Prize Draws Unavailable'
                     description='We couldn’t load the draws for your tier right now. Please try again shortly.'
                 />
             ) : giveaways.length === 0 ? (
                 <EmptyState
                     icon={Gift}
-                    title='No Giveaways Right Now'
+                    title='No Prize Draws Right Now'
                     description='Active draws for your tier will appear here soon.'
                     action={
                         <Link
@@ -79,6 +93,8 @@ export default async function GiveawaysPage() {
             ) : (
                 <GiveawaysBoard giveaways={giveaways} memberSubTier={member.sub_tier} nextRenewalIso={nextRenewalIso} />
             )}
+
+            <PastDraws winners={pastWinners} />
         </div>
     );
 }

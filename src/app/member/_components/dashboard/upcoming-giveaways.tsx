@@ -62,7 +62,7 @@ function GiveawayCard({ giveaway }: { giveaway: UpcomingGiveaway }) {
 export function UpcomingGiveaways({ giveaways }: { giveaways: UpcomingGiveaway[] }) {
     return (
         <section>
-            <SectionTitle viewAllHref='/member/giveaways'>Active Giveaways</SectionTitle>
+            <SectionTitle viewAllHref='/member/giveaways'>Active Prize Draws</SectionTitle>
             <div className='grid gap-4 lg:grid-cols-2 xl:grid-cols-3'>
                 {giveaways.map((giveaway) => (
                     <GiveawayCard key={giveaway.id} giveaway={giveaway} />

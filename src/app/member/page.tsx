@@ -230,13 +230,13 @@ export default async function MemberDashboardPage() {
             ) : giveawaysFailed ? (
                 <EmptyState
                     icon={CircleAlert}
-                    title='Giveaways Unavailable'
+                    title='Prize Draws Unavailable'
                     description='We couldn’t load the active draws right now. Please try again shortly.'
                 />
             ) : isVisitor ? null : (
                 <EmptyState
                     icon={Gift}
-                    title='No Active Giveaways'
+                    title='No Active Prize Draws'
                     description='Active draws for your tier will show here soon.'
                 />
             )}

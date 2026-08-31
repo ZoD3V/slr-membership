@@ -17,7 +17,7 @@ import { type ApiGiveaway, getGiveaway, getGiveaways, toGiveawayDetail } from '@
 import { getAccessToken } from '@/lib/api/server';
 import { formatDrawDateTime, formatShortDate, tierGroupOf } from '@/lib/member';
 import { goldButtonStyle } from '@/lib/styles';
-import type { GiveawayDetail, GiveawayEntryRow, PastWinner } from '@/types/member';
+import type { GiveawayDetail, GiveawayEntryRow } from '@/types/member';
 
 import {
     ArrowLeft,
@@ -63,7 +63,7 @@ async function loadGiveaway(id: string): Promise<GiveawayDetail | null> {
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const giveaway = await loadGiveaway((await params).id);
 
-    return { title: giveaway ? `${giveaway.title} · SLR Giveaways` : 'Giveaway · SLR' };
+    return { title: giveaway ? `${giveaway.title} · SLR Prize Draws` : 'Prize Draw · SLR' };
 }
 
 function InfoCard({ title, children }: { title: string; children: ReactNode }) {
@@ -88,7 +88,7 @@ export default async function GiveawayDetailPage({ params }: { params: Promise<{
             <Link
                 href='/member/giveaways'
                 className='text-slr-muted hover:text-foreground inline-flex items-center gap-1 text-sm transition-colors'>
-                <ArrowLeft className='size-4' /> Giveaways
+                <ArrowLeft className='size-4' /> Prize Draws
             </Link>
 
             <div
@@ -239,24 +239,6 @@ export default async function GiveawayDetailPage({ params }: { params: Promise<{
                                 You have no entries in this pool yet. Upgrade your tier to take part.
                             </p>
                         )}
-                    </InfoCard>
-
-                    <InfoCard title='Past Winners'>
-                        <ul className='space-y-3'>
-                            {giveaway.past_winners.map((winner: PastWinner, i: number) => (
-                                <li key={i} className='flex items-center justify-between gap-2 text-sm'>
-                                    <div>
-                                        <p className='text-white/90'>
-                                            {winner.name} <span className='text-slr-dim'>· {winner.state}</span>
-                                        </p>
-                                        <p className='text-slr-dim text-xs'>{formatShortDate(winner.drawn_at)}</p>
-                                    </div>
-                                    <span className='text-gradient-gold text-right text-xs font-semibold'>
-                                        {winner.prize}
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
                     </InfoCard>
                 </div>
             </div>
