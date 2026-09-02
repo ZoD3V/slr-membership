@@ -2,7 +2,7 @@ import { AU_STATE_CODES } from '@/constant/au-states';
 import { MIN_PASSWORD_LENGTH } from '@/constant/password';
 import { MIN_AGE_YEARS, isAdultDob } from '@/lib/dob';
 
-import { email, literal, object, string, union, enum as zEnum } from 'zod';
+import { boolean, email, literal, object, string, union, enum as zEnum } from 'zod';
 
 export const SignInSchema = object({
     email: union([email('Invalid Email'), literal('SLRadmin')]),
@@ -25,5 +25,8 @@ export const SignUpSchema = object({
         .regex(/^[0-9 +()-]+$/, 'Only digits, spaces, +, -, () allowed'),
     dob: string()
         .min(1, 'Date of birth is required')
-        .refine(isAdultDob, { message: `You must be at least ${MIN_AGE_YEARS} years old` })
+        .refine(isAdultDob, { message: `You must be at least ${MIN_AGE_YEARS} years old` }),
+    agreedToTerms: boolean().refine((val) => val === true, {
+        message: 'You must agree to the Terms & Conditions and Privacy Policy to continue.'
+    })
 });

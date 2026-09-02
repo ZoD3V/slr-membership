@@ -10,11 +10,6 @@ import { motion, useAnimationFrame, useMotionValue } from 'motion/react';
 
 const SPEED = 30;
 
-// Below this many logos a second row would just repeat the first one, so the
-// marquee stays a single row. At or above it the set is split in half, with the
-// odd logo going to the top row (13 → 7 above, 6 below).
-const TWO_ROW_THRESHOLD = 12;
-
 function repeatToFill(logos: { src: string; alt: string }[]): { src: string; alt: string }[] {
     if (logos.length === 0) return [];
 
@@ -54,19 +49,20 @@ const LogoMarquee = ({
         );
     }, [logos]);
 
-    const isTwoRows = validLogos.length >= TWO_ROW_THRESHOLD;
-
     const row1Logos = React.useMemo(() => {
-        if (!isTwoRows) return repeatToFill(validLogos);
+        if (validLogos.length === 0) return [];
+        if (validLogos.length === 1) return repeatToFill(validLogos);
 
         return repeatToFill(validLogos.slice(0, Math.ceil(validLogos.length / 2)));
-    }, [validLogos, isTwoRows]);
+    }, [validLogos]);
 
     const row2Logos = React.useMemo(() => {
-        if (!isTwoRows) return [];
+        if (validLogos.length === 0) return [];
+        if (validLogos.length === 1) return repeatToFill(validLogos);
+        const secondHalf = validLogos.slice(Math.ceil(validLogos.length / 2));
 
-        return repeatToFill(validLogos.slice(Math.ceil(validLogos.length / 2)));
-    }, [validLogos, isTwoRows]);
+        return repeatToFill(secondHalf.length > 0 ? secondHalf : validLogos);
+    }, [validLogos]);
 
     useEffect(() => {
         const init = () => {
@@ -82,7 +78,7 @@ const LogoMarquee = ({
 
             if (row2Ref.current) {
                 const half2 = row2Ref.current.scrollWidth / 2;
-                if (half2 > 0) xRow2.set(-half2 / 3);
+                if (half2 > 0) xRow2.set(-half2);
             }
         };
 
@@ -99,9 +95,9 @@ const LogoMarquee = ({
         if (row1Ref.current) {
             const half = row1Ref.current.scrollWidth / 2;
             if (half > 0) {
-                let next = xRow1.get() + dx;
-                while (next >= 0) next -= half;
-                while (next < -half) next += half;
+                let next = xRow1.get() - dx;
+                while (next <= -half) next += half;
+                while (next > 0) next -= half;
                 xRow1.set(next);
             }
         }
@@ -140,7 +136,7 @@ const LogoMarquee = ({
             animate={{ opacity: mounted ? 1 : 0 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
             className={cn(
-                'overflow-hidden transition-opacity duration-300 select-none',
+                'flex flex-col overflow-hidden transition-opacity duration-300 select-none',
                 isDragging ? 'cursor-grabbing' : 'cursor-grab',
                 mounted ? 'opacity-100' : 'opacity-0'
             )}
@@ -160,19 +156,17 @@ const LogoMarquee = ({
                 ))}
             </motion.div>
 
-            {isTwoRows ? (
-                <motion.div ref={row2Ref} className='flex w-max will-change-transform' style={{ x: xRow2 }}>
-                    {[...row2Logos, ...row2Logos].map((logo, idx) => (
-                        <LogoCard
-                            key={`row2-${idx}`}
-                            src={logo.src}
-                            alt={logo.alt}
-                            cardClassName={cardClassName}
-                            imageClassName={imageClassName}
-                        />
-                    ))}
-                </motion.div>
-            ) : null}
+            <motion.div ref={row2Ref} className='flex w-max will-change-transform' style={{ x: xRow2 }}>
+                {[...row2Logos, ...row2Logos].map((logo, idx) => (
+                    <LogoCard
+                        key={`row2-${idx}`}
+                        src={logo.src}
+                        alt={logo.alt}
+                        cardClassName={cardClassName}
+                        imageClassName={imageClassName}
+                    />
+                ))}
+            </motion.div>
         </motion.div>
     );
 };

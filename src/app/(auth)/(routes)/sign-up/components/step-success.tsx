@@ -15,24 +15,17 @@ type StepSuccessProps = {
 };
 
 const StepSuccess = ({ data, spinPrize }: StepSuccessProps) => {
-    const tier = data.tier ?? 'visitor';
-    const isPaid = tier !== 'visitor';
+    const tier = data.tier;
     const stateLabel = AU_STATES.find((s) => s.code === data.state)?.label ?? data.state;
-    const planLabel = isPaid && data.sub_tier ? subTierLabel(data.sub_tier) : 'Visitor';
-    const planPrice = isPaid && data.sub_tier ? subTierPrice(data.sub_tier) : 0;
+    const planLabel = data.sub_tier ? subTierLabel(data.sub_tier) : '-';
+    const planPrice = data.sub_tier ? subTierPrice(data.sub_tier) : 0;
 
-    const benefits = isPaid
-        ? [
-              `Welcome email sent to ${data.email}`,
-              `Payment confirmation + invoice on the way`,
-              `Entries allocated to SLR ${tier === 'red' ? 'Red' : 'Blue'} ${data.state}`,
-              spinPrize && spinPrize.discountAmount > 0 ? `${spinPrize.label} applied to your first month` : null
-          ].filter(Boolean)
-        : [
-              `Welcome email sent to ${data.email}`,
-              `Your account is verified and active`,
-              `You're entered into the next weekly Visitor draw (${data.state})`
-          ];
+    const benefits = [
+        `Welcome email sent to ${data.email}`,
+        `Payment confirmation + invoice on the way`,
+        `Entries allocated to SLR ${tier === 'blue' ? 'Blue' : 'Red'} ${data.state}`,
+        spinPrize && spinPrize.discountAmount > 0 ? `${spinPrize.label} applied to your first month` : null
+    ].filter(Boolean);
 
     return (
         <div className='flex flex-col items-center gap-6 text-center'>
@@ -47,12 +40,10 @@ const StepSuccess = ({ data, spinPrize }: StepSuccessProps) => {
 
             <div>
                 <h2 className='font-bebas-neue text-3xl tracking-wider text-white uppercase md:text-4xl'>
-                    {isPaid ? "You're in." : 'Welcome to SLR.'}
+                    You&apos;re in.
                 </h2>
                 <p className='text-slr-muted mt-2 text-sm md:text-base'>
-                    {isPaid
-                        ? `Your ${planLabel} membership is active. Your first cycle starts now.`
-                        : `Your free Visitor account is ready. Browse the platform and get entered into the weekly draw.`}
+                    Your {planLabel} membership is active. Your first cycle starts now.
                 </p>
             </div>
 
@@ -78,7 +69,7 @@ const StepSuccess = ({ data, spinPrize }: StepSuccessProps) => {
                         <Detail label='Name' value={data.name} />
                         <Detail label='Email' value={data.email} />
                         <Detail label='State' value={`${data.state} · ${stateLabel}`} />
-                        <Detail label='Plan' value={`${planLabel}${isPaid ? ` · $${planPrice}/mo` : ''}`} />
+                        <Detail label='Plan' value={`${planLabel} · $${planPrice}/mo`} />
                     </dl>
                 </div>
             </div>

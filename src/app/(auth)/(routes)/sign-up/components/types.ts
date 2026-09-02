@@ -2,7 +2,9 @@ import { AuStateCode } from '@/constant/au-states';
 import { SUB_TIERS } from '@/constant/tiers';
 import type { SubTierCode } from '@/types/member';
 
-export type TierKey = 'visitor' | 'red' | 'blue';
+// Visitor sign-up is closed — new accounts must pick a paid tier. Existing Visitor
+// members keep their tier, so the platform-wide TierGroup still has 'visitor'.
+export type TierKey = 'red' | 'blue';
 
 export type SignUpFormData = {
     name: string;
@@ -11,6 +13,7 @@ export type SignUpFormData = {
     state: AuStateCode | '';
     phone: string;
     dob: string;
+    agreedToTerms: boolean;
     tier: TierKey | null;
     sub_tier: SubTierCode | null;
 };
@@ -21,13 +24,11 @@ export type SpinPrize = {
 };
 
 export const TIER_PRICE: Record<TierKey, number> = {
-    visitor: 0,
     red: 10,
     blue: 26
 };
 
 export const TIER_LABEL: Record<TierKey, string> = {
-    visitor: 'Visitor',
     red: 'SLR Red',
     blue: 'SLR Blue'
 };
@@ -56,7 +57,7 @@ export const BLUE_SUB_TIERS: SubTierOption[] = [
 const ALL_SUB_TIERS = [...RED_SUB_TIERS, ...BLUE_SUB_TIERS];
 
 export const subTiersForGroup = (group: TierKey): SubTierOption[] =>
-    group === 'red' ? RED_SUB_TIERS : group === 'blue' ? BLUE_SUB_TIERS : [];
+    group === 'red' ? RED_SUB_TIERS : BLUE_SUB_TIERS;
 
 export const spinDiscountFor = (code: SubTierCode | null): number =>
     (code ? ALL_SUB_TIERS.find((s) => s.code === code)?.spinDiscount : 0) ?? 0;

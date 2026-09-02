@@ -31,7 +31,7 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
 
     const tier = data.tier;
     const subTier = data.sub_tier;
-    if (!tier || tier === 'visitor' || !subTier) {
+    if (!tier || !subTier) {
         return null;
     }
 

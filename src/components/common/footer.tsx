@@ -20,7 +20,7 @@ const navigationLinks: FooterLink[] = [
 ];
 
 const membershipLinks: FooterLink[] = [
-    { name: 'Join Free', href: '/sign-up' },
+    { name: 'Join Now', href: '/sign-up' },
     { name: 'SLR Red — $10/mo', href: '/membership' },
     { name: 'SLR Blue — from $26/mo', href: '/membership' },
     { name: 'Membership 4 Life', href: '/membership' },

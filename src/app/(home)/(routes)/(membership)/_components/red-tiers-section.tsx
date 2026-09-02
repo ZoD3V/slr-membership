@@ -61,7 +61,7 @@ const tiers: TierRow[] = [
         name: 'Standard',
         code: 'R1',
         price: '$10',
-        tokens: '1 Token',
+        tokens: '1 Entry',
         spin: null,
         beny: false,
         cardStyle: redCardStyle,
@@ -74,7 +74,7 @@ const tiers: TierRow[] = [
         name: 'Plus',
         code: 'R4',
         price: '$20',
-        tokens: '4 Tokens',
+        tokens: '4 Entries',
         spin: '$5 Off',
         beny: true,
         cardStyle: goldCardStyle,
@@ -87,7 +87,7 @@ const tiers: TierRow[] = [
         name: 'Premium',
         code: 'R7',
         price: '$30',
-        tokens: '7 Tokens',
+        tokens: '7 Entries',
         spin: '$10 Off',
         beny: true,
         cardStyle: blackCardStyle,
@@ -128,7 +128,7 @@ const RedTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispla
                     </SectionHeading>
 
                     <p className='text-slr-muted mt-2 text-center text-sm leading-relaxed xl:text-base'>
-                        Member prize tokens are based on your tier level.
+                        Member prize entries are based on your tier level.
                     </p>
                 </div>
 
@@ -160,7 +160,7 @@ const RedTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispla
                                         </span>
                                         <span className='text-xs text-white/60'>/mo</span>
                                     </div>
-                                    <p className='text-slr-muted mt-1 text-xs'>1 to 7 draw token/entry</p>
+                                    <p className='text-slr-muted mt-1 text-xs'>1 to 7 draw entries</p>
                                 </div>
                             </div>
 

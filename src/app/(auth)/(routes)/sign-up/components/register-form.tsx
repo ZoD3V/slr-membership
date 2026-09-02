@@ -34,6 +34,7 @@ const initialData: SignUpFormData = {
     state: 'VIC',
     phone: '',
     dob: '',
+    agreedToTerms: false,
     tier: null,
     sub_tier: null
 };
@@ -80,9 +81,14 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
         const goPay = (spinAvailable: boolean) =>
             setStep(spinAvailable && isSpinEligible(subTier) ? 'spin' : 'checkout');
 
+        if (!tier || !subTier) {
+            setStep('tier');
+
+            return;
+        }
+
         if (userId && registeredEmail === data.email) {
-            if (tier === 'visitor') setStep('otp');
-            else goPay(true);
+            goPay(true);
 
             return;
         }
@@ -95,8 +101,8 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<'div'
                 state: data.state as Exclude<SignUpFormData['state'], ''>,
                 phone: data.phone,
                 dob: data.dob,
-                tier: tier ?? 'visitor',
-                sub_tier: tier === 'visitor' ? undefined : subTier?.toLowerCase()
+                tier,
+                sub_tier: subTier.toLowerCase()
             });
             setUserId(res.user_id);
             setRegisteredEmail(data.email);

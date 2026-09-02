@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -23,7 +24,7 @@ type StepAccountProps = {
     onNext: (patch: Partial<SignUpFormData>) => void;
 };
 
-type FieldErrors = Partial<Record<'name' | 'email' | 'password' | 'state' | 'phone' | 'dob', string>>;
+type FieldErrors = Partial<Record<'name' | 'email' | 'password' | 'state' | 'phone' | 'dob' | 'agreedToTerms', string>>;
 
 const StepAccount = ({ data, onNext }: StepAccountProps) => {
     const [showPassword, setShowPassword] = useState(false);
@@ -34,7 +35,8 @@ const StepAccount = ({ data, onNext }: StepAccountProps) => {
         password: data.password,
         state: data.state,
         phone: data.phone,
-        dob: data.dob
+        dob: data.dob,
+        agreedToTerms: data.agreedToTerms ?? false
     });
 
     const update = <K extends keyof typeof values>(key: K, value: (typeof values)[K]) => {
@@ -61,7 +63,8 @@ const StepAccount = ({ data, onNext }: StepAccountProps) => {
                 password: fieldErrors.password?.[0],
                 state: fieldErrors.state?.[0],
                 phone: fieldErrors.phone?.[0],
-                dob: fieldErrors.dob?.[0]
+                dob: fieldErrors.dob?.[0],
+                agreedToTerms: fieldErrors.agreedToTerms?.[0]
             });
 
             return;
@@ -211,6 +214,51 @@ const StepAccount = ({ data, onNext }: StepAccountProps) => {
                     </PopoverContent>
                 </Popover>
                 {errors.dob && <span className='text-xs text-red-400'>{errors.dob}</span>}
+            </div>
+
+            <div className='grid gap-1.5'>
+                <div
+                    className={cn(
+                        'flex items-start gap-3 rounded-lg border p-3.5 transition-colors',
+                        errors.agreedToTerms
+                            ? 'border-red-500/50 bg-red-500/5'
+                            : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.04]'
+                    )}>
+                    <Checkbox
+                        id='agreedToTerms'
+                        checked={values.agreedToTerms}
+                        onCheckedChange={(checked) => {
+                            const next = checked === true;
+                            setValues((v) => ({ ...v, agreedToTerms: next }));
+                            if (errors.agreedToTerms) setErrors((e) => ({ ...e, agreedToTerms: undefined }));
+                        }}
+                        className='mt-0.5 shrink-0 border-white/20 data-[state=checked]:border-[#D4AF37] data-[state=checked]:bg-[#D4AF37] data-[state=checked]:text-[#131619] focus-visible:ring-[#D4AF37]/30'
+                        aria-invalid={!!errors.agreedToTerms}
+                    />
+                    <label htmlFor='agreedToTerms' className='cursor-pointer text-xs leading-relaxed text-white/85 select-none'>
+                        I agree to the{' '}
+                        <a
+                            href='/terms'
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            onClick={(e) => e.stopPropagation()}
+                            className='font-medium text-[#FFDC75] underline decoration-[#FFDC75]/40 underline-offset-2 hover:text-[#FFE066] hover:decoration-[#FFE066]'>
+                            Terms & Conditions
+                        </a>{' '}
+                        and{' '}
+                        <a
+                            href='/privacy'
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            onClick={(e) => e.stopPropagation()}
+                            className='font-medium text-[#FFDC75] underline decoration-[#FFDC75]/40 underline-offset-2 hover:text-[#FFE066] hover:decoration-[#FFE066]'>
+                            Privacy Policy
+                        </a>
+                        , and consent to receiving weekly prize draw results, merchant reward updates, and member
+                        communications from Smart Life Rewards.
+                    </label>
+                </div>
+                {errors.agreedToTerms && <span className='text-xs text-red-400'>{errors.agreedToTerms}</span>}
             </div>
 
             <Button

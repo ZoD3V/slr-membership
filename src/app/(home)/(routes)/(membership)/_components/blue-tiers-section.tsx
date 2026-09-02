@@ -80,7 +80,7 @@ const tiers: TierRow[] = [
         name: 'Standard',
         code: 'B1',
         price: '$26',
-        tokens: '1 Token',
+        tokens: '1 Entry',
         spin: null,
         beny: false,
         cardStyle: blueCardStyle,
@@ -95,7 +95,7 @@ const tiers: TierRow[] = [
         name: 'Plus',
         code: 'B4',
         price: '$39',
-        tokens: '4 Tokens',
+        tokens: '4 Entries',
         spin: '$10 Off',
         beny: true,
         cardStyle: silverCardStyle,
@@ -112,7 +112,7 @@ const tiers: TierRow[] = [
         name: 'Premium',
         code: 'B7',
         price: '$52',
-        tokens: '7 Tokens',
+        tokens: '7 Entries',
         spin: '$15 Off',
         beny: true,
         cardStyle: goldCardStyle,
@@ -128,7 +128,7 @@ const tiers: TierRow[] = [
         name: 'Elite',
         code: 'B10',
         price: '$65',
-        tokens: '10 Tokens',
+        tokens: '10 Entries',
         spin: '$20 Off',
         beny: true,
         cardStyle: blackCardStyle,
@@ -202,7 +202,7 @@ const BlueTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispl
                                         <span className='text-xs text-white/60'>/mo</span>
                                     </div>
                                     <p className='text-slr-muted mt-1 text-xs'>
-                                        1 token = 1 weekly draw entry · Full platform access
+                                        1 entry = 1 weekly draw entry · Full platform access
                                     </p>
                                 </div>
                             </div>
@@ -343,7 +343,7 @@ const BlueTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispl
                     </div>
                 </div>
                 <div className='text-slr-dim mt-12 w-full rounded-xl border border-[#1A62C033] bg-[#1A62C014] p-4 text-center text-sm md:text-base'>
-                    Each token gives you <span className='font-bold text-[#6AB0F0]'>one entry</span> into the weekly
+                    Each entry gives you <span className='font-bold text-[#6AB0F0]'>one entry</span> into the weekly
                     member prize draws. Higher tiers = more chances to win every week.
                 </div>
             </div>

@@ -20,25 +20,12 @@ type TierOption = {
     tagline: string;
     perks: string[];
     badge?: string;
-    isPaid: boolean;
     icon: string | null;
-    borderGradient?: string;
-    innerBg?: string;
-    cardBg?: string;
+    borderGradient: string;
+    innerBg: string;
 };
 
 const tiers: TierOption[] = [
-    {
-        key: 'visitor',
-        name: 'Visitor',
-        price: 'FREE',
-        note: 'No card needed',
-        tagline: 'Try SLR with the weekly Visitor draw.',
-        perks: ['Weekly $50 Visitor draw', 'Browse partner discounts', 'Browse e-book listings'],
-        isPaid: false,
-        icon: null,
-        cardBg: 'border-[#A0B4D259] bg-[linear-gradient(154.36deg,#141820_0.82%,#1E2530_49.73%,#141820_98.65%)]'
-    },
     {
         key: 'red',
         name: 'SLR Red',
@@ -47,7 +34,6 @@ const tiers: TierOption[] = [
         tagline: 'The everyday rewards plan.',
         perks: ['Up to 7 weekly draws', '4–7 entries per cycle', 'Unlock all discount codes', 'Read all e-books'],
         badge: 'Most popular',
-        isPaid: true,
         icon: null,
         borderGradient:
             'bg-[linear-gradient(180deg,#FF6B7A_10%,#C8152E_25%,#8B0010_75.24%,#C8152E_87.62%,#FF6B7A_100%)]',
@@ -60,7 +46,6 @@ const tiers: TierOption[] = [
         note: '/ month',
         tagline: 'Maximum draws, member-only deals.',
         perks: ['Everything in Red', '10+ entries per cycle', 'Premium prize pool', 'Member-only deals'],
-        isPaid: true,
         icon: null,
         borderGradient:
             'bg-[linear-gradient(180deg,#6AACFF_10%,#1A62C0_25%,#0A2E80_75.24%,#1A62C0_87.62%,#6AACFF_100%)]',
@@ -90,12 +75,6 @@ const StepTier = ({ data, onNext, onBack }: StepTierProps) => {
 
             return;
         }
-        if (group === 'visitor') {
-            onNext({ tier: 'visitor', sub_tier: 'VISITOR' });
-
-            return;
-        }
-
         const subs = subTiersForGroup(group);
         if (!subCode || !subs.some((s) => s.code === subCode)) {
             setSubCode(subs[0].code);
@@ -208,7 +187,7 @@ const StepTier = ({ data, onNext, onBack }: StepTierProps) => {
                 <p className='text-slr-muted mt-1 text-sm'>You can change or cancel any time from your account.</p>
             </div>
 
-            <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
+            <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                 {tiers.map((tier) => {
                     const isSelected = group === tier.key;
 
@@ -223,23 +202,16 @@ const StepTier = ({ data, onNext, onBack }: StepTierProps) => {
                                     ? 'ring-2 ring-[#D4AF37] ring-offset-2 ring-offset-[#131619]'
                                     : 'hover:ring-1 hover:ring-white/20'
                             )}>
-                            <div
-                                className={cn(
-                                    'relative isolate flex flex-1 flex-col rounded-2xl',
-                                    tier.isPaid ? 'p-[1.25px]' : ''
-                                )}>
-                                {tier.isPaid && tier.borderGradient && (
-                                    <div
-                                        className={`absolute inset-0 -z-10 rounded-2xl ${tier.borderGradient} mask-exclude [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)]`}
-                                        aria-hidden='true'
-                                    />
-                                )}
+                            <div className='relative isolate flex flex-1 flex-col rounded-2xl p-[1.25px]'>
+                                <div
+                                    className={`absolute inset-0 -z-10 rounded-2xl ${tier.borderGradient} mask-exclude [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)]`}
+                                    aria-hidden='true'
+                                />
 
                                 <div
                                     className={cn(
-                                        'flex flex-1 flex-col rounded-2xl p-5',
-                                        tier.isPaid ? tier.innerBg : tier.cardBg,
-                                        tier.isPaid && 'rounded-[calc(1rem-1.25px)]'
+                                        'flex flex-1 flex-col rounded-[calc(1rem-1.25px)] p-5',
+                                        tier.innerBg
                                     )}>
                                     {tier.badge && (
                                         <div
