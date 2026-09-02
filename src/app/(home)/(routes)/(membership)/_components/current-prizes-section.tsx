@@ -1,3 +1,4 @@
+import { BLUE_TIER_CARD, RED_TIER_CARD } from '@/constant/tier-card-theme';
 import { getMembershipTiers } from '@/lib/api/resources/memberships';
 import { getPublicPrizeContent } from '@/lib/api/resources/prizes';
 import { membersCapLabel, minPriceCents, parseAmount, splitLines, toStat, weeklyPriceLabel } from '@/lib/prize-content';
@@ -29,29 +30,6 @@ const FALLBACK = {
 
 const MONTHLY_NOTE = 'For 1000 New Members';
 
-const RED_THEME = {
-    name: 'SLR Red',
-    accent: '#F24040',
-    accentGlow: '#F2404080',
-    borderGradient: 'linear-gradient(180deg, #FF6B7A 10%, #C8152E 25%, #8B0010 75.24%, #C8152E 87.62%, #FF6B7A 100%)',
-    surface: 'linear-gradient(180deg, #3D050C 0%, #000000 25%, #000000 70%, #4A0813 100%)',
-    pillBorder: 'rgba(242,64,64,0.5)',
-    prizeBox: 'rgba(240, 33, 33, 0.08)',
-    footerBar: 'linear-gradient(180deg, #FF4D5B 0%, #B31222 100%)',
-    moneyFilter: 'hue-rotate(145deg)'
-};
-
-const BLUE_THEME = {
-    name: 'SLR Blue',
-    accent: '#6699FF',
-    accentGlow: '#6699FF80',
-    borderGradient: 'linear-gradient(180deg, #6AACFF 0%, #1A62C0 25%, #0A2E80 50%, #1A62C0 75%, #6AACFF 100%)',
-    surface: 'linear-gradient(180deg, #091C4A 0%, #000000 25%, #000000 70%, #0F2C73 100%)',
-    pillBorder: 'rgba(102,153,255,0.5)',
-    prizeBox: 'rgba(102, 153, 255, 0.08)',
-    footerBar: 'linear-gradient(180deg, #5C93FF 0%, #1A53D9 100%)'
-};
-
 const perWeekAmount = (price: string) => price.replace('/week', '');
 
 const CurrentPrizesSection = async () => {
@@ -75,7 +53,7 @@ const CurrentPrizesSection = async () => {
 
     const cards: PrizeTierCard[] = [
         {
-            ...RED_THEME,
+            ...RED_TIER_CARD,
             price: redPrice,
             membersCap,
             weekly: redWeekly.length > 0 ? redWeekly : FALLBACK.red.weekly,
@@ -84,7 +62,7 @@ const CurrentPrizesSection = async () => {
             footer: `Great prizes for only ${perWeekAmount(redPrice)} a week`
         },
         {
-            ...BLUE_THEME,
+            ...BLUE_TIER_CARD,
             price: bluePrice,
             membersCap,
             weekly: blueWeekly.length > 0 ? blueWeekly : FALLBACK.blue.weekly,
