@@ -72,14 +72,12 @@ function useReachedOnce(ref: React.RefObject<HTMLElement | null>, onReach: () =>
 function useRevealSequence(total: number | null, statCount: number) {
     const anchorRef = useRef<HTMLHeadingElement>(null);
     const [amount, setAmount] = useState(0);
-    const [statsIn, setStatsIn] = useState(false);
     const [cardsIn, setCardsIn] = useState(false);
     const cleanup = useRef<() => void>(() => undefined);
 
     const countUp = useCallback(() => {
         if (total === null || prefersReducedMotion()) {
             setAmount(total ?? 0);
-            setStatsIn(true);
             setCardsIn(true);
 
             return;
@@ -100,7 +98,6 @@ function useRevealSequence(total: number | null, statCount: number) {
                 return;
             }
             setAmount(total);
-            setStatsIn(true);
             cardsTimer = setTimeout(() => setCardsIn(true), statCount * 150 + 200);
         };
         frame = window.requestAnimationFrame(step);
@@ -114,7 +111,7 @@ function useRevealSequence(total: number | null, statCount: number) {
     useReachedOnce(anchorRef, countUp);
     useEffect(() => () => cleanup.current(), []);
 
-    return { anchorRef, amount, statsIn, cardsIn };
+    return { anchorRef, amount, cardsIn };
 }
 
 function useTypewriter(text: string) {
@@ -143,13 +140,6 @@ function useTypewriter(text: string) {
 
     return { ref, typed };
 }
-
-const revealStyle = (shown: boolean, delayMs: number) => ({
-    opacity: shown ? 1 : 0,
-    transform: shown ? 'translateY(0)' : 'translateY(15px)',
-    transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
-    transitionDelay: `${delayMs}ms`
-});
 
 const TierCardBlock = ({ tier, shown, delayMs }: { tier: PrizeTierCard; shown: boolean; delayMs: number }) => (
     <div
@@ -237,7 +227,7 @@ const TierCardBlock = ({ tier, shown, delayMs }: { tier: PrizeTierCard; shown: b
 );
 
 export function CurrentPrizesContent({ poolAmount, poolText, stats, tiers }: CurrentPrizesContentProps) {
-    const { anchorRef, amount, statsIn, cardsIn } = useRevealSequence(poolAmount, stats.length);
+    const { anchorRef, amount, cardsIn } = useRevealSequence(poolAmount, stats.length);
     const { ref: typeRef, typed } = useTypewriter(TYPEWRITER_TEXT);
 
     return (
@@ -260,9 +250,7 @@ export function CurrentPrizesContent({ poolAmount, poolText, stats, tiers }: Cur
                                 {index > 0 && (
                                     <div aria-hidden='true' className='h-8 w-px bg-white/20 min-[600px]:h-10 md:h-15' />
                                 )}
-                                <div
-                                    className='flex flex-col items-center justify-center text-center'
-                                    style={revealStyle(statsIn, index * 150)}>
+                                <div className='flex flex-col items-center justify-center text-center'>
                                     <p
                                         className='font-bebas-neue text-[15px] leading-[1.1] tracking-wider min-[600px]:text-[24px] md:text-[40px]'
                                         style={{ color: '#F3F4F6', textShadow: '0 0 12px rgba(255, 255, 255, 0.3)' }}>
