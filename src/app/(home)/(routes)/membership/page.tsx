@@ -19,7 +19,7 @@ import { CircleAlert } from 'lucide-react';
 export const metadata: Metadata = {
     title: 'Membership · SLR Rewards',
     description:
-        "Compare Smart Life Rewards membership tiers — Visitor (free), SLR Red ($10/mo), and SLR Premium ($26/mo). Choose the plan that's right for you."
+        "Compare Smart Life Rewards membership tiers — SLR Red ($10/mo) and SLR Premium ($26/mo). Choose the plan that's right for you."
 };
 
 const formatPrice = (cents: number) => {
@@ -53,13 +53,6 @@ const MembershipPage = async () => {
     const hasTiers = !!tiers && (tiers.red.length > 0 || tiers.blue.length > 0);
 
     const schemaTiers = [
-        {
-            name: 'Smart Life Rewards Visitor (Free)',
-            description: 'Visitor Free Membership - 1 free token per cycle. Access to visitor giveaway draws.',
-            price: '0.00',
-            priceCurrency: 'AUD',
-            billingPeriod: 'P28D'
-        },
         {
             name: 'Smart Life Rewards Red',
             description:

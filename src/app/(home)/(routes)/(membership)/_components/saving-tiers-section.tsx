@@ -39,7 +39,9 @@ const SavingTiersSection = () => {
         <section id='saving-tiers' className='bg-slr-ink relative py-16 md:py-24'>
             <div className='mx-auto max-w-7xl px-4'>
                 <SectionHeading>
-                    <span className='text-gradient-silver'>Start Your Saving Now With The Best Value Tiers</span>
+                    <span className='text-gradient-silver'>
+                        Get your weekly draw tickets <br className='hidden sm:block' /> from $1.50 a week
+                    </span>
                 </SectionHeading>
 
                 <p
@@ -71,16 +73,6 @@ const SavingTiersSection = () => {
                         cta='Join SLR Red'
                         className='sm:w-44 md:w-52 lg:w-60'
                         buttonClassName='inset-x-[10%] bottom-[4.9%] h-[10%]'
-                    />
-                    <TierCard
-                        image='/images/card-free-visitor.webp'
-                        width={846}
-                        height={1617}
-                        alt='Free Visitors — bonus giveaways, upgrade anytime'
-                        href='/sign-up'
-                        cta='Enter as a Free Visitor'
-                        className='sm:w-52 md:w-60 lg:w-72'
-                        buttonClassName='inset-x-[11%] bottom-[6%] h-[10%]'
                     />
                     <TierCard
                         image='/images/card-slr-blue.webp'

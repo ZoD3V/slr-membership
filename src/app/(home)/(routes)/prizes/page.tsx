@@ -5,8 +5,8 @@ import type { PrizeContent } from '@/types/member';
 
 import WelcomeSection from '../(membership)/_components/welcome-section';
 import MembershipClubSection from './_components/membership-club-section';
+import RedBlueSection from './_components/red-blue-section';
 import SlrLifeTiersSection from './_components/slr-life-tiers-section';
-import VisitorRedBlueSection from './_components/visitor-red-blue-section';
 import { PUBLIC_PRIZE_FALLBACK } from './fallback';
 
 const Page = async () => {
@@ -34,7 +34,7 @@ const Page = async () => {
                 </div>
 
                 <MembershipClubSection content={content} />
-                <VisitorRedBlueSection content={content} />
+                <RedBlueSection content={content} />
             </div>
 
             <WelcomeSection />

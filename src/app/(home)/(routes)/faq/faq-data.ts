@@ -21,7 +21,7 @@ export const categories: FaqCategory[] = [
             },
             {
                 question: 'Is there a free option?',
-                answer: 'Yes. The Visitor tier is completely free, no credit card required. Visitor members are entered into a weekly $50 draw and can browse public pages and e-book listings.'
+                answer: 'No. Membership is paid only — SLR Red starts at $10/month and SLR Premium (Blue) at $26/month. You can browse public pages and e-book listings without an account.'
             }
         ]
     },
@@ -30,7 +30,7 @@ export const categories: FaqCategory[] = [
         items: [
             {
                 question: 'What are the membership tiers?',
-                answer: 'There are three tiers: Visitor (free), SLR Red (from $10/month) with basic discounts and Red draws, and SLR Premium / Blue (from $26/month) with full access to all draws, e-books, and member-only deals. Red and Premium members can also add the BENY discount platform for an extra $4/month.'
+                answer: 'There are two tiers: SLR Red (from $10/month) with basic discounts and Red draws, and SLR Premium / Blue (from $26/month) with full access to all draws, e-books, and member-only deals. Red and Premium members can also add the BENY discount platform for an extra $4/month.'
             },
             {
                 question: 'How does billing work?',
@@ -76,7 +76,7 @@ export const categories: FaqCategory[] = [
         items: [
             {
                 question: 'What discounts do members get?',
-                answer: 'Red and Blue members can browse the Discounts directory to find partner deals across fuel, groceries, dining, travel, and more. Each deal includes a code you can copy with one click. Visitor members see the directory but need to upgrade to use the codes.'
+                answer: 'Red and Blue members can browse the Discounts directory to find partner deals across fuel, groceries, dining, travel, and more. Each deal includes a code you can copy with one click.'
             },
             {
                 question: 'What is BENY?',
@@ -93,7 +93,7 @@ export const categories: FaqCategory[] = [
             },
             {
                 question: 'Who can access e-books?',
-                answer: 'Everyone can browse e-book listings (covers, titles, descriptions). Full content is available to Red and Blue members and can be read in your browser. Visitor members see an upgrade prompt.'
+                answer: 'Everyone can browse e-book listings (covers, titles, descriptions). Full content is available to Red and Blue members and can be read in your browser.'
             }
         ]
     },

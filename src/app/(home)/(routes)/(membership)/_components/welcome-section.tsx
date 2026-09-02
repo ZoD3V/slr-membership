@@ -14,7 +14,7 @@ const bars = [
 ];
 
 const highlights = [
-    { title: 'Visitor, Red, Blue', subtitle: 'Tier separated draw pool' },
+    { title: 'Red & Blue', subtitle: 'Tier separated draw pool' },
     { title: 'Up to $24,000', subtitle: 'Monthly bonus pool' },
     { title: 'Weekly Draw', subtitle: '18 draws per month' }
 ];

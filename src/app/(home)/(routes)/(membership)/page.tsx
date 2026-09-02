@@ -1,17 +1,14 @@
-import Image from 'next/image';
-
 import { type Discount, getPublicDiscounts } from '@/lib/api/resources/discounts';
 
-import FreeVisitorsSection from './_components/free-visitors-section';
+import CurrentPrizesSection from './_components/current-prizes-section';
+import DrawCountdownSection from './_components/draw-countdown-section';
 import HeroSection from './_components/hero-section';
-import MerchandiseSection from './_components/merchandise-section';
+import HowItWorksSection from './_components/how-it-works-section';
+import MoreMembersSection from './_components/more-members-section';
 import PartnersSection from './_components/partners-section';
 import SavingTiersSection from './_components/saving-tiers-section';
 import SlrRedBlueTiersSpinWheelSection from './_components/slr-red-blue-tiers-spin-wheel-section';
-import SlrRewardCarsSection from './_components/slr-reward-cars-section';
 import TrustedSection from './_components/trusted-section';
-import WelcomeSection from './_components/welcome-section';
-import WhyJoinSection from './_components/why-join-section';
 
 const MembershipPage = async () => {
     const publicDiscounts = await getPublicDiscounts().catch(() => [] as Discount[]);
@@ -20,26 +17,14 @@ const MembershipPage = async () => {
     return (
         <main className='bg-slr-ink min-h-screen'>
             <HeroSection />
-            <div className='relative'>
-                <WelcomeSection />
-                <div className='pointer-events-none absolute top-[55%] right-0 z-20 hidden -translate-y-1/2 xl:block'>
-                    <Image
-                        src='/images/grid-decoration.webp'
-                        alt='Grid Decoration'
-                        width={550}
-                        height={550}
-                        className='object-contain'
-                    />
-                </div>
-                <WhyJoinSection />
-            </div>
-            <SlrRewardCarsSection />
-            <FreeVisitorsSection />
-            <SlrRedBlueTiersSpinWheelSection />
-            <TrustedSection />
-            <SavingTiersSection />
+            <HowItWorksSection />
+            <CurrentPrizesSection />
             <PartnersSection logos={partnerLogos} />
-            <MerchandiseSection />
+            <MoreMembersSection />
+            <TrustedSection />
+            <SlrRedBlueTiersSpinWheelSection />
+            <SavingTiersSection />
+            <DrawCountdownSection />
         </main>
     );
 };

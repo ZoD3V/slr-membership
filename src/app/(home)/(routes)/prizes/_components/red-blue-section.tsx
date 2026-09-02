@@ -171,57 +171,17 @@ const TierCard: FC<{ tier: Tier; stageLabel: string }> = ({ tier, stageLabel }) 
     );
 };
 
-const VisitorCard = ({ prize }: { prize: string }) => (
-    <div className='flex h-full flex-col items-center rounded-2xl bg-[#F1FBFE] px-6 py-8 text-center'>
-        <h3 className='font-bebas-neue text-4xl font-bold tracking-wider text-[#0A0A0A] uppercase sm:text-5xl'>
-            Visitor
-        </h3>
-        <span className='mt-3 rounded-full border border-[#0A0A0A]/40 px-4 py-1 text-sm font-bold tracking-wider text-[#0A0A0A] uppercase'>
-            Free To Join
-        </span>
-
-        <Image
-            src='/icons/ic-visitor-cole.webp'
-            alt='Coles gift card'
-            width={320}
-            height={220}
-            className='mt-8 h-auto w-40 object-contain sm:w-48'
-        />
-
-        <p className='mt-8 text-sm font-bold tracking-[0.2em] text-[#0A0A0A] uppercase'>Weekly</p>
-        <p className='mt-2 text-3xl leading-tight font-extrabold whitespace-pre-line text-[#0A0A0A] sm:text-4xl'>
-            {prize}
-        </p>
-
-        <div className='my-6 h-px w-24 bg-[#D1A62E]' />
-
-        <div className='mt-auto flex items-center gap-2'>
-            <Image
-                src='/icons/ic-check-circle.png'
-                alt=''
-                width={20}
-                height={20}
-                className='h-5 w-5 shrink-0 object-contain'
-            />
-            <span className='text-xs font-bold tracking-[0.12em] text-[#0A0A0A] uppercase'>
-                Access to Selected Benefits
-            </span>
-        </div>
-    </div>
-);
-
-const VisitorRedBlueSection = ({ content }: { content: PrizeContent }) => {
+const RedBlueSection = ({ content }: { content: PrizeContent }) => {
     const stats = buildStats(content);
 
     return (
         <section className='relative isolate -mt-8 overflow-hidden bg-transparent py-16 md:-mt-12 md:py-24'>
             <div className='mx-auto max-w-7xl px-4'>
-                <div className='grid grid-cols-1 items-stretch gap-5 md:grid-cols-3'>
+                <div className='grid grid-cols-1 items-stretch gap-5 md:grid-cols-2'>
                     <TierCard
                         tier={toTier(redTheme, content.red_weekly, content.red_monthly)}
                         stageLabel={content.stage_label}
                     />
-                    <VisitorCard prize={content.visitor_prize} />
                     <TierCard
                         tier={toTier(blueTheme, content.blue_weekly, content.blue_monthly)}
                         stageLabel={content.stage_label}
@@ -284,4 +244,4 @@ const VisitorRedBlueSection = ({ content }: { content: PrizeContent }) => {
     );
 };
 
-export default VisitorRedBlueSection;
+export default RedBlueSection;

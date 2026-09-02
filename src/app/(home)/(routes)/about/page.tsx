@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 const stats = [
     { icon: Map, label: 'States & territories', value: '8' },
     { icon: CalendarCheck, label: 'Draws per week', value: 'Up to 7' },
-    { icon: Layers, label: 'Membership tiers', value: '3' },
+    { icon: Layers, label: 'Membership tiers', value: '2' },
     { icon: ShieldCheck, label: 'Backed by', value: 'TPAL' }
 ];
 
@@ -42,7 +42,7 @@ const howItWorks = [
     {
         icon: UserPlus,
         title: 'Sign up',
-        body: 'Pick your tier — free Visitor, $10 Red, or $26 Premium. Tell us your state for the draw pool.'
+        body: 'Pick your tier — $10 Red or $26 Premium. Tell us your state for the draw pool.'
     },
     {
         icon: Ticket,
