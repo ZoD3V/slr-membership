@@ -6,12 +6,14 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { CountdownBoxes } from '@/components/common/countdown';
+import { DrawRulesBody } from '@/components/common/draw-rules-body';
 import { DrawTypeBadge } from '@/components/common/draw-type-badge';
 import { EntryStatusBadge } from '@/components/common/entry-status-badge';
 import { TierGroupBadge } from '@/components/common/tier-badge';
 import { TIER_VISUALS } from '@/constant/tiers';
 import { getCurrentMember } from '@/data/member-dashboard';
 import { handleApiAuthError } from '@/lib/api/guard';
+import { getDrawRules } from '@/lib/api/resources/announcements';
 import { getEntryHistory } from '@/lib/api/resources/entries';
 import { type ApiGiveaway, getGiveaway, getGiveaways, toGiveawayDetail } from '@/lib/api/resources/giveaways';
 import { getAccessToken } from '@/lib/api/server';
@@ -19,18 +21,7 @@ import { formatDrawDateTime, formatShortDate, tierGroupOf } from '@/lib/member';
 import { goldButtonStyle } from '@/lib/styles';
 import type { GiveawayDetail, GiveawayEntryRow } from '@/types/member';
 
-import {
-    ArrowLeft,
-    ArrowRight,
-    CheckCircle2,
-    ChevronRight,
-    Clock,
-    Lock,
-    MapPin,
-    ShieldCheck,
-    Ticket,
-    Trophy
-} from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock, Lock, MapPin, ShieldCheck, Ticket, Trophy } from 'lucide-react';
 
 async function loadGiveaway(id: string): Promise<GiveawayDetail | null> {
     const member = await getCurrentMember();
@@ -77,7 +68,7 @@ function InfoCard({ title, children }: { title: string; children: ReactNode }) {
 
 export default async function GiveawayDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const giveaway = await loadGiveaway(id);
+    const [giveaway, drawRules] = await Promise.all([loadGiveaway(id), getDrawRules()]);
 
     if (!giveaway) notFound();
 
@@ -197,14 +188,7 @@ export default async function GiveawayDetailPage({ params }: { params: Promise<{
                     )}
 
                     <InfoCard title='How It Works'>
-                        <ul className='space-y-2.5'>
-                            {giveaway.rules.map((rule, i) => (
-                                <li key={i} className='flex gap-2.5 text-sm text-white/90'>
-                                    <ChevronRight className='text-slr-gold-label mt-0.5 size-4 shrink-0' />
-                                    <span className='leading-relaxed'>{rule}</span>
-                                </li>
-                            ))}
-                        </ul>
+                        <DrawRulesBody html={drawRules?.content} fallback={giveaway.rules} />
                     </InfoCard>
 
                     <section className='bg-gold-tint rounded-2xl border border-[#D4AF3759] p-5 md:p-6'>

@@ -22,7 +22,7 @@ function LongDescription({ description }: { description: string }) {
     if (isHtml(description)) {
         return (
             <div
-                className='prose prose-invert text-slr-muted tiptap max-w-none space-y-5 text-sm leading-relaxed md:text-base'
+                className='tiptap text-slr-muted max-w-none space-y-5 text-sm leading-relaxed md:text-base'
                 dangerouslySetInnerHTML={{ __html: description }}
             />
         );

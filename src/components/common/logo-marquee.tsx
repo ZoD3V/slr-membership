@@ -10,6 +10,22 @@ import { motion, useAnimationFrame, useMotionValue } from 'motion/react';
 
 const SPEED = 30;
 
+// Below this many logos a second row would just repeat the first one, so the
+// marquee stays a single row. At or above it the set is split in half, with the
+// odd logo going to the top row (13 → 7 above, 6 below).
+const TWO_ROW_THRESHOLD = 12;
+
+function repeatToFill(logos: { src: string; alt: string }[]): { src: string; alt: string }[] {
+    if (logos.length === 0) return [];
+
+    let items = [...logos];
+    while (items.length < 35) {
+        items = [...items, ...logos];
+    }
+
+    return items;
+}
+
 export interface LogoMarqueeProps {
     logos: { src: string; alt: string }[];
 
@@ -38,15 +54,19 @@ const LogoMarquee = ({
         );
     }, [logos]);
 
-    const multipliedLogos = React.useMemo(() => {
-        if (validLogos.length === 0) return [];
-        let items = [...validLogos];
-        while (items.length < 35) {
-            items = [...items, ...validLogos];
-        }
+    const isTwoRows = validLogos.length >= TWO_ROW_THRESHOLD;
 
-        return items;
-    }, [validLogos]);
+    const row1Logos = React.useMemo(() => {
+        if (!isTwoRows) return repeatToFill(validLogos);
+
+        return repeatToFill(validLogos.slice(0, Math.ceil(validLogos.length / 2)));
+    }, [validLogos, isTwoRows]);
+
+    const row2Logos = React.useMemo(() => {
+        if (!isTwoRows) return [];
+
+        return repeatToFill(validLogos.slice(Math.ceil(validLogos.length / 2)));
+    }, [validLogos, isTwoRows]);
 
     useEffect(() => {
         const init = () => {
@@ -54,19 +74,22 @@ const LogoMarquee = ({
                 const half = row1Ref.current.scrollWidth / 2;
                 if (half > 0) {
                     xRow1.set(-half);
-
-                    xRow2.set(-half / 3);
                     setMounted(true);
                 }
             } else {
                 setMounted(true);
+            }
+
+            if (row2Ref.current) {
+                const half2 = row2Ref.current.scrollWidth / 2;
+                if (half2 > 0) xRow2.set(-half2 / 3);
             }
         };
 
         const t = window.requestAnimationFrame(init);
 
         return () => window.cancelAnimationFrame(t);
-    }, [xRow1, xRow2, multipliedLogos]);
+    }, [xRow1, xRow2, row1Logos, row2Logos]);
 
     useAnimationFrame((_time, delta) => {
         if (draggingRef.current) return;
@@ -109,7 +132,7 @@ const LogoMarquee = ({
         xRow2.set(xRow2.get() + info.delta.x);
     };
 
-    if (multipliedLogos.length === 0) return null;
+    if (row1Logos.length === 0) return null;
 
     return (
         <motion.div
@@ -126,7 +149,7 @@ const LogoMarquee = ({
             onPanEnd={handlePanEnd}
             style={{ touchAction: 'pan-y' }}>
             <motion.div ref={row1Ref} className='flex w-max will-change-transform' style={{ x: xRow1 }}>
-                {[...multipliedLogos, ...multipliedLogos].map((logo, idx) => (
+                {[...row1Logos, ...row1Logos].map((logo, idx) => (
                     <LogoCard
                         key={`row1-${idx}`}
                         src={logo.src}
@@ -137,17 +160,19 @@ const LogoMarquee = ({
                 ))}
             </motion.div>
 
-            <motion.div ref={row2Ref} className='flex w-max will-change-transform' style={{ x: xRow2 }}>
-                {[...multipliedLogos, ...multipliedLogos].map((logo, idx) => (
-                    <LogoCard
-                        key={`row2-${idx}`}
-                        src={logo.src}
-                        alt={logo.alt}
-                        cardClassName={cardClassName}
-                        imageClassName={imageClassName}
-                    />
-                ))}
-            </motion.div>
+            {isTwoRows ? (
+                <motion.div ref={row2Ref} className='flex w-max will-change-transform' style={{ x: xRow2 }}>
+                    {[...row2Logos, ...row2Logos].map((logo, idx) => (
+                        <LogoCard
+                            key={`row2-${idx}`}
+                            src={logo.src}
+                            alt={logo.alt}
+                            cardClassName={cardClassName}
+                            imageClassName={imageClassName}
+                        />
+                    ))}
+                </motion.div>
+            ) : null}
         </motion.div>
     );
 };

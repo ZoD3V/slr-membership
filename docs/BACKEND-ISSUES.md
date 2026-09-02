@@ -1231,6 +1231,102 @@ Nilai yang paling berguna untuk admin — orang yang mendaftar tapi tidak pernah
 
 ---
 
+## ✅ 2026-09-01 — Announcements: CLOSED, tidak ada sisa permintaan ke backend
+
+Diuji live di `https://api-dev.smartliferewards.com.au` dengan akun `superadmin@`, seluruh siklus CRUD.
+
+> **✅ Update 2026-09-01 16:12 UTC — diuji ulang, backend sudah memperbaiki.** Siklus CRUD penuh lewat sekarang:
+>
+> | Uji ulang | Hasil |
+> | --- | --- |
+> | `POST /admin/announcements` (payload form FE) | ✅ 200, `updated_by` kini terisi — menguatkan dugaan awal bahwa 500-nya memang di penulisan kolom itu |
+> | `PUT /admin/announcements/:id` body **parsial** | ✅ 200 |
+> | `PUT /admin/announcements/:id` body **penuh** (bentuk yang dikirim FE) | ✅ 200 — jadi superset field kita diterima, tak perlu diubah |
+> | `DELETE /admin/announcements/:id` pada baris nyata | ✅ 200, detail sesudahnya 404 |
+> | `DELETE` id tak dikenal | ✅ kini `code: NOT_FOUND` (sebelumnya `BAD_REQUEST`) |
+> | `?is_active=true` dan `?is_active=false` | ✅ 200 keduanya |
+> | `GET /api/v1/public/announcements` (dipakai FE) | ✅ 200 |
+>
+> Casing body snake_case terkonfirmasi diterima. Baris uji yang dibuat sudah dihapus, dan judul baris ticker yang sempat tersentuh saat menguji PUT sudah dikembalikan ke `TV Running Text Ticker` — data dev bersih.
+>
+> **Tidak ada sisa permintaan.** Path publik yang dipakai FE adalah `/api/v1/public/announcements` dan sudah berfungsi; perbedaan penulisan di dokumen integrasi (`/api/v1/announcements`) ditutup sebagai non-isu atas keputusan tim FE — tidak perlu alias maupun route tambahan.
+
+Laporan awal (untuk arsip):
+
+
+### Ringkasan hasil
+
+| Endpoint                                    | Hasil                                                      |
+| ------------------------------------------- | ---------------------------------------------------------- |
+| `GET /api/v1/announcements`                 | 🔴 **404** — path yang ditulis di panduan integrasi        |
+| `GET /api/v1/public/announcements`          | ✅ 200 (path yang sebenarnya hidup; `?type=` bekerja)      |
+| `GET /api/v1/admin/announcements`           | ✅ 200 — array polos + `meta{total,page,per_page,total_pages}` |
+| `GET /api/v1/admin/announcements?search=`   | ✅ 200                                                      |
+| `GET /api/v1/admin/announcements?type=`     | ✅ 200                                                      |
+| `GET /api/v1/admin/announcements?is_active=`| 🔴 **400** untuk `true`, `false`, maupun `1`               |
+| `GET /api/v1/admin/announcements/:id`       | ✅ 200                                                      |
+| `POST /api/v1/admin/announcements`          | 🔴 **500** `INTERNAL_ERROR`                                 |
+| `PUT /api/v1/admin/announcements/:id`       | 🔴 **500** `INTERNAL_ERROR`                                 |
+| `DELETE /api/v1/admin/announcements/:id`    | 🟡 rute ada; id tak dikenal → 404 tapi `code: BAD_REQUEST`  |
+
+### 1. ✅ ~~Path publik di dokumen integrasi salah~~ — DITUTUP, non-isu
+
+Dokumen integrasi menulis `GET /api/v1/announcements`, sedangkan yang hidup adalah `GET /api/v1/public/announcements`. FE memakai path yang hidup dan berfungsi normal. **Ditutup — tidak ada yang perlu dikerjakan backend.**
+
+### 2. 🔴 `POST /admin/announcements` selalu 500
+
+Empat variasi body dicoba, semuanya 500 — jadi ini bukan soal validasi atau casing:
+
+```
+POST /api/v1/admin/announcements
+{"type":"RUNNING_TEXT","content":"FE PROBE MINIMAL"}
+→ 500 {"code":"INTERNAL_ERROR"}  requestId 01a05b00-440c-70b8-8d99-9b477b0242de
+
+{"type":"RUNNING_TEXT","title":"…","content":"…","link_url":"https://…","is_active":false,"sort_order":99}
+→ 500  requestId 01a05b00-2e8c-…
+
+{"type":"RUNNING_TEXT","title":"…","content":"…","linkUrl":null,"isActive":false,"sortOrder":98}   (camelCase)
+→ 500  requestId 01a05b00-4c58-76dd-8d82-39cbb63053d7
+```
+
+Validasi yang gagal seharusnya 400 `VALIDATION_ERROR` (endpoint list membuktikan mekanisme itu ada), jadi 500 di sini menunjuk galat sisi server — dugaan kami saat penulisan `updated_by`. Mohon ditelusuri lewat `requestId` di atas.
+
+### 3. 🔴 `PUT /admin/announcements/:id` selalu 500
+
+Baik body parsial maupun body penuh:
+
+```
+PUT /api/v1/admin/announcements/0191ae5c-42b7-72e1-87ab-4e38c92a912e
+{"title":"TV Running Text Ticker (FE probe)"}
+→ 500  requestId 01a05b00-b45f-75e8-a33a-e421faf003f9
+
+{"type":"RUNNING_TEXT","title":"…","content":"…","link_url":null,"is_active":true,"sort_order":0}
+→ 500  requestId 01a05b00-d486-76c2-b468-b0b803481066
+```
+
+**Dampak:** panel admin Announcements sudah jadi dan terpasang, tapi tombol Create dan Save Changes akan selalu gagal sampai kedua endpoint ini diperbaiki. List, detail, dan ticker publik jalan normal.
+
+### 4. 🔴 Filter `is_active` tidak bisa dipakai dalam bentuk apa pun
+
+```
+GET /api/v1/admin/announcements?is_active=true
+→ 400 {"code":"VALIDATION_ERROR",
+       "errors":[{"field":"is_active","message":"Expected 'true' | 'false', received boolean"}]}
+```
+
+Pesannya menunjukkan query string sudah dikoersi jadi boolean oleh middleware, lalu divalidasi terhadap skema yang menuntut **string** `'true' | 'false'` — jadi tidak ada nilai yang bisa lolos (`true`, `false`, dan `1` semuanya 400). Mohon skema dan koersinya diselaraskan.
+
+### 5. 🟡 `DELETE` id tak dikenal: status 404 tapi `code: BAD_REQUEST`
+
+```
+DELETE /api/v1/admin/announcements/0191ae5c-0000-7000-8000-000000000000
+→ 404 {"code":"BAD_REQUEST","message":"Announcement with ID '…' not found."}
+```
+
+Status dan kode tidak sepadan; mohon `code` diubah jadi `NOT_FOUND`. **Catatan:** delete pada baris yang benar-benar ada **belum diuji** — POST rusak sehingga tidak ada baris sekali-pakai yang bisa dibuat, dan kami tidak menghapus satu-satunya baris ticker yang dipakai landing dev.
+
+---
+
 ## 🟡 2026-08-31 — E-book butuh field `external_url` (sekarang menumpang `pdf_url`)
 
 Klien meminta jenis e-book ketiga: kontennya **tidak** dihosting SLR, melainkan dibaca di situs penerbit. Halaman member menampilkan cover + judul + sub-judul + deskripsi panjang, lalu satu CTA yang membuka situs itu di tab baru.

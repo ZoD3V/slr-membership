@@ -2,8 +2,33 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import GoldPillButton from '@/components/common/gold-pill-button';
+import { compareAnnouncements, getRunningText } from '@/lib/api/resources/announcements';
 
-const HeroSection = () => {
+const FALLBACK_TICKER = [
+    '$2,100 PRIZE POOL',
+    'ONLY 100 MEMBERS COMPETING',
+    'ODDS 9 IN 10 P/A',
+    '4-6 PRIZE DRAWS EVERY FRIDAY'
+];
+
+async function loadTickerSegments(): Promise<string[]> {
+    try {
+        const announcements = (await getRunningText()).filter((item) => item.is_active).sort(compareAnnouncements);
+
+        const segments = announcements
+            .flatMap((item) => item.content.split('•'))
+            .map((segment) => segment.trim())
+            .filter(Boolean);
+
+        return segments.length > 0 ? segments : FALLBACK_TICKER;
+    } catch {
+        return FALLBACK_TICKER;
+    }
+}
+
+const HeroSection = async () => {
+    const tickerSegments = await loadTickerSegments();
+
     return (
         <section className='bg-slr-ink relative overflow-hidden pt-28 pb-16 md:pt-32 md:pb-20'>
             <div className='relative z-20 mx-auto max-w-7xl px-4'>
@@ -88,14 +113,14 @@ const HeroSection = () => {
                                             <span
                                                 key={i}
                                                 className='text-gradient-gold flex items-center gap-3 px-6 text-xl font-bold tracking-[0.18em] uppercase sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl'>
-                                                <span>$2,100 PRIZE POOL</span>
-                                                <span className='bg-gradient-gold inline-block h-1.5 w-1.5 rounded-full' />
-                                                <span className='text-white/90'>ONLY 100 MEMBERS COMPETING</span>
-                                                <span className='bg-gradient-gold inline-block h-1.5 w-1.5 rounded-full' />
-                                                <span className='text-white/90'>ODDS 9 IN 10 P/A</span>
-                                                <span className='bg-gradient-gold inline-block h-1.5 w-1.5 rounded-full' />
-                                                <span className='text-white/90'>4-6 PRIZE DRAWS EVERY FRIDAY</span>
-                                                <span className='bg-gradient-gold inline-block h-1.5 w-1.5 rounded-full' />
+                                                {tickerSegments.map((segment, index) => (
+                                                    <span key={index} className='flex items-center gap-3'>
+                                                        <span className={index === 0 ? undefined : 'text-white/90'}>
+                                                            {segment}
+                                                        </span>
+                                                        <span className='bg-gradient-gold inline-block h-1.5 w-1.5 rounded-full' />
+                                                    </span>
+                                                ))}
                                             </span>
                                         ))}
                                     </div>

@@ -21,6 +21,7 @@ import {
     Gift,
     LayoutGrid,
     type LucideIcon,
+    Megaphone,
     Sparkles,
     Ticket,
     Trophy,
@@ -45,7 +46,8 @@ const ITEMS: NavItem[] = [
     { title: 'TPAL Exports', href: '/dashboard/draw-exports', icon: FileSpreadsheet },
     { title: 'Discounts', href: '/dashboard/discounts', icon: Ticket },
     { title: 'BENY', href: '/dashboard/beny', icon: UserCheck },
-    { title: 'Ebooks', href: '/dashboard/ebooks', icon: BookOpen }
+    { title: 'Ebooks', href: '/dashboard/ebooks', icon: BookOpen },
+    { title: 'Announcements', href: '/dashboard/announcements', icon: Megaphone }
 ];
 
 export function NavMain() {

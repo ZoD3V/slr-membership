@@ -1,9 +1,11 @@
 import { CountdownBoxes } from '@/components/common/countdown';
 import { EntryStatusBadge } from '@/components/common/entry-status-badge';
+import { LIVE_DRAW_URL } from '@/constant/links';
+import { goldButtonStyle } from '@/lib/styles';
 import { cn } from '@/lib/utils';
 import type { DrawStatus } from '@/types/member';
 
-import { MapPin, Ticket, Trophy } from 'lucide-react';
+import { ExternalLink, MapPin, Ticket, Trophy } from 'lucide-react';
 
 interface DrawStatusCardProps {
     draw: DrawStatus;
@@ -62,6 +64,15 @@ export function DrawStatusCard({
             <div className='mt-5'>
                 <CountdownBoxes targetIso={draw.draws_at} />
             </div>
+
+            <a
+                href={LIVE_DRAW_URL}
+                target='_blank'
+                rel='noopener noreferrer'
+                style={goldButtonStyle}
+                className='mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-bold uppercase transition-opacity hover:opacity-90'>
+                Watch Live Draw <ExternalLink className='size-4' />
+            </a>
 
             <div className='mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-white/5 pt-4'>
                 {hasPrize ? (

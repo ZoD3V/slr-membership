@@ -45,6 +45,10 @@ export function WysiwygEditor({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
 
+    // Last HTML this editor handed to the parent. Anything coming back that matches it
+    // is our own update echoing through the parent's state, not an external change.
+    const lastEmittedRef = useRef(value);
+
     const editor = useEditor({
         extensions: [
             StarterKit,
@@ -63,25 +67,34 @@ export function WysiwygEditor({
         immediatelyRender: false,
         onUpdate: ({ editor }) => {
             const html = editor.getHTML();
-            if (html === '<p></p>' || html === '') {
-                onChange?.('');
-            } else {
-                onChange?.(html);
-            }
+            const next = html === '<p></p>' ? '' : html;
+
+            lastEmittedRef.current = next;
+            onChange?.(next);
         },
         editorProps: {
             attributes: {
-                class: 'min-h-[250px] max-h-[400px] overflow-y-auto p-4 text-white text-sm outline-none focus:outline-none transition-all prose prose-invert max-w-none tiptap'
+                class: 'min-h-[250px] max-h-[400px] overflow-y-auto p-4 text-white text-sm outline-none focus:outline-none transition-all tiptap max-w-none'
             }
         }
     });
 
+    // Only reset the document for a genuine external change. Without the echo guard a
+    // parent that re-renders mid-keystroke (a form watching another field, say) feeds a
+    // stale value straight back and setContent wipes what was just typed — pressing
+    // Enter inside a list dropped the new item and every character after it.
     useEffect(() => {
         if (!editor) return;
+        // Never reset the document while someone is typing in it. A parent that
+        // re-renders mid-keystroke hands back the previous value, and setContent then
+        // drops the newest characters and throws the cursor to the end — pressing Enter
+        // inside a list lost the new item that way.
+        if (editor.isFocused) return;
+        if (value === lastEmittedRef.current) return;
+        if (value === editor.getHTML()) return;
 
-        if (value !== editor.getHTML()) {
-            editor.commands.setContent(value || '');
-        }
+        lastEmittedRef.current = value;
+        editor.commands.setContent(value || '', { emitUpdate: false });
     }, [value, editor]);
 
     const handleImageClick = () => {
@@ -131,61 +144,12 @@ export function WysiwygEditor({
                 'flex flex-col overflow-hidden rounded-lg border border-white/10 bg-white/5 transition-all focus-within:border-[#D4AF37]/60 focus-within:ring-1 focus-within:ring-[#D4AF37]/20',
                 className
             )}>
-            <style
-                dangerouslySetInnerHTML={{
-                    __html: `
-                .tiptap p.is-editor-empty:first-child::before {
-                    color: rgba(255, 255, 255, 0.3);
-                    content: attr(data-placeholder);
-                    float: left;
-                    height: 0;
-                    pointer-events: none;
-                }
-                .tiptap ul {
-                    list-style-type: disc !important;
-                    padding-left: 1.5rem !important;
-                    margin-top: 0.5rem !important;
-                    margin-bottom: 0.5rem !important;
-                }
-                .tiptap ol {
-                    list-style-type: decimal !important;
-                    padding-left: 1.5rem !important;
-                    margin-top: 0.5rem !important;
-                    margin-bottom: 0.5rem !important;
-                }
-                .tiptap li {
-                    display: list-item !important;
-                    margin-top: 0.25rem !important;
-                    margin-bottom: 0.25rem !important;
-                }
-                .tiptap blockquote {
-                    border-left: 3px solid #D4AF37 !important;
-                    padding-left: 1rem !important;
-                    font-style: italic !important;
-                    color: rgba(255, 255, 255, 0.8) !important;
-                    margin: 1rem 0 !important;
-                }
-                .tiptap h1 {
-                    font-size: 1.5rem !important;
-                    font-weight: bold !important;
-                    margin-top: 1.5rem !important;
-                    margin-bottom: 0.5rem !important;
-                }
-                .tiptap h2 {
-                    font-size: 1.25rem !important;
-                    font-weight: bold !important;
-                    margin-top: 1.25rem !important;
-                    margin-bottom: 0.5rem !important;
-                }
-            `
-                }}
-            />
-
             <input type='file' ref={fileInputRef} onChange={handleFileChange} accept='image/*' className='hidden' />
 
             <div className='flex flex-wrap items-center gap-1 border-b border-white/10 bg-white/5 p-1.5'>
                 <button
                     type='button'
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => editor.chain().focus().toggleBold().run()}
                     className={cn(
                         'cursor-pointer rounded-md p-1.5 text-white/70 transition-all hover:bg-white/10 hover:text-white active:bg-white/20',
@@ -196,6 +160,7 @@ export function WysiwygEditor({
                 </button>
                 <button
                     type='button'
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => editor.chain().focus().toggleItalic().run()}
                     className={cn(
                         'cursor-pointer rounded-md p-1.5 text-white/70 transition-all hover:bg-white/10 hover:text-white active:bg-white/20',
@@ -206,6 +171,7 @@ export function WysiwygEditor({
                 </button>
                 <button
                     type='button'
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => editor.chain().focus().toggleUnderline().run()}
                     className={cn(
                         'cursor-pointer rounded-md p-1.5 text-white/70 transition-all hover:bg-white/10 hover:text-white active:bg-white/20',
@@ -219,6 +185,7 @@ export function WysiwygEditor({
 
                 <button
                     type='button'
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
                     className={cn(
                         'cursor-pointer rounded-md p-1.5 text-white/70 transition-all hover:bg-white/10 hover:text-white active:bg-white/20',
@@ -229,6 +196,7 @@ export function WysiwygEditor({
                 </button>
                 <button
                     type='button'
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
                     className={cn(
                         'cursor-pointer rounded-md p-1.5 text-white/70 transition-all hover:bg-white/10 hover:text-white active:bg-white/20',
@@ -239,6 +207,7 @@ export function WysiwygEditor({
                 </button>
                 <button
                     type='button'
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => editor.chain().focus().toggleBlockquote().run()}
                     className={cn(
                         'cursor-pointer rounded-md p-1.5 text-white/70 transition-all hover:bg-white/10 hover:text-white active:bg-white/20',
@@ -252,6 +221,7 @@ export function WysiwygEditor({
 
                 <button
                     type='button'
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => editor.chain().focus().toggleBulletList().run()}
                     className={cn(
                         'cursor-pointer rounded-md p-1.5 text-white/70 transition-all hover:bg-white/10 hover:text-white active:bg-white/20',
@@ -262,6 +232,7 @@ export function WysiwygEditor({
                 </button>
                 <button
                     type='button'
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => editor.chain().focus().toggleOrderedList().run()}
                     className={cn(
                         'cursor-pointer rounded-md p-1.5 text-white/70 transition-all hover:bg-white/10 hover:text-white active:bg-white/20',
@@ -274,6 +245,7 @@ export function WysiwygEditor({
                 <div className='mx-1.5 h-4 w-[1px] bg-white/10' />
                 <button
                     type='button'
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={handleImageClick}
                     disabled={isUploading}
                     className='flex cursor-pointer items-center justify-center rounded-md p-1.5 text-white/70 transition-all hover:bg-white/10 hover:text-white active:bg-white/20 disabled:pointer-events-none disabled:opacity-50'
@@ -285,6 +257,7 @@ export function WysiwygEditor({
 
                 <button
                     type='button'
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => editor.chain().focus().undo().run()}
                     disabled={!editor.can().undo()}
                     className='cursor-pointer rounded-md p-1.5 text-white/70 transition-all hover:bg-white/10 hover:text-white active:bg-white/20 disabled:pointer-events-none disabled:opacity-30'
@@ -293,6 +266,7 @@ export function WysiwygEditor({
                 </button>
                 <button
                     type='button'
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => editor.chain().focus().redo().run()}
                     disabled={!editor.can().redo()}
                     className='cursor-pointer rounded-md p-1.5 text-white/70 transition-all hover:bg-white/10 hover:text-white active:bg-white/20 disabled:pointer-events-none disabled:opacity-30'
@@ -301,6 +275,7 @@ export function WysiwygEditor({
                 </button>
                 <button
                     type='button'
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}
                     className='cursor-pointer rounded-md p-1.5 text-white/70 transition-all hover:bg-white/10 hover:text-white active:bg-white/20'
                     title='Clear Formatting'>

@@ -1,19 +1,15 @@
 'use server';
 
-import { revalidatePath, updateTag } from 'next/cache';
-
-import { handleApiAuthError } from '@/lib/api/guard';
 import {
     type AnnouncementItem,
-    DRAW_RULES_TYPE,
+    type AnnouncementPayload,
     createAnnouncement,
+    deleteAnnouncement,
     updateAnnouncement
 } from '@/lib/api/resources/announcements';
 import { type PresignedUrlResponse, getEbookPresignedUrl } from '@/lib/api/resources/ebooks';
-import { PRIZE_CONTENT_TAG, updateAdminPrizeContent } from '@/lib/api/resources/prizes';
 import { getAccessToken } from '@/lib/api/server';
 import { ApiError } from '@/lib/api/types';
-import type { PrizeContent, PrizeContentUpdatePayload } from '@/types/member';
 
 export type ActionError = {
     ok: false;
@@ -26,8 +22,6 @@ export type ActionError = {
 export type ActionResult<T> = { ok: true; data: T; message: string } | ActionError;
 
 function toActionError(error: unknown): ActionError {
-    handleApiAuthError(error);
-
     if (error instanceof ApiError) {
         const payload = error.payload as { code?: string; requestId?: string } | undefined;
 
@@ -43,58 +37,51 @@ function toActionError(error: unknown): ActionError {
     return { ok: false, message: 'Something went wrong. Please try again.' };
 }
 
-export async function savePrizeContentAction(payload: PrizeContentUpdatePayload): Promise<ActionResult<PrizeContent>> {
+export async function createAnnouncementAction(payload: AnnouncementPayload): Promise<ActionResult<AnnouncementItem>> {
     const token = await getAccessToken();
     if (!token) return { ok: false, message: 'Not authenticated.' };
 
     try {
-        const data = await updateAdminPrizeContent(token, payload);
+        const data = await createAnnouncement(token, payload);
 
-        revalidatePath('/dashboard/prizes');
-
-        updateTag(PRIZE_CONTENT_TAG);
-
-        return { ok: true, data, message: 'Prize content saved.' };
+        return { ok: true, data, message: 'Announcement created.' };
     } catch (error) {
         return toActionError(error);
     }
 }
 
-// Draw rules live in the Announcements CMS (type DRAW_RULES) but are edited here,
-// next to the prize pool they belong to. One document: create it the first time,
-// update it after that.
-export async function saveDrawRulesAction(
-    content: string,
-    existingId: string | null
+export async function updateAnnouncementAction(
+    id: string,
+    payload: AnnouncementPayload
 ): Promise<ActionResult<AnnouncementItem>> {
     const token = await getAccessToken();
     if (!token) return { ok: false, message: 'Not authenticated.' };
 
-    const body = {
-        type: DRAW_RULES_TYPE,
-        title: 'Draw Rules',
-        content,
-        link_url: null,
-        is_active: true,
-        sort_order: 0
-    };
-
     try {
-        const data = existingId
-            ? await updateAnnouncement(token, existingId, body)
-            : await createAnnouncement(token, body);
+        const data = await updateAnnouncement(token, id, payload);
 
-        revalidatePath('/dashboard/prizes');
-        revalidatePath('/member/prizes');
-
-        return { ok: true, data, message: 'Draw rules saved.' };
+        return { ok: true, data, message: 'Announcement updated.' };
     } catch (error) {
         return toActionError(error);
     }
 }
 
-// Same single presigned-upload endpoint the rest of the CMS uses.
-export async function getPrizePresignedUrlAction(
+export async function deleteAnnouncementAction(id: string): Promise<ActionResult<null>> {
+    const token = await getAccessToken();
+    if (!token) return { ok: false, message: 'Not authenticated.' };
+
+    try {
+        await deleteAnnouncement(token, id);
+
+        return { ok: true, data: null, message: 'Announcement deleted.' };
+    } catch (error) {
+        return toActionError(error);
+    }
+}
+
+// The platform exposes a single presigned-upload endpoint (ebooks). Announcement
+// images ride on it until the backend adds one of its own.
+export async function getAnnouncementPresignedUrlAction(
     filename: string,
     contentType: string,
     fileSize: number

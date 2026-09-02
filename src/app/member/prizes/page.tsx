@@ -1,12 +1,15 @@
 import type { Metadata } from 'next';
 
+import { DrawRulesBody } from '@/components/common/draw-rules-body';
 import EmptyState from '@/components/common/empty-state';
 import { SUB_TIERS, TIER_VISUALS } from '@/constant/tiers';
 import { getCurrentMember } from '@/data/member-dashboard';
 import { handleApiAuthError } from '@/lib/api/guard';
+import { getDrawRules } from '@/lib/api/resources/announcements';
+import { GIVEAWAY_RULES } from '@/lib/api/resources/giveaways';
 import { getPrizePool } from '@/lib/api/resources/prizes';
 import { getAccessToken } from '@/lib/api/server';
-import { tierGroupOf } from '@/lib/member';
+import { formatShortDate, tierGroupOf } from '@/lib/member';
 import type { PrizeContent, PrizeTierBreakdown, TierGroup } from '@/types/member';
 
 import { PrizeTierCard } from './_components/prize-tier-card';
@@ -42,7 +45,7 @@ function toTierBreakdown(content: PrizeContent): PrizeTierBreakdown[] {
 }
 
 export default async function PrizesPage() {
-    const [token, member] = await Promise.all([getAccessToken(), getCurrentMember()]);
+    const [token, member, drawRules] = await Promise.all([getAccessToken(), getCurrentMember(), getDrawRules()]);
     const memberGroup = tierGroupOf(member.sub_tier);
 
     let content: PrizeContent | null = null;
@@ -105,6 +108,22 @@ export default async function PrizesPage() {
                                     isYours={tier.tier_group === memberGroup}
                                 />
                             ))}
+                        </div>
+                    </section>
+
+                    <section>
+                        <div className='mb-3 flex flex-wrap items-center justify-between gap-2'>
+                            <h2 className='font-bebas-neue text-xl tracking-wide text-white uppercase md:text-2xl'>
+                                Draw Rules
+                            </h2>
+                            {drawRules?.updated_at ? (
+                                <span className='text-slr-dim text-xs'>
+                                    Updated {formatShortDate(drawRules.updated_at)}
+                                </span>
+                            ) : null}
+                        </div>
+                        <div className='bg-card-dark-navy border-slr-navy-border rounded-2xl border p-5 md:p-6'>
+                            <DrawRulesBody html={drawRules?.content} fallback={GIVEAWAY_RULES} />
                         </div>
                     </section>
 

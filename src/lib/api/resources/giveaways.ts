@@ -66,7 +66,7 @@ export interface ApiGiveawayDetail {
     winners: ApiGiveawayWinnerRow[];
 }
 
-const GIVEAWAY_RULES = [
+export const GIVEAWAY_RULES = [
     'Entries are allocated automatically each 28-day cycle — no manual entry needed.',
     'Your number of entries equals your active tokens for the cycle.',
     'Winners are drawn externally and certified via TPAL (randomdraws.com.au).',

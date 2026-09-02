@@ -86,6 +86,13 @@ export const API = {
         detail: (id: string) => `/api/v1/giveaways/${id}`,
         winners: '/api/v1/giveaways/winners'
     },
+    announcements: {
+        // Live path is /public/announcements — the integration guide's /announcements 404s.
+        public: (type?: string) =>
+            type ? `/api/v1/public/announcements?type=${encodeURIComponent(type)}` : '/api/v1/public/announcements',
+        adminList: '/api/v1/admin/announcements',
+        adminDetail: (id: string) => `/api/v1/admin/announcements/${id}`
+    },
     entries: {
         history: '/api/v1/entries/'
     },

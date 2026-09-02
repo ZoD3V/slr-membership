@@ -1,10 +1,17 @@
 import { DashboardPageShell } from '@/app/dashboard/_components/page-shell';
 import Heading from '@/components/ui/heading';
 import { handleApiAuthError } from '@/lib/api/guard';
+import {
+    type AnnouncementItem,
+    DRAW_RULES_TYPE,
+    compareAnnouncements,
+    getAdminAnnouncements
+} from '@/lib/api/resources/announcements';
 import { getAdminPrizeContent } from '@/lib/api/resources/prizes';
 import { getAccessToken } from '@/lib/api/server';
 import type { PrizeContent } from '@/types/member';
 
+import { DrawRulesCard } from './draw-rules-card';
 import { PrizesClient } from './prizes-client';
 import { PRIZE_CONTENT_SEED } from './seed';
 
@@ -24,6 +31,17 @@ export default async function PrizesPage() {
         isPlaceholder = true;
     }
 
+    let drawRules: AnnouncementItem | null = null;
+
+    if (token) {
+        try {
+            const docs = await getAdminAnnouncements(token, { type: DRAW_RULES_TYPE, perPage: 100 });
+            drawRules = [...docs].sort(compareAnnouncements)[0] ?? null;
+        } catch (error) {
+            handleApiAuthError(error);
+        }
+    }
+
     return (
         <DashboardPageShell>
             <div className='mx-auto w-full'>
@@ -40,6 +58,10 @@ export default async function PrizesPage() {
             </div>
 
             <PrizesClient content={content} />
+
+            <div className='mx-auto w-full pb-6'>
+                <DrawRulesCard initialContent={drawRules?.content ?? ''} existingId={drawRules?.id ?? null} />
+            </div>
         </DashboardPageShell>
     );
 }
