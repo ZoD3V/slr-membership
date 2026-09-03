@@ -197,47 +197,6 @@ const RedBlueSection = async ({ content }: { content: PrizeContent }) => {
                     />
                 </div>
 
-                <div className='mt-10 rounded-2xl p-0.5' style={statBarStyle}>
-                    <div className='rounded-[calc(1rem-2px)] bg-[#F7F7F5] px-4 py-5'>
-                        <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5 lg:gap-0 lg:divide-x lg:divide-black/10'>
-                            {stats.map((stat) => (
-                                <div key={stat.lines[0].text} className='flex items-center gap-3 lg:px-5'>
-                                    <Image
-                                        src={stat.icon}
-                                        alt=''
-                                        width={64}
-                                        height={64}
-                                        className={`shrink-0 object-contain ${stat.iconClass}`}
-                                    />
-                                    <div className='min-w-0 text-left'>
-                                        {stat.lines.map((line) =>
-                                            line.kind === 'big' ? (
-                                                <p
-                                                    key={line.text}
-                                                    className='text-2xl leading-none font-extrabold text-[#8C660D]'>
-                                                    {line.text}
-                                                </p>
-                                            ) : line.kind === 'accent' ? (
-                                                <p
-                                                    key={line.text}
-                                                    className='text-xs font-semibold tracking-[0.15em] text-[#8C660D] uppercase'>
-                                                    {line.text}
-                                                </p>
-                                            ) : (
-                                                <p
-                                                    key={line.text}
-                                                    className='text-[11px] leading-tight font-extrabold tracking-[0.08em] text-[#212121] uppercase'>
-                                                    {line.text}
-                                                </p>
-                                            )
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
                 <div className='mx-auto mt-8 flex w-full max-w-xs flex-col gap-4 sm:max-w-none sm:flex-row sm:items-center sm:justify-center'>
                     <GoldPillButton href='/sign-up' className='w-full sm:w-auto'>
                         Join Us Now!
