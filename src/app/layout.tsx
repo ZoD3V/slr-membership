@@ -8,6 +8,7 @@ import '@/app/globals.css';
 import { VersionWatcher } from '@/components/common/version-watcher';
 import { Toaster } from '@/components/ui/sonner';
 import { getOrganizationSchema, getWebSiteSchema } from '@/lib/seo/structured-data';
+import { getTierPricing, minPriceOf } from '@/lib/tier-pricing';
 import { GoogleAnalytics } from '@next/third-parties/google';
 
 const montserrat = Montserrat({
@@ -25,8 +26,8 @@ const bebasNeue = Bebas_Neue({
 });
 
 const siteName = 'Smart Life Rewards';
-const siteDescription =
-    "Australia's best-value rewards club. Weekly state-based draws, partner discounts, e-books and digital offers — SLR Red ($10/mo) and SLR Premium ($26/mo).";
+const describeSite = (redFrom: number, blueFrom: number) =>
+    `Australia's best-value rewards club. Weekly state-based draws, partner discounts, e-books and digital offers — SLR Red (from $${redFrom}/mo) and SLR Premium (from $${blueFrom}/mo).`;
 const ogImage = '/images/background-metadata.webp';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -35,6 +36,9 @@ export async function generateMetadata(): Promise<Metadata> {
     const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? 'http' : 'https';
 
     const dynamicSiteUrl = `${protocol}://${host}`;
+
+    const pricing = await getTierPricing();
+    const siteDescription = describeSite(minPriceOf(pricing, 'red') / 100, minPriceOf(pricing, 'blue') / 100);
 
     return {
         metadataBase: new URL(dynamicSiteUrl),

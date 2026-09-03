@@ -10,15 +10,6 @@ const MembershipClubSection = ({ content }: { content: PrizeContent }) => {
     return (
         <section className='relative isolate pt-24 pb-20 md:pt-36 md:pb-28'>
             <div className='relative z-10 mx-auto max-w-3xl px-4 text-center'>
-                <h2 className='font-bebas-neue leading-[0.85] tracking-wide uppercase'>
-                    <span className='text-gradient-silver block text-4xl sm:text-5xl md:text-6xl'>Membership</span>
-                    <span
-                        className='block bg-clip-text text-6xl text-transparent sm:text-7xl md:text-[112px]'
-                        style={{ backgroundImage: clubGradient, filter: clubGlow }}>
-                        Club
-                    </span>
-                </h2>
-
                 <div
                     className='relative mx-auto mt-12 w-full max-w-xs rounded-2xl p-0.5'
                     style={{ background: GOLD_GRADIENT }}>

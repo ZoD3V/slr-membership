@@ -1,5 +1,8 @@
 import { Fragment } from 'react';
 
+import { BENY_MONTHLY_PRICE } from '@/constant/tiers';
+import { getTierPricing, minPriceOf } from '@/lib/tier-pricing';
+
 import { Check, Minus } from 'lucide-react';
 
 type Cell = boolean | string;
@@ -80,7 +83,7 @@ const groups: Group[] = [
             },
             {
                 feature: 'BENY add-on eligibility',
-                hint: 'Optional +$4/month, requires phone',
+                hint: `Optional +$${BENY_MONTHLY_PRICE}/month, requires phone`,
                 visitor: false,
                 red: true,
                 blue: true
@@ -155,7 +158,11 @@ const renderCell = (value: Cell) => {
     return <span className='text-xs font-semibold text-white md:text-sm'>{value}</span>;
 };
 
-const ComparisonMatrix = () => {
+const ComparisonMatrix = async () => {
+    const pricing = await getTierPricing();
+    const redFrom = minPriceOf(pricing, 'red') / 100;
+    const blueFrom = minPriceOf(pricing, 'blue') / 100;
+
     return (
         <div className='overflow-hidden rounded-2xl border border-[#A0B4D259] bg-[linear-gradient(154.36deg,#141820_0.82%,#1E2530_49.73%,#141820_98.65%)] shadow-[0px_0px_20px_0px_#776D6D26]'>
             <div className='overflow-x-auto'>
@@ -174,13 +181,13 @@ const ComparisonMatrix = () => {
                             <th className='p-4 text-center text-xs font-semibold tracking-widest text-[#E88888] uppercase md:p-5'>
                                 <div className='flex flex-col items-center gap-0.5'>
                                     <span>Red</span>
-                                    <span className='text-[10px] text-white/40 normal-case'>$10/mo</span>
+                                    <span className='text-[10px] text-white/40 normal-case'>from ${redFrom}/mo</span>
                                 </div>
                             </th>
                             <th className='p-4 text-center text-xs font-semibold tracking-widest text-[#6AB0F0] uppercase md:p-5'>
                                 <div className='flex flex-col items-center gap-0.5'>
                                     <span>Premium</span>
-                                    <span className='text-[10px] text-white/40 normal-case'>$26/mo</span>
+                                    <span className='text-[10px] text-white/40 normal-case'>from ${blueFrom}/mo</span>
                                 </div>
                             </th>
                         </tr>

@@ -45,7 +45,7 @@ export function MembershipSummaryCard({
     const isCancelled = summary.cancel_at_period_end ?? false;
 
     const tierName = meta.group === 'visitor' ? 'Visitor Pass' : formatTierName(summary.sub_tier);
-    const price = meta.price_cents === 0 ? 'Free' : formatAud(meta.price_cents);
+    const price = summary.price_cents === 0 ? 'Free' : formatAud(summary.price_cents);
 
     return (
         <div className={cn('relative isolate rounded-2xl p-px', className)}>
@@ -76,7 +76,7 @@ export function MembershipSummaryCard({
                         </h3>
                         <p className='text-slr-muted mt-1 text-sm'>
                             <span className='text-gradient-gold font-bebas-neue text-[32px] leading-none'>{price}</span>
-                            {meta.price_cents > 0 && <span className='ml-1.5'>/ 28-day cycle</span>}
+                            {summary.price_cents > 0 && <span className='ml-1.5'>/ 28-day cycle</span>}
                         </p>
                     </div>
                 </div>

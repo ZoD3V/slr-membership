@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from 'react';
 
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Input } from '@/components/ui/input';
+import { BENY_MONTHLY_PRICE } from '@/constant/tiers';
 import { BENY_CATEGORIES } from '@/data/discounts';
 import { type BenyStatusValue, isBenyCancelled, isBenyWindingDown } from '@/lib/api/resources/beny';
 import { goldButtonStyle, inputClassName } from '@/lib/styles';
@@ -88,7 +89,9 @@ export function BenySection({
                 });
                 if (res.checkoutUrl) {
                     window.open(res.checkoutUrl, '_blank', 'noopener,noreferrer');
-                    toast.success('Complete your $4/month payment in the new tab to finish adding BENY.');
+                    toast.success(
+                        `Complete your $${BENY_MONTHLY_PRICE}/month payment in the new tab to finish adding BENY.`
+                    );
                 } else {
                     toast.success('BENY requested — pending admin activation.');
                 }
@@ -132,7 +135,7 @@ export function BenySection({
                 <span
                     className='text-slr-gold-label shrink-0 rounded-md border border-[#D4AF3759] px-2.5 py-1 text-sm font-semibold'
                     style={{ background: '#291F0A' }}>
-                    $4/month
+                    {`$${BENY_MONTHLY_PRICE}/month`}
                 </span>
             </div>
 
@@ -194,7 +197,7 @@ export function BenySection({
                         <form onSubmit={handleSubmitAttempt} className='space-y-3'>
                             <p className='text-slr-muted text-sm'>
                                 Enter your details to add BENY. You&apos;ll be redirected to secure checkout for the
-                                $4/month subscription.
+                                {`$${BENY_MONTHLY_PRICE}/month`} subscription.
                             </p>
                             <div className='grid gap-3 sm:grid-cols-3'>
                                 <Input
@@ -252,7 +255,7 @@ export function BenySection({
                                     'inline-flex h-10 items-center justify-center rounded-xl px-5 text-sm font-bold uppercase'
                                 )}
                                 style={goldButtonStyle}>
-                                Add BENY — $4/mo
+                                Add BENY — {`$${BENY_MONTHLY_PRICE}/mo`}
                             </button>
                         </div>
                     ))}
@@ -266,7 +269,7 @@ export function BenySection({
                 cancelBtnText='Keep membership only'
                 isLoading={isPending}
                 handleConfirm={handleConfirmSubscribe}
-                desc='This will add the helper BENY savings addon. Confirming this will charge an extra $4.00 AUD per month recursively on Stripe.'
+                desc={`This will add the helper BENY savings addon. Confirming this will charge an extra $${BENY_MONTHLY_PRICE.toFixed(2)} AUD per month recursively on Stripe.`}
             />
 
             <ConfirmDialog
@@ -278,7 +281,7 @@ export function BenySection({
                 cancelBtnText='Keep BENY addon'
                 isLoading={isPending}
                 handleConfirm={handleConfirmCancel}
-                desc='Are you sure you want to cancel your BENY savings add-on? Your $4.00 AUD monthly charge will stop at the end of the paid period.'
+                desc={`Are you sure you want to cancel your BENY savings add-on? Your $${BENY_MONTHLY_PRICE.toFixed(2)} AUD monthly charge will stop at the end of the paid period.`}
             />
         </section>
     );

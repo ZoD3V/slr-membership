@@ -3,7 +3,7 @@ export type FaqCategory = {
     items: { question: string; answer: string }[];
 };
 
-export const categories: FaqCategory[] = [
+export const buildCategories = (redFrom: number, blueFrom: number, benyPrice: number): FaqCategory[] => [
     {
         title: 'Getting Started',
         items: [
@@ -21,7 +21,7 @@ export const categories: FaqCategory[] = [
             },
             {
                 question: 'Is there a free option?',
-                answer: 'No. Membership is paid only — SLR Red starts at $10/month and SLR Premium (Blue) at $26/month. You can browse public pages and e-book listings without an account.'
+                answer: `No. Membership is paid only — SLR Red starts at $${redFrom}/month and SLR Premium (Blue) at $${blueFrom}/month. You can browse public pages and e-book listings without an account.`
             }
         ]
     },
@@ -30,7 +30,7 @@ export const categories: FaqCategory[] = [
         items: [
             {
                 question: 'What are the membership tiers?',
-                answer: 'There are two tiers: SLR Red (from $10/month) with basic discounts and Red draws, and SLR Premium / Blue (from $26/month) with full access to all draws, e-books, and member-only deals. Red and Premium members can also add the BENY discount platform for an extra $4/month.'
+                answer: `There are two tiers: SLR Red (from $${redFrom}/month) with basic discounts and Red draws, and SLR Premium / Blue (from $${blueFrom}/month) with full access to all draws, e-books, and member-only deals. Red and Premium members can also add the BENY discount platform for an extra $${benyPrice}/month.`
             },
             {
                 question: 'How does billing work?',
@@ -80,7 +80,7 @@ export const categories: FaqCategory[] = [
             },
             {
                 question: 'What is BENY?',
-                answer: 'BENY is a separate third-party discount platform with thousands of additional offers. It is available to Red and Premium members as an optional add-on for $4/month — it is not included in any tier by default. You can add BENY during checkout or later from the BENY page. Activation requires a phone number.'
+                answer: `BENY is a separate third-party discount platform with thousands of additional offers. It is available to Red and Premium members as an optional add-on for $${benyPrice}/month — it is not included in any tier by default. You can add BENY during checkout or later from the BENY page. Activation requires a phone number.`
             }
         ]
     },

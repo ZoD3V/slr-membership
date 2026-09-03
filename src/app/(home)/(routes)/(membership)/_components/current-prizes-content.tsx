@@ -145,11 +145,7 @@ const TierCardBlock = ({ tier, shown, delayMs }: { tier: PrizeTierCard; shown: b
     <div
         className='rounded-2xl p-0.5'
         style={{
-            background: tier.borderGradient,
-            opacity: shown ? 1 : 0,
-            transform: shown ? 'translateY(0)' : 'translateY(30px)',
-            transition: 'opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)',
-            transitionDelay: `${delayMs}ms`
+            background: tier.borderGradient
         }}>
         <div
             className='relative flex h-full flex-col overflow-hidden rounded-[14px]'

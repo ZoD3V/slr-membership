@@ -5,15 +5,25 @@ import Link from 'next/link';
 
 import GoldPillButton from '@/components/common/gold-pill-button';
 import SectionHeading from '@/components/common/section-heading';
+import SpinWheelBadge from '@/components/common/spin-wheel-badge';
+import { SUB_TIERS } from '@/constant/tiers';
+import { type TierPricing, codesForGroup, getTierPricing } from '@/lib/tier-pricing';
 import { cn } from '@/lib/utils';
 
 type Tier = {
     label: string;
     price: string;
     token: string;
-
-    spin: string | null;
+    spinDiscount: number;
 };
+
+const tiersForGroup = (pricing: TierPricing, group: 'red' | 'blue'): Tier[] =>
+    codesForGroup(pricing, group).map((code) => ({
+        label: SUB_TIERS[code].marketingName,
+        price: `$${pricing[code].priceCents / 100}`,
+        token: `${pricing[code].tokens} ${pricing[code].tokens === 1 ? 'Entry' : 'Entries'}`,
+        spinDiscount: pricing[code].spinDiscountCents / 100
+    }));
 
 type TierTheme = {
     accent: string;
@@ -29,19 +39,6 @@ type TierTheme = {
     divider: string;
     columns: string;
 };
-
-const redTiers: Tier[] = [
-    { label: 'Standard', price: '$10', token: '1 Token', spin: null },
-    { label: 'Plus', price: '$20', token: '4 Tokens', spin: '/icons/ic-duck-5-wheel.webp' },
-    { label: 'Premium', price: '$30', token: '7 Tokens', spin: '/icons/ic-duck-10-wheel.webp' }
-];
-
-const blueTiers: Tier[] = [
-    { label: 'Standard', price: '$26', token: '1 Token', spin: null },
-    { label: 'Plus', price: '$39', token: '4 Tokens', spin: '/icons/ic-duck-10-wheel.webp' },
-    { label: 'Premium', price: '$52', token: '7 Tokens', spin: '/icons/ic-duck-15-wheel.webp' },
-    { label: 'Elite', price: '$65', token: '10 Tokens', spin: '/icons/ic-duck-20-wheel.webp' }
-];
 
 const redTheme: TierTheme = {
     accent: '#F1343F',
@@ -84,15 +81,9 @@ const TierColumn: FC<{ tier: Tier; theme: TierTheme }> = ({ tier, theme }) => (
         </span>
 
         <div className='mt-4 flex min-h-27.5 flex-1 flex-col items-center justify-center gap-2'>
-            {tier.spin ? (
+            {tier.spinDiscount > 0 ? (
                 <>
-                    <Image
-                        src={tier.spin}
-                        alt={`Monthly spin wheel — ${tier.price} prize`}
-                        width={96}
-                        height={96}
-                        className='h-24 w-24 sm:h-28 sm:w-28 md:h-30 md:w-30 lg:h-32 lg:w-32'
-                    />
+                    <SpinWheelBadge amount={tier.spinDiscount} />
                     <p className='text-[10px] leading-tight font-semibold tracking-wider text-white uppercase'>
                         Monthly
                         <br />
@@ -119,7 +110,7 @@ const TierCard: FC<{ name: string; tiers: Tier[]; theme: TierTheme }> = ({ name,
                 <span className='h-px w-12 sm:w-16' style={{ background: theme.itemBorder }} />
             </div>
             <p className='mt-2 text-center text-[10px] font-medium tracking-wider text-white uppercase sm:text-xs'>
-                Membership includes choice of token entries
+                Membership includes choice of entries
             </p>
 
             <div className={cn('mt-4 grid gap-2 sm:gap-3', theme.columns)}>
@@ -131,7 +122,11 @@ const TierCard: FC<{ name: string; tiers: Tier[]; theme: TierTheme }> = ({ name,
     </div>
 );
 
-const SlrRedBlueTiersSpinWheelSection = () => {
+const SlrRedBlueTiersSpinWheelSection = async () => {
+    const pricing = await getTierPricing();
+    const redTiers = tiersForGroup(pricing, 'red');
+    const blueTiers = tiersForGroup(pricing, 'blue');
+
     return (
         <section id='tiers' className='bg-slr-ink relative py-16 md:py-24'>
             <div className='mx-auto max-w-7xl px-4'>
@@ -156,7 +151,7 @@ const SlrRedBlueTiersSpinWheelSection = () => {
                     <div className='flex items-center gap-3'>
                         <Image src='/icons/ic-trophy.png' alt='' width={40} height={40} className='h-9 w-9 shrink-0' />
                         <p className='text-slr-gold-label max-w-xl text-xs font-semibold tracking-wider uppercase sm:text-base'>
-                            Tokens are used for member draws &amp; promotions only. Spins provide bonus savings
+                            Entries are used for member draws &amp; promotions only. Spins provide bonus savings
                             discounts.
                         </p>
                     </div>

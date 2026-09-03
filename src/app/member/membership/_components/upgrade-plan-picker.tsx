@@ -9,6 +9,7 @@ import { SUB_TIERS, TIER_VISUALS } from '@/constant/tiers';
 import { useSafeHours } from '@/hooks/use-safe-hours';
 import { formatAud } from '@/lib/member';
 import { goldButtonStyle } from '@/lib/styles';
+import { type TierPricing } from '@/lib/tier-pricing';
 import type { SubTierCode, TierGroup } from '@/types/member';
 
 import { startSubTierCheckout } from '../actions';
@@ -30,13 +31,13 @@ const GROUPS: { group: PaidGroup; blurb: string; codes: SubTierCode[] }[] = [
     }
 ];
 
-export function UpgradePlanPicker() {
+export function UpgradePlanPicker({ pricing }: { pricing: TierPricing }) {
     const [selected, setSelected] = useState<SubTierCode>('R4');
     const [pending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
     const safeHoursLocked = useSafeHours();
 
-    const selectedMeta = SUB_TIERS[selected];
+    const selectedPrice = pricing[selected].priceCents;
 
     const checkout = () => {
         setError(null);
@@ -107,7 +108,7 @@ export function UpgradePlanPicker() {
                                             )}
                                         </span>
                                         <span className='font-bebas-neue text-2xl leading-none tracking-wide text-white'>
-                                            {formatAud(meta.price_cents)}
+                                            {formatAud(pricing[code].priceCents)}
                                         </span>
                                         <span className='text-slr-dim text-[10px] tracking-widest uppercase'>
                                             {meta.tokens} {meta.tokens === 1 ? 'token' : 'tokens'} / cycle
@@ -146,7 +147,7 @@ export function UpgradePlanPicker() {
                     </>
                 ) : (
                     <>
-                        {error ? 'Try again' : 'Continue'} — {formatAud(selectedMeta.price_cents)} / 28 days
+                        {error ? 'Try again' : 'Continue'} — {formatAud(selectedPrice)} / 28 days
                         <ArrowRight className='size-4' />
                     </>
                 )}

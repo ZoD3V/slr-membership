@@ -13,6 +13,7 @@ import { useSafeHours } from '@/hooks/use-safe-hours';
 import { type MemberSubTierId, type ScheduledTierChange } from '@/lib/api/resources/memberships';
 import { formatAud, formatShortDate, formatTierName } from '@/lib/member';
 import { goldButtonStyle } from '@/lib/styles';
+import { type TierPricing } from '@/lib/tier-pricing';
 import { cn } from '@/lib/utils';
 import type { SubTierCode } from '@/types/member';
 
@@ -21,6 +22,7 @@ import { toast } from 'sonner';
 
 interface ManageMembershipActionsProps {
     currentSubTier: SubTierCode;
+    pricing: TierPricing;
     nextRenewalIso: string | null;
 
     scheduledChange: ScheduledTierChange | null;
@@ -40,6 +42,7 @@ const PAID_CODES: SubTierCode[] = ['R1', 'R4', 'R7', 'B1', 'B4', 'B7', 'B10'];
 
 export function ManageMembershipActions({
     currentSubTier,
+    pricing,
     nextRenewalIso,
     scheduledChange,
     billingStatus,
@@ -70,12 +73,12 @@ export function ManageMembershipActions({
                 return {
                     id: code.toLowerCase() as MemberSubTierId,
                     label: formatTierName(code),
-                    price: formatAud(meta.price_cents),
-                    tokens: meta.tokens,
+                    price: formatAud(pricing[code].priceCents),
+                    tokens: pricing[code].tokens,
                     badgeIcon: meta.badgeIcon
                 };
             }),
-        [currentSubTier]
+        [currentSubTier, pricing]
     );
 
     const renewalLabel = nextRenewalIso ? formatShortDate(nextRenewalIso) : 'your next renewal';

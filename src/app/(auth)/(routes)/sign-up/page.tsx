@@ -1,9 +1,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { getTierPricing } from '@/lib/tier-pricing';
+
 import { RegisterForm } from './components/register-form';
 
-const SignUp = () => {
+const SignUp = async () => {
+    const pricing = await getTierPricing();
+
     return (
         <div className='relative flex min-h-svh w-full items-center justify-center overflow-hidden bg-[#131619] p-6 md:p-10'>
             <div
@@ -32,7 +36,7 @@ const SignUp = () => {
                     </p>
                 </div>
 
-                <RegisterForm />
+                <RegisterForm pricing={pricing} />
 
                 <p className='text-slr-muted mt-6 text-center text-sm'>
                     Already have an account?{' '}

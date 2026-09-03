@@ -8,6 +8,7 @@ import { getMe } from '@/lib/api/resources/auth';
 import { getMyMembership } from '@/lib/api/resources/memberships';
 import { getAccessToken } from '@/lib/api/server';
 import { subTierCodeOf } from '@/lib/member';
+import { getTierPricing } from '@/lib/tier-pricing';
 
 import ActivatedRedirect from './_components/activated-redirect';
 import CompletePaymentClient from './_components/complete-payment-client';
@@ -23,6 +24,7 @@ export default async function CompletePaymentPage({ searchParams }: { searchPara
     const { status } = await searchParams;
     const session = await auth();
     const token = await getAccessToken();
+    const pricing = await getTierPricing();
 
     let subTierId: string | undefined;
 
@@ -48,7 +50,7 @@ export default async function CompletePaymentPage({ searchParams }: { searchPara
     const subTier = subTierCodeOf(subTierId ?? (session?.user as { sub_tier?: string } | undefined)?.sub_tier);
     const meta = SUB_TIERS[subTier];
     const firstName = (session?.user?.name ?? '').trim().split(' ')[0];
-    const price = (meta.price_cents / 100).toFixed(0);
+    const price = (pricing[subTier].priceCents / 100).toFixed(0);
     const planLine = `SLR ${meta.group === 'red' ? 'RED' : 'BLUE'} · ${meta.marketingName} — $${price} / 28-day cycle`;
 
     const expired = status === 'expired';
@@ -96,6 +98,7 @@ export default async function CompletePaymentPage({ searchParams }: { searchPara
                 <div className='mt-6'>
                     <CompletePaymentClient
                         subTier={subTier}
+                        pricing={pricing}
                         ctaLabel={expired ? 'Continue to payment' : 'Complete payment'}
                         showChangePlan={!expired}
                     />

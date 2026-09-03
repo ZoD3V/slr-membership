@@ -4,6 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import GoldPillButton from '@/components/common/gold-pill-button';
+import { BLUE_TIER_CARD, MONEY_ARTWORK, RED_TIER_CARD, type TierCardTheme } from '@/constant/tier-card-theme';
+import { getTierPricing, minPriceOf } from '@/lib/tier-pricing';
 import type { PrizeContent } from '@/types/member';
 
 type Reward = {
@@ -13,46 +15,32 @@ type Reward = {
     text: string;
 };
 
-type Tier = {
-    name: string;
+type Tier = TierCardTheme & {
     price: string;
     rewards: Reward[];
     footer: [string, string];
-    cardBg: string;
-    borderGradient: string;
-    accent: string;
-    footerBg: string;
 };
 
 const redTheme = {
-    name: 'SLR Red',
-    price: '$10 Month',
+    ...RED_TIER_CARD,
     weeklyIcon: '/icons/ic-red-cole.webp',
     monthlyIcon: '/icons/ic-red-gift.webp',
-    footer: ['Low Cost.', 'Strong Weekly Rewards.'] as [string, string],
-    cardBg: 'linear-gradient(180deg, #530710 0%, #000000 19.27%, #220408 71.42%, #470818 87.62%)',
-    borderGradient: 'linear-gradient(180deg, #FF6B7A 10%, #C8152E 25%, #8B0010 75.24%, #C8152E 87.62%, #FF6B7A 100%)',
-    accent: '#F24040',
-    footerBg: 'linear-gradient(180deg, #F22E2E 0%, #A61212 100%)'
+    footer: ['Low Cost.', 'Strong Weekly Rewards.'] as [string, string]
 };
 
 const blueTheme = {
-    name: 'SLR Blue',
-    price: '$26 Month',
+    ...BLUE_TIER_CARD,
     weeklyIcon: '/icons/ic-blue-cole.webp',
     monthlyIcon: '/icons/ic-blue-gift.webp',
-    footer: ['Higher Tier.', 'Bigger Rewards.'] as [string, string],
-    cardBg: 'linear-gradient(180deg, #0F2F7A 0%, #000207 10.41%, #000D35 63.57%, #0D2662 87.62%)',
-    borderGradient: 'linear-gradient(180deg, #6AACFF 0%, #1A62C0 25%, #0A2E80 50%, #1A62C0 75%, #6AACFF 100%)',
-    accent: '#6699FF',
-    footerBg: 'linear-gradient(180deg, #4080FF 0%, #143399 100%)'
+    footer: ['Higher Tier.', 'Bigger Rewards.'] as [string, string]
 };
 
-function toTier(theme: typeof redTheme, weekly: string, monthly: string): Tier {
+function toTier(theme: typeof redTheme, price: string, weekly: string, monthly: string): Tier {
     const { weeklyIcon, monthlyIcon, ...rest } = theme;
 
     return {
         ...rest,
+        price,
         rewards: [
             { icon: weeklyIcon, period: 'Weekly', text: weekly },
             { icon: monthlyIcon, period: 'Monthly', text: monthly }
@@ -114,30 +102,47 @@ const statBarStyle: CSSProperties = {
 };
 
 const TierCard: FC<{ tier: Tier; stageLabel: string }> = ({ tier, stageLabel }) => {
-    const titleStyle: CSSProperties = { color: tier.accent, textShadow: `0px 0px 18px ${tier.accent}80` };
+    const titleStyle: CSSProperties = { color: tier.accent, textShadow: `0px 0px 18px ${tier.accentGlow}` };
 
     return (
         <div className='rounded-2xl p-0.5' style={{ background: tier.borderGradient }}>
             <div
-                className='flex h-full flex-col overflow-hidden rounded-[calc(1rem-2px)]'
-                style={{ background: tier.cardBg }}>
-                <div className='flex flex-col items-center px-6 pt-8 text-center'>
+                className='relative flex h-full flex-col overflow-hidden rounded-[14px]'
+                style={{ background: tier.surface }}>
+                <div
+                    aria-hidden='true'
+                    className='absolute -top-2.5 left-0 z-0 h-52 w-full opacity-35'
+                    style={{
+                        background: `url('${MONEY_ARTWORK}') no-repeat center 20%`,
+                        backgroundSize: 'cover',
+                        maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)',
+                        WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)',
+                        filter: tier.moneyFilter
+                    }}
+                />
+
+                <div className='relative z-10 flex flex-col items-center px-4 pt-8 text-center sm:px-6'>
                     <h3
                         style={titleStyle}
-                        className='font-bebas-neue text-4xl font-bold tracking-wider uppercase sm:text-5xl'>
+                        className='font-bebas-neue text-5xl font-bold tracking-wider uppercase sm:text-6xl'>
                         {tier.name}
                     </h3>
                     <span
-                        style={{ border: `1px solid ${tier.accent}` }}
-                        className='mt-3 rounded-full bg-black/30 px-4 py-1 text-sm font-bold tracking-wider text-white uppercase'>
-                        {tier.price}
+                        style={{ border: `1px solid ${tier.pillBorder}` }}
+                        className='mt-4 inline-block max-w-full rounded-full bg-black/50 px-6 py-2.5 text-lg font-bold tracking-wider whitespace-nowrap text-white uppercase sm:px-10 sm:py-3 sm:text-[22px]'>
+                        From <span className='text-gradient-gold'>{tier.price}</span>
                     </span>
-                    <p className='mt-3 text-sm font-semibold tracking-wider text-white/60 uppercase'>{stageLabel}</p>
+                    <p className='mt-4 text-sm font-bold tracking-widest text-white/60 uppercase sm:text-[15px]'>
+                        {stageLabel}
+                    </p>
                 </div>
 
-                <div className='flex flex-col gap-6 px-6 py-8'>
+                <div className='relative z-10 flex flex-col gap-4 px-4 py-8 sm:px-6'>
                     {tier.rewards.map((reward) => (
-                        <div key={reward.period} className='flex items-center gap-4'>
+                        <div
+                            key={reward.period}
+                            className='flex items-center gap-4 rounded-xl px-4 py-3'
+                            style={{ backgroundColor: tier.prizeBox }}>
                             <Image
                                 src={reward.icon}
                                 alt=''
@@ -159,8 +164,10 @@ const TierCard: FC<{ tier: Tier; stageLabel: string }> = ({ tier, stageLabel }) 
                     ))}
                 </div>
 
-                <div style={{ background: tier.footerBg }} className='mt-auto px-6 py-5 text-center leading-tight'>
-                    <p className='text-sm font-bold tracking-wide text-white uppercase'>
+                <div
+                    style={{ background: tier.footerBar, borderTop: '1px solid rgba(255,255,255,0.15)' }}
+                    className='relative z-10 mt-auto px-3 py-3.5 text-center leading-tight'>
+                    <p className='text-[clamp(12px,3.4vw,17px)] font-bold tracking-wider text-white uppercase md:text-[17px]'>
                         {tier.footer[0]}
                         <br />
                         {tier.footer[1]}
@@ -171,19 +178,21 @@ const TierCard: FC<{ tier: Tier; stageLabel: string }> = ({ tier, stageLabel }) 
     );
 };
 
-const RedBlueSection = ({ content }: { content: PrizeContent }) => {
+const RedBlueSection = async ({ content }: { content: PrizeContent }) => {
     const stats = buildStats(content);
+    const pricing = await getTierPricing();
+    const priceLabel = (group: 'red' | 'blue') => `$${minPriceOf(pricing, group) / 100}/month`;
 
     return (
         <section className='relative isolate -mt-8 overflow-hidden bg-transparent py-16 md:-mt-12 md:py-24'>
             <div className='mx-auto max-w-7xl px-4'>
                 <div className='grid grid-cols-1 items-stretch gap-5 md:grid-cols-2'>
                     <TierCard
-                        tier={toTier(redTheme, content.red_weekly, content.red_monthly)}
+                        tier={toTier(redTheme, priceLabel('red'), content.red_weekly, content.red_monthly)}
                         stageLabel={content.stage_label}
                     />
                     <TierCard
-                        tier={toTier(blueTheme, content.blue_weekly, content.blue_monthly)}
+                        tier={toTier(blueTheme, priceLabel('blue'), content.blue_weekly, content.blue_monthly)}
                         stageLabel={content.stage_label}
                     />
                 </div>

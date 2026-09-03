@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 import EmptyState from '@/components/common/empty-state';
-import { SPIN_ELIGIBLE_SUB_TIERS, SUB_TIERS } from '@/constant/tiers';
+import { SPIN_ELIGIBLE_SUB_TIERS } from '@/constant/tiers';
 import { getCurrentMember } from '@/data/member-dashboard';
 import { handleApiAuthError } from '@/lib/api/guard';
 import { type Discount, getPublicDiscounts } from '@/lib/api/resources/discounts';
@@ -19,6 +19,7 @@ import {
     subTierCodeOf,
     tierGroupOf
 } from '@/lib/member';
+import { getTierPricing } from '@/lib/tier-pricing';
 import type { DrawStatus, MembershipSummary, UpcomingGiveaway } from '@/types/member';
 
 import { CancelledMembershipBanner } from './_components/dashboard/cancelled-membership-banner';
@@ -78,6 +79,7 @@ export default async function MemberDashboardPage() {
     const spin = spinR?.status === 'fulfilled' ? spinR.value : null;
     const renewalSpin = spin?.available && (spin.moment === 'renewal' || spin.moment === 'pre_renewal') ? spin : null;
 
+    const pricing = await getTierPricing();
     const subTier = membership ? subTierCodeOf(membership.subTierId) : member.sub_tier;
     const memberGroup = tierGroupOf(subTier);
 
@@ -93,7 +95,7 @@ export default async function MemberDashboardPage() {
         sub_tier: subTier,
         state: member.state,
         billing_status: membership ? mapBillingStatus(membership.billingStatus) : null,
-        price_cents: membership?.subTier.priceCents ?? SUB_TIERS[subTier].price_cents,
+        price_cents: membership?.subTier.priceCents ?? pricing[subTier].priceCents,
         next_payment_date: nextPayment,
         beny_addon: null,
         cancel_at_period_end: billing?.cancel_at_period_end ?? false

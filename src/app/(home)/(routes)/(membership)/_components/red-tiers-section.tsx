@@ -5,6 +5,7 @@ import Image from 'next/image';
 import GoldCtaButton from '@/components/common/gold-cta-button';
 import SectionEyebrow from '@/components/common/section-eyebrow';
 import SectionHeading from '@/components/common/section-heading';
+import { BENY_MONTHLY_PRICE } from '@/constant/tiers';
 import type { TierDisplay } from '@/lib/api/resources/memberships';
 import { GOLD_BAR_GRADIENT } from '@/lib/styles';
 import { cn } from '@/lib/utils';
@@ -60,7 +61,7 @@ const tiers: TierRow[] = [
         icon: '/icons/ic-list-slr-red-reward-1.webp',
         name: 'Standard',
         code: 'R1',
-        price: '$10',
+        price: '$6',
         tokens: '1 Entry',
         spin: null,
         beny: false,
@@ -73,9 +74,9 @@ const tiers: TierRow[] = [
         icon: '/icons/ic-list-slr-red-reward-2.webp',
         name: 'Plus',
         code: 'R4',
-        price: '$20',
+        price: '$12',
         tokens: '4 Entries',
-        spin: '$5 Off',
+        spin: '$3 Off',
         beny: true,
         cardStyle: goldCardStyle,
         tokenBoxStyle: { border: '1.5px solid #000000', background: 'transparent' },
@@ -86,9 +87,9 @@ const tiers: TierRow[] = [
         icon: '/icons/ic-list-slr-red-reward-3.webp',
         name: 'Premium',
         code: 'R7',
-        price: '$30',
+        price: '$18',
         tokens: '7 Entries',
-        spin: '$10 Off',
+        spin: '$6 Off',
         beny: true,
         cardStyle: blackCardStyle,
         tokenBoxStyle: { border: '1.5px solid #D4AF37', background: 'transparent' },
@@ -156,7 +157,7 @@ const RedTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispla
                                             Start From
                                         </span>
                                         <span className='text-gradient-gold font-bebas-neue text-3xl font-extrabold xl:text-4xl'>
-                                            {startFrom ?? '$10'}
+                                            {startFrom ?? '$6'}
                                         </span>
                                         <span className='text-xs text-white/60'>/mo</span>
                                     </div>
@@ -181,7 +182,7 @@ const RedTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispla
                                     </div>
                                     <div className='flex flex-col items-center justify-center pt-0.75 pb-1.5'>
                                         <span className='text-[10px] leading-tight font-black text-[#363A3D] sm:text-xs md:text-sm'>
-                                            BENY $4
+                                            BENY {`$${BENY_MONTHLY_PRICE}`}
                                         </span>
                                     </div>
                                 </div>

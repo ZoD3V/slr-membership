@@ -2,9 +2,9 @@
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
-import { categories } from '../faq-data';
+import type { FaqCategory } from '../faq-data';
 
-const FaqList = () => {
+const FaqList = ({ categories }: { categories: FaqCategory[] }) => {
     return (
         <div className='space-y-12'>
             {categories.map((category) => (

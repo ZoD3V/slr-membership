@@ -5,10 +5,11 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { BLUE_TIER_CARD, MONEY_ARTWORK, RED_TIER_CARD, type TierCardTheme } from '@/constant/tier-card-theme';
 import { GOLD_GRADIENT, goldButtonStyle } from '@/lib/styles';
+import { type TierPricing, dollarsOf, minPriceOf, spinDiscountOf } from '@/lib/tier-pricing';
 import { cn } from '@/lib/utils';
 import type { SubTierCode } from '@/types/member';
 
-import { BENY_PRICE, SignUpFormData, TierKey, subTierPrice, subTierTokens, subTiersForGroup } from './types';
+import { BENY_PRICE, SignUpFormData, TierKey, subTiersForGroup } from './types';
 import { ArrowLeft, Check, Sparkles } from 'lucide-react';
 
 type TierOption = TierCardTheme & {
@@ -34,10 +35,9 @@ const tiers: TierOption[] = [
     }
 ];
 
-const fromPrice = (group: TierKey) => Math.min(...subTiersForGroup(group).map((s) => subTierPrice(s.code)));
-
 type StepTierProps = {
     data: SignUpFormData;
+    pricing: TierPricing;
     onNext: (patch: Partial<SignUpFormData>) => void;
     onBack: () => void;
 };
@@ -46,7 +46,7 @@ const backBtn =
     'h-11 min-w-max flex-1 rounded-xl border border-white/10 bg-white/5 px-6 font-semibold text-white hover:bg-white/10 hover:text-white sm:flex-none';
 const nextBtn = 'h-11 min-w-max flex-1 rounded-xl font-bold uppercase shadow-md transition-opacity hover:opacity-90';
 
-const StepTier = ({ data, onNext, onBack }: StepTierProps) => {
+const StepTier = ({ data, pricing, onNext, onBack }: StepTierProps) => {
     const [phase, setPhase] = useState<'group' | 'subtier'>('group');
     const [group, setGroup] = useState<TierKey | null>(data.tier);
     const [subCode, setSubCode] = useState<SubTierCode | null>(data.sub_tier);
@@ -58,7 +58,7 @@ const StepTier = ({ data, onNext, onBack }: StepTierProps) => {
 
             return;
         }
-        const subs = subTiersForGroup(group);
+        const subs = subTiersForGroup(pricing, group);
         if (!subCode || !subs.some((s) => s.code === subCode)) {
             setSubCode(subs[0].code);
         }
@@ -66,7 +66,7 @@ const StepTier = ({ data, onNext, onBack }: StepTierProps) => {
     };
 
     if (phase === 'subtier' && (group === 'red' || group === 'blue')) {
-        const subs = subTiersForGroup(group);
+        const subs = subTiersForGroup(pricing, group);
         const groupName = group === 'red' ? 'SLR Red' : 'SLR Blue';
 
         return (
@@ -76,14 +76,15 @@ const StepTier = ({ data, onNext, onBack }: StepTierProps) => {
                         Choose your {groupName} plan
                     </h2>
                     <p className='text-slr-muted mt-1 text-sm'>
-                        More tokens = more entries per draw. Token-upgrade plans get a spin at checkout.
+                        More entries = better odds in every draw. Upgrade plans get a spin at checkout.
                     </p>
                 </div>
 
                 <div className='space-y-3'>
                     {subs.map((opt) => {
                         const on = subCode === opt.code;
-                        const tokens = subTierTokens(opt.code);
+                        const tokens = pricing[opt.code].tokens;
+                        const spinDiscount = spinDiscountOf(pricing, opt.code);
 
                         return (
                             <button
@@ -110,20 +111,20 @@ const StepTier = ({ data, onNext, onBack }: StepTierProps) => {
                                         </span>
                                         <span className='shrink-0'>
                                             <span className='text-gradient-gold font-bebas-neue text-2xl'>
-                                                ${subTierPrice(opt.code)}
+                                                ${dollarsOf(pricing, opt.code)}
                                             </span>
                                             <span className='text-xs text-white/60'>/mo</span>
                                         </span>
                                     </div>
                                     <div className='mt-1 flex flex-wrap items-center gap-2 text-xs text-white/70'>
                                         <span className='text-sm'>
-                                            {tokens} token{tokens === 1 ? '' : 's'} · entries per draw
+                                            {tokens} {tokens === 1 ? 'Entry' : 'Entries'} per draw
                                         </span>
-                                        {opt.spinDiscount > 0 && (
+                                        {spinDiscount > 0 && (
                                             <span
                                                 className='inline-flex items-center gap-1 rounded-md border border-[#D4AF3759] px-1.5 py-0.5 text-xs font-semibold text-[#FFDC75]'
                                                 style={{ background: '#291F0A' }}>
-                                                <Sparkles className='size-3' /> Spin — win ${opt.spinDiscount} off
+                                                <Sparkles className='size-3' /> Spin — win ${spinDiscount} off
                                             </span>
                                         )}
                                     </div>
@@ -225,7 +226,10 @@ const StepTier = ({ data, onNext, onBack }: StepTierProps) => {
                                     <span
                                         className='mt-3 inline-block max-w-full rounded-full bg-black/50 px-5 py-2 text-sm font-bold tracking-wider whitespace-nowrap text-white uppercase sm:text-base'
                                         style={{ border: `1px solid ${tier.pillBorder}` }}>
-                                        From <span className='text-gradient-gold'>${fromPrice(tier.key)}</span>
+                                        From{' '}
+                                        <span className='text-gradient-gold'>
+                                            ${minPriceOf(pricing, tier.key) / 100}
+                                        </span>
                                         <span className='text-white/60'> / month</span>
                                     </span>
                                     <p className='text-slr-muted mt-3 text-xs leading-relaxed'>{tier.tagline}</p>

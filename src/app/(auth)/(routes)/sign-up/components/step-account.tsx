@@ -232,10 +232,12 @@ const StepAccount = ({ data, onNext }: StepAccountProps) => {
                             setValues((v) => ({ ...v, agreedToTerms: next }));
                             if (errors.agreedToTerms) setErrors((e) => ({ ...e, agreedToTerms: undefined }));
                         }}
-                        className='mt-0.5 shrink-0 border-white/20 data-[state=checked]:border-[#D4AF37] data-[state=checked]:bg-[#D4AF37] data-[state=checked]:text-[#131619] focus-visible:ring-[#D4AF37]/30'
+                        className='mt-0.5 shrink-0 border-white/20 focus-visible:ring-[#D4AF37]/30 data-[state=checked]:border-[#D4AF37] data-[state=checked]:bg-[#D4AF37] data-[state=checked]:text-[#131619]'
                         aria-invalid={!!errors.agreedToTerms}
                     />
-                    <label htmlFor='agreedToTerms' className='cursor-pointer text-xs leading-relaxed text-white/85 select-none'>
+                    <label
+                        htmlFor='agreedToTerms'
+                        className='cursor-pointer text-xs leading-relaxed text-white/85 select-none'>
                         I agree to the{' '}
                         <a
                             href='/terms'

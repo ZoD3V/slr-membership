@@ -8,6 +8,7 @@ import {
     getMembershipTiers
 } from '@/lib/api/resources/memberships';
 import { getMembershipOfferSchema } from '@/lib/seo/structured-data';
+import { getTierPricing, minPriceOf, tierPricingFrom } from '@/lib/tier-pricing';
 
 import BlueTiersSection from '../(membership)/_components/blue-tiers-section';
 import RedTiersSection from '../(membership)/_components/red-tiers-section';
@@ -16,11 +17,14 @@ import SaveMoreWithBenySection from './_components/save-more-with-beny-section';
 import SavingTodaySection from './_components/saving-today-section';
 import { CircleAlert } from 'lucide-react';
 
-export const metadata: Metadata = {
-    title: 'Membership · SLR Rewards',
-    description:
-        "Compare Smart Life Rewards membership tiers — SLR Red ($10/mo) and SLR Premium ($26/mo). Choose the plan that's right for you."
-};
+export async function generateMetadata(): Promise<Metadata> {
+    const pricing = await getTierPricing();
+
+    return {
+        title: 'Membership · SLR Rewards',
+        description: `Compare Smart Life Rewards membership tiers — SLR Red (from $${minPriceOf(pricing, 'red') / 100}/mo) and SLR Premium (from $${minPriceOf(pricing, 'blue') / 100}/mo). Choose the plan that's right for you.`
+    };
+}
 
 const formatPrice = (cents: number) => {
     const dollars = cents / 100;
@@ -52,20 +56,22 @@ const MembershipPage = async () => {
 
     const hasTiers = !!tiers && (tiers.red.length > 0 || tiers.blue.length > 0);
 
+    const pricing = tierPricingFrom(tiers);
+    const redFrom = minPriceOf(pricing, 'red') / 100;
+    const blueFrom = minPriceOf(pricing, 'blue') / 100;
+
     const schemaTiers = [
         {
             name: 'Smart Life Rewards Red',
-            description:
-                'SLR Red Membership - starting from $10/month. Access to Red draws, partner discounts, and digital e-books.',
-            price: '10.00',
+            description: `SLR Red Membership - starting from $${redFrom}/month. Access to Red draws, partner discounts, and digital e-books.`,
+            price: redFrom.toFixed(2),
             priceCurrency: 'AUD',
             billingPeriod: 'P28D'
         },
         {
             name: 'Smart Life Rewards Premium (Blue)',
-            description:
-                'SLR Premium Blue Membership - starting from $26/month. Full access to premium blue draws, complete discounts directory, e-books library, and BENY add-on.',
-            price: '26.00',
+            description: `SLR Premium Blue Membership - starting from $${blueFrom}/month. Full access to premium blue draws, complete discounts directory, e-books library, and BENY add-on.`,
+            price: blueFrom.toFixed(2),
             priceCurrency: 'AUD',
             billingPeriod: 'P28D'
         }

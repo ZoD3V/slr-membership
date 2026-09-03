@@ -1,6 +1,9 @@
 import { StarsBackground } from '@/components/ui/stars-background';
+import { getTierPricing, minPriceOf } from '@/lib/tier-pricing';
 
-const PricingSection = () => {
+const PricingSection = async () => {
+    const pricing = await getTierPricing();
+
     return (
         <section id='pricing' className='bg-slr-navy-deep relative mx-auto max-w-7xl'>
             <StarsBackground starDensity={0.0003} />
@@ -11,7 +14,7 @@ const PricingSection = () => {
                         RED
                     </p>
                     <p className='font-bebas-neue text-gradient-gold mt-2 text-[52px] font-extrabold md:text-[60px] lg:text-[60px] xl:text-[70px]'>
-                        $10
+                        ${minPriceOf(pricing, 'red') / 100}
                     </p>
                     <p className='text-slr-dim mt-1 text-[10px] sm:text-sm'>/month</p>
                 </div>
@@ -21,7 +24,7 @@ const PricingSection = () => {
                         SLR Premium
                     </p>
                     <p className='font-bebas-neue text-gradient-gold mt-2 text-[52px] font-extrabold md:text-[60px] lg:text-[60px] xl:text-[70px]'>
-                        $26
+                        ${minPriceOf(pricing, 'blue') / 100}
                     </p>
                     <p className='text-slr-dim mt-1 text-[10px] sm:text-sm'>/month</p>
                 </div>

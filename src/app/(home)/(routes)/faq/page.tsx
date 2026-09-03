@@ -2,19 +2,27 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
+import { BENY_MONTHLY_PRICE } from '@/constant/tiers';
 import { getFAQPageSchema } from '@/lib/seo/structured-data';
 import { goldButtonStyle } from '@/lib/styles';
+import { getTierPricing, minPriceOf } from '@/lib/tier-pricing';
 
 import PageHero from '../_components/page-hero';
 import FaqList from './_components/faq-list';
-import { categories } from './faq-data';
+import { buildCategories } from './faq-data';
 
 export const metadata: Metadata = {
     title: 'FAQ · SLR Rewards',
     description: 'Answers to common questions about Smart Life Rewards membership, draws, billing, and discounts.'
 };
 
-const FaqPage = () => {
+const FaqPage = async () => {
+    const pricing = await getTierPricing();
+    const categories = buildCategories(
+        minPriceOf(pricing, 'red') / 100,
+        minPriceOf(pricing, 'blue') / 100,
+        BENY_MONTHLY_PRICE
+    );
     const allFaqs = categories.flatMap((category) => category.items);
     const faqSchema = getFAQPageSchema(allFaqs);
 
@@ -34,7 +42,7 @@ const FaqPage = () => {
 
             <section className='bg-slr-navy-deep relative py-12 md:py-16'>
                 <div className='mx-auto max-w-4xl px-4'>
-                    <FaqList />
+                    <FaqList categories={categories} />
 
                     <div className='mt-16 rounded-2xl border border-[#A0B4D259] bg-[linear-gradient(154.36deg,#141820_0.82%,#1E2530_49.73%,#141820_98.65%)] p-8 text-center shadow-[0px_0px_20px_0px_#776D6D26]'>
                         <h2 className='font-bebas-neue text-3xl tracking-wider text-white uppercase md:text-4xl'>

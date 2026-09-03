@@ -6,6 +6,9 @@ import Link from 'next/link';
 import GoldPillButton from '@/components/common/gold-pill-button';
 import SectionEyebrow from '@/components/common/section-eyebrow';
 import { LIVE_DRAW_URL } from '@/constant/links';
+import { BENY_MONTHLY_PRICE } from '@/constant/tiers';
+import { weeklyPriceLabel } from '@/lib/prize-content';
+import { getTierPricing, minPriceOf } from '@/lib/tier-pricing';
 import { cn } from '@/lib/utils';
 
 import { ArrowRight } from 'lucide-react';
@@ -25,16 +28,16 @@ const Strong = ({ children }: { children: ReactNode }) => (
     <strong className='font-bold text-[#0A0A0A]'>{children}</strong>
 );
 
-const steps: Step[] = [
+const buildSteps = (redFrom: number, blueFrom: number, redWeekly: string): Step[] => [
     {
         badge: 'Step 01',
         icon: '/icons/ic-person-circle.png',
         title: 'Choose Your Tier',
-        kicker: 'From $1.50 / Week',
+        kicker: `From $${redWeekly} / Week`,
         body: (
             <>
-                Pick <Strong>Red ($6/mo)</Strong> or <Strong>Blue ($12/mo)</Strong> across 2 separate draw pools. Level
-                up to Blue for larger prize pools &amp; higher stakes.
+                Pick <Strong>{`Red ($${redFrom}/mo)`}</Strong> or <Strong>{`Blue ($${blueFrom}/mo)`}</Strong> across 2
+                separate draw pools. Level up to Blue for larger prize pools &amp; higher stakes.
             </>
         ),
         cta: { label: 'View Tiers', href: '#tiers' }
@@ -58,10 +61,10 @@ const steps: Step[] = [
         badge: 'Step 03',
         icon: '/icons/ic-star-circle.png',
         title: 'Everyday Discounts',
-        kicker: 'Beny ($4/mo Add-On)',
+        kicker: `Beny ($${BENY_MONTHLY_PRICE}/mo Add-On)`,
         body: (
             <>
-                Add Beny for <Strong>$4/mo</Strong> to unlock hundreds of instant{' '}
+                Add Beny for <Strong>{`$${BENY_MONTHLY_PRICE}/mo`}</Strong> to unlock hundreds of instant{' '}
                 <Strong>discounts on fuel, groceries, and dining</Strong> across Australia to save every day.
             </>
         ),
@@ -156,7 +159,16 @@ const StepCard = ({ step }: { step: Step }) => {
     );
 };
 
-const HowItWorksSection = () => {
+const HowItWorksSection = async () => {
+    const pricing = await getTierPricing();
+    const redFrom = minPriceOf(pricing, 'red') / 100;
+    const blueFrom = minPriceOf(pricing, 'blue') / 100;
+    const steps = buildSteps(
+        redFrom,
+        blueFrom,
+        weeklyPriceLabel(minPriceOf(pricing, 'red')).replace('$', '').replace('/week', '')
+    );
+
     return (
         <section id='how-it-works' className='bg-slr-ink relative py-16 md:py-24'>
             <div className='mx-auto max-w-7xl px-4'>

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import GoldCtaButton from '@/components/common/gold-cta-button';
 import SectionEyebrow from '@/components/common/section-eyebrow';
 import SectionHeading from '@/components/common/section-heading';
+import { BENY_MONTHLY_PRICE } from '@/constant/tiers';
 import type { TierDisplay } from '@/lib/api/resources/memberships';
 import { GOLD_BAR_GRADIENT } from '@/lib/styles';
 import { cn } from '@/lib/utils';
@@ -79,7 +80,7 @@ const tiers: TierRow[] = [
         icon: '/icons/ic-list-slr-blue-reward-1.webp',
         name: 'Standard',
         code: 'B1',
-        price: '$26',
+        price: '$12',
         tokens: '1 Entry',
         spin: null,
         beny: false,
@@ -94,9 +95,9 @@ const tiers: TierRow[] = [
         icon: '/icons/ic-list-slr-blue-reward-2.webp',
         name: 'Plus',
         code: 'B4',
-        price: '$39',
+        price: '$19',
         tokens: '4 Entries',
-        spin: '$10 Off',
+        spin: '$3 Off',
         beny: true,
         cardStyle: silverCardStyle,
         tokenBoxStyle: { background: 'transparent', border: '1.5px solid #55606E' },
@@ -111,9 +112,9 @@ const tiers: TierRow[] = [
         icon: '/icons/ic-list-slr-blue-reward-3.webp',
         name: 'Premium',
         code: 'B7',
-        price: '$52',
+        price: '$27',
         tokens: '7 Entries',
-        spin: '$15 Off',
+        spin: '$6 Off',
         beny: true,
         cardStyle: goldCardStyle,
         tokenBoxStyle: { background: 'transparent', border: '1.5px solid #000000' },
@@ -127,9 +128,9 @@ const tiers: TierRow[] = [
         icon: '/icons/ic-list-slr-blue-reward-4.webp',
         name: 'Elite',
         code: 'B10',
-        price: '$65',
+        price: '$35',
         tokens: '10 Entries',
-        spin: '$20 Off',
+        spin: '$9 Off',
         beny: true,
         cardStyle: blackCardStyle,
         tokenBoxStyle: { background: 'transparent', border: '1.5px solid #D4AF37' },
@@ -197,7 +198,7 @@ const BlueTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispl
                                             Start From
                                         </span>
                                         <span className='text-gradient-gold font-bebas-neue text-3xl font-extrabold xl:text-4xl'>
-                                            {startFrom ?? '$26'}
+                                            {startFrom ?? '$12'}
                                         </span>
                                         <span className='text-xs text-white/60'>/mo</span>
                                     </div>
@@ -224,7 +225,7 @@ const BlueTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispl
                                     </div>
                                     <div className='flex flex-col items-center justify-center pt-0.75 pb-1.5'>
                                         <span className='text-[10px] leading-tight font-black text-[#363A3D] sm:text-xs md:text-sm'>
-                                            BENY $4
+                                            BENY {`$${BENY_MONTHLY_PRICE}`}
                                         </span>
                                     </div>
                                 </div>

@@ -4,6 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import SectionHeading from '@/components/common/section-heading';
+import { weeklyPriceLabel } from '@/lib/prize-content';
+import { getTierPricing, minPriceOf } from '@/lib/tier-pricing';
 import { cn } from '@/lib/utils';
 
 type TierCardProps = {
@@ -34,13 +36,16 @@ const TierCard: FC<TierCardProps> = ({ image, width, height, alt, href, cta, cla
     </div>
 );
 
-const SavingTiersSection = () => {
+const SavingTiersSection = async () => {
+    const pricing = await getTierPricing();
+    const weekly = weeklyPriceLabel(minPriceOf(pricing, 'red')).replace('/week', '');
+
     return (
         <section id='saving-tiers' className='bg-slr-ink relative py-16 md:py-24'>
             <div className='mx-auto max-w-7xl px-4'>
                 <SectionHeading>
                     <span className='text-gradient-silver'>
-                        Get your weekly draw tickets <br className='hidden sm:block' /> from $1.50 a week
+                        Get your weekly draw tickets <br className='hidden sm:block' /> from {weekly} a week
                     </span>
                 </SectionHeading>
 
@@ -68,7 +73,7 @@ const SavingTiersSection = () => {
                         image='/images/card-slr-red.webp'
                         width={795}
                         height={1164}
-                        alt='SLR Red tier — $10 per month, Red Standard'
+                        alt='SLR Red tier — Red Standard'
                         href='/sign-up'
                         cta='Join SLR Red'
                         className='sm:w-44 md:w-52 lg:w-60'
@@ -78,7 +83,7 @@ const SavingTiersSection = () => {
                         image='/images/card-slr-blue.webp'
                         width={795}
                         height={1164}
-                        alt='SLR Blue tier — $26 per month, Blue Standard'
+                        alt='SLR Blue tier — Blue Standard'
                         href='/sign-up'
                         cta='Join SLR Blue'
                         className='sm:w-44 md:w-52 lg:w-60'

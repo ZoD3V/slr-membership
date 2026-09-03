@@ -210,11 +210,11 @@ const sections: LegalSection[] = [
 
                 <Sub>5.2 Red Membership</Sub>
                 <p>Current Red Membership options may include:</p>
-                <List items={['$10 – 1 Token', '$20 – 4 Tokens', '$30 – 7 Tokens']} />
+                <List items={['$6 – 1 Token', '$12 – 4 Tokens', '$18 – 7 Tokens']} />
 
                 <Sub>5.3 Blue Membership</Sub>
                 <p>Current Blue Membership options may include:</p>
-                <List items={['$26 – 1 Token', '$52 – 4 Tokens', '$78 – 7 Tokens', '$99 – 10 Tokens']} />
+                <List items={['$12 – 1 Token', '$19 – 4 Tokens', '$27 – 7 Tokens', '$35 – 10 Tokens']} />
 
                 <p>
                     5.4 Current Membership prices, inclusions and benefits displayed on the SLR website at the time of

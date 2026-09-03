@@ -1,5 +1,6 @@
 import { AuStateCode } from '@/constant/au-states';
-import { SUB_TIERS } from '@/constant/tiers';
+import { BENY_MONTHLY_PRICE, SUB_TIERS } from '@/constant/tiers';
+import { type TierPricing, codesForGroup } from '@/lib/tier-pricing';
 import type { SubTierCode } from '@/types/member';
 
 // Visitor sign-up is closed — new accounts must pick a paid tier. Existing Visitor
@@ -23,54 +24,24 @@ export type SpinPrize = {
     discountAmount: number;
 };
 
-export const TIER_PRICE: Record<TierKey, number> = {
-    red: 10,
-    blue: 26
-};
-
 export const TIER_LABEL: Record<TierKey, string> = {
     red: 'SLR Red',
     blue: 'SLR Blue'
 };
 
-export const BENY_PRICE = 4;
+export const BENY_PRICE = BENY_MONTHLY_PRICE;
 
 export interface SubTierOption {
     code: SubTierCode;
     level: string;
-    spinDiscount: number;
 }
 
-export const RED_SUB_TIERS: SubTierOption[] = [
-    { code: 'R1', level: 'Standard', spinDiscount: 0 },
-    { code: 'R4', level: 'Plus', spinDiscount: 5 },
-    { code: 'R7', level: 'Premium', spinDiscount: 10 }
-];
-
-export const BLUE_SUB_TIERS: SubTierOption[] = [
-    { code: 'B1', level: 'Standard', spinDiscount: 0 },
-    { code: 'B4', level: 'Plus', spinDiscount: 10 },
-    { code: 'B7', level: 'Premium', spinDiscount: 15 },
-    { code: 'B10', level: 'Elite', spinDiscount: 20 }
-];
-
-const ALL_SUB_TIERS = [...RED_SUB_TIERS, ...BLUE_SUB_TIERS];
-
-export const subTiersForGroup = (group: TierKey): SubTierOption[] =>
-    group === 'red' ? RED_SUB_TIERS : BLUE_SUB_TIERS;
-
-export const spinDiscountFor = (code: SubTierCode | null): number =>
-    (code ? ALL_SUB_TIERS.find((s) => s.code === code)?.spinDiscount : 0) ?? 0;
-
-export const isSpinEligible = (code: SubTierCode | null): boolean => spinDiscountFor(code) > 0;
-
-export const subTierPrice = (code: SubTierCode): number => SUB_TIERS[code].price_cents / 100;
-export const subTierTokens = (code: SubTierCode): number => SUB_TIERS[code].tokens;
+export const subTiersForGroup = (pricing: TierPricing, group: TierKey): SubTierOption[] =>
+    codesForGroup(pricing, group).map((code) => ({ code, level: SUB_TIERS[code].marketingName }));
 
 export const subTierLabel = (code: SubTierCode): string => {
     const meta = SUB_TIERS[code];
     if (meta.group === 'visitor') return 'Visitor';
-    const level = ALL_SUB_TIERS.find((s) => s.code === code)?.level ?? meta.label;
 
-    return `SLR ${meta.group === 'red' ? 'Red' : 'Blue'} · ${level}`;
+    return `SLR ${meta.group === 'red' ? 'Red' : 'Blue'} · ${meta.marketingName}`;
 };

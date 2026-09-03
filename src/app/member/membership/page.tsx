@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 
 import { BenySection } from '@/app/member/discounts/_components/beny-section';
 import EmptyState from '@/components/common/empty-state';
-import { SUB_TIERS } from '@/constant/tiers';
 import { getCurrentMember } from '@/data/member-dashboard';
 import { getMemberProfile } from '@/data/profile';
 import { handleApiAuthError } from '@/lib/api/guard';
@@ -16,6 +15,7 @@ import {
 import { type MembershipRecord, getMyMembership } from '@/lib/api/resources/memberships';
 import { getAccessToken } from '@/lib/api/server';
 import { formatAud, formatShortDate, subTierCodeOf, tierGroupOf } from '@/lib/member';
+import { getTierPricing } from '@/lib/tier-pricing';
 
 import { CancelledMembershipBanner } from '../_components/dashboard/cancelled-membership-banner';
 import { GraceBanner } from './_components/grace-banner';
@@ -65,9 +65,10 @@ export default async function MembershipPage() {
         } else handleApiAuthError(y.reason);
     }
 
+    const pricing = await getTierPricing();
     const subTier = subTierCodeOf(membership?.subTierId ?? member.sub_tier);
     const isVisitor = tierGroupOf(subTier) === 'visitor';
-    const priceCents = membership?.subTier.priceCents ?? SUB_TIERS[subTier].price_cents;
+    const priceCents = membership?.subTier.priceCents ?? pricing[subTier].priceCents;
 
     return (
         <div className='mx-auto w-full flex-1 space-y-6 px-4 py-6 md:px-6 md:py-8'>
@@ -88,6 +89,7 @@ export default async function MembershipPage() {
                 nextRenewal={billing?.next_renewal_at ?? null}>
                 <ManageTier
                     isVisitor={isVisitor}
+                    pricing={pricing}
                     currentSubTier={subTier}
                     nextRenewalIso={billing?.next_renewal_at ?? null}
                     scheduledChange={membership?.pending_upgrade ?? null}

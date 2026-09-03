@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { SUB_TIERS } from '@/constant/tiers';
 import { useSafeHours } from '@/hooks/use-safe-hours';
 import { goldButtonStyle } from '@/lib/styles';
+import { type TierPricing } from '@/lib/tier-pricing';
 import type { SubTierCode } from '@/types/member';
 
 import { startMembershipCheckout } from '../actions';
@@ -17,7 +18,7 @@ import { toast } from 'sonner';
 
 const PAID_CODES: SubTierCode[] = ['R1', 'R4', 'R7', 'B1', 'B4', 'B7', 'B10'];
 
-const priceLabel = (code: SubTierCode) => `$${(SUB_TIERS[code].price_cents / 100).toFixed(0)}`;
+const priceLabel = (pricing: TierPricing, code: SubTierCode) => `$${(pricing[code].priceCents / 100).toFixed(0)}`;
 
 const planLabel = (code: SubTierCode) => {
     const meta = SUB_TIERS[code];
@@ -27,6 +28,7 @@ const planLabel = (code: SubTierCode) => {
 
 type CompletePaymentClientProps = {
     subTier: SubTierCode;
+    pricing: TierPricing;
     ctaLabel?: string;
 
     showChangePlan?: boolean;
@@ -34,6 +36,7 @@ type CompletePaymentClientProps = {
 
 const CompletePaymentClient = ({
     subTier,
+    pricing,
     ctaLabel = 'Complete payment',
     showChangePlan = true
 }: CompletePaymentClientProps) => {
@@ -98,7 +101,7 @@ const CompletePaymentClient = ({
                                     {busy === code ? (
                                         <Loader2Icon className='h-4 w-4 animate-spin' />
                                     ) : (
-                                        `${priceLabel(code)} / 28 days`
+                                        `${priceLabel(pricing, code)} / 28 days`
                                     )}
                                 </span>
                             </button>

@@ -3,6 +3,8 @@ import type { CSSProperties } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { BENY_MONTHLY_PRICE } from '@/constant/tiers';
+
 const goldPillStyle: CSSProperties = {
     background: 'linear-gradient(119.74deg, #FFE8A3 16.57%, #F1C94F 94.27%)'
 };
@@ -30,7 +32,7 @@ const SaveMoreWithBenySection = () => {
                             <span
                                 style={goldPillStyle}
                                 className='rounded-full px-3 py-1 text-[11px] font-bold tracking-wider text-[#0C1132] uppercase'>
-                                Add-ons $4
+                                Add-ons {`$${BENY_MONTHLY_PRICE}`}
                             </span>
                         </div>
 

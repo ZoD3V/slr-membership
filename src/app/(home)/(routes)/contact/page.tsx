@@ -25,7 +25,7 @@ const infoCards = [
     {
         icon: MapPin,
         title: 'Based in Australia',
-        body: 'Smart Life Rewards Pty Ltd',
+        body: 'SLR Life Pty Ltd t/a Smart Life Rewards',
         hint: 'Serving every state and territory'
     },
     {

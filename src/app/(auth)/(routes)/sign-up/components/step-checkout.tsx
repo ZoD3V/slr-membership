@@ -11,20 +11,22 @@ import { createMembershipCheckout } from '@/lib/api/resources/stripe';
 import { ApiError, apiErrorMessage } from '@/lib/api/types';
 import { SAFE_HOURS_MESSAGE, isSafeHoursError } from '@/lib/safe-hours';
 import { goldButtonStyle } from '@/lib/styles';
+import { type TierPricing, dollarsOf } from '@/lib/tier-pricing';
 
-import { BENY_PRICE, SignUpFormData, SpinPrize, subTierLabel, subTierPrice } from './types';
+import { BENY_PRICE, SignUpFormData, SpinPrize, subTierLabel } from './types';
 import { ArrowLeft, CreditCard, Loader2Icon, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
 type StepCheckoutProps = {
     data: SignUpFormData;
+    pricing: TierPricing;
     spinPrize: SpinPrize | null;
 
     token: string | null;
     onBack: () => void;
 };
 
-const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => {
+const StepCheckout = ({ data, pricing, spinPrize, token, onBack }: StepCheckoutProps) => {
     const [redirecting, setRedirecting] = useState(false);
     const [addBeny, setAddBeny] = useState(false);
     const safeHoursLocked = useSafeHours();
@@ -35,7 +37,7 @@ const StepCheckout = ({ data, spinPrize, token, onBack }: StepCheckoutProps) => 
         return null;
     }
 
-    const subtotal = subTierPrice(subTier);
+    const subtotal = dollarsOf(pricing, subTier);
     const discount = Math.min(spinPrize?.discountAmount ?? 0, subtotal);
     const total = subtotal - discount + (addBeny ? BENY_PRICE : 0);
 

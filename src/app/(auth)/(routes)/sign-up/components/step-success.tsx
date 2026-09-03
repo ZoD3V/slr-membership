@@ -5,20 +5,22 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { AU_STATES } from '@/constant/au-states';
 import { goldButtonStyle } from '@/lib/styles';
+import { type TierPricing, dollarsOf } from '@/lib/tier-pricing';
 
-import { SignUpFormData, SpinPrize, subTierLabel, subTierPrice } from './types';
+import { SignUpFormData, SpinPrize, subTierLabel } from './types';
 import { Check, Mail, PartyPopper } from 'lucide-react';
 
 type StepSuccessProps = {
     data: SignUpFormData;
+    pricing: TierPricing;
     spinPrize: SpinPrize | null;
 };
 
-const StepSuccess = ({ data, spinPrize }: StepSuccessProps) => {
+const StepSuccess = ({ data, pricing, spinPrize }: StepSuccessProps) => {
     const tier = data.tier;
     const stateLabel = AU_STATES.find((s) => s.code === data.state)?.label ?? data.state;
     const planLabel = data.sub_tier ? subTierLabel(data.sub_tier) : '-';
-    const planPrice = data.sub_tier ? subTierPrice(data.sub_tier) : 0;
+    const planPrice = data.sub_tier ? dollarsOf(pricing, data.sub_tier) : 0;
 
     const benefits = [
         `Welcome email sent to ${data.email}`,

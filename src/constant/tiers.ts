@@ -7,6 +7,7 @@ export interface SubTierMeta {
     marketingName: string;
     tokens: number;
     price_cents: number;
+    spin_discount_cents: number;
     badgeIcon: string | null;
 }
 
@@ -18,6 +19,7 @@ export const SUB_TIERS: Record<SubTierCode, SubTierMeta> = {
         marketingName: 'Visitor',
         tokens: 1,
         price_cents: 0,
+        spin_discount_cents: 0,
         badgeIcon: null
     },
     R1: {
@@ -26,7 +28,8 @@ export const SUB_TIERS: Record<SubTierCode, SubTierMeta> = {
         label: 'R1',
         marketingName: 'Standard',
         tokens: 1,
-        price_cents: 1000,
+        price_cents: 600,
+        spin_discount_cents: 0,
         badgeIcon: '/icons/ic-list-slr-red-reward-1.webp'
     },
     R4: {
@@ -35,7 +38,8 @@ export const SUB_TIERS: Record<SubTierCode, SubTierMeta> = {
         label: 'R4',
         marketingName: 'Plus',
         tokens: 4,
-        price_cents: 2000,
+        price_cents: 1200,
+        spin_discount_cents: 300,
         badgeIcon: '/icons/ic-list-slr-red-reward-2.webp'
     },
     R7: {
@@ -44,7 +48,8 @@ export const SUB_TIERS: Record<SubTierCode, SubTierMeta> = {
         label: 'R7',
         marketingName: 'Premium',
         tokens: 7,
-        price_cents: 3000,
+        price_cents: 1800,
+        spin_discount_cents: 600,
         badgeIcon: '/icons/ic-list-slr-red-reward-3.webp'
     },
     B1: {
@@ -53,7 +58,8 @@ export const SUB_TIERS: Record<SubTierCode, SubTierMeta> = {
         label: 'B1',
         marketingName: 'Standard',
         tokens: 1,
-        price_cents: 2600,
+        price_cents: 1200,
+        spin_discount_cents: 0,
         badgeIcon: '/icons/ic-list-slr-blue-reward-1.webp'
     },
     B4: {
@@ -62,7 +68,8 @@ export const SUB_TIERS: Record<SubTierCode, SubTierMeta> = {
         label: 'B4',
         marketingName: 'Plus',
         tokens: 4,
-        price_cents: 3900,
+        price_cents: 1900,
+        spin_discount_cents: 300,
         badgeIcon: '/icons/ic-list-slr-blue-reward-2.webp'
     },
     B7: {
@@ -71,7 +78,8 @@ export const SUB_TIERS: Record<SubTierCode, SubTierMeta> = {
         label: 'B7',
         marketingName: 'Premium',
         tokens: 7,
-        price_cents: 5200,
+        price_cents: 2700,
+        spin_discount_cents: 600,
         badgeIcon: '/icons/ic-list-slr-blue-reward-3.webp'
     },
     B10: {
@@ -80,10 +88,14 @@ export const SUB_TIERS: Record<SubTierCode, SubTierMeta> = {
         label: 'B10',
         marketingName: 'Elite',
         tokens: 10,
-        price_cents: 6500,
+        price_cents: 3500,
+        spin_discount_cents: 900,
         badgeIcon: '/icons/ic-list-slr-blue-reward-4.webp'
     }
 };
+
+/** BENY has no pricing endpoint — the $4 add-on lives here so every surface agrees. */
+export const BENY_MONTHLY_PRICE = 4;
 
 export const SPIN_ELIGIBLE_SUB_TIERS: ReadonlySet<SubTierCode> = new Set(['R4', 'R7', 'B4', 'B7', 'B10']);
 

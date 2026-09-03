@@ -19,10 +19,10 @@ const navigationLinks: FooterLink[] = [
     { name: 'Contact', href: '/contact' }
 ];
 
-const membershipLinks: FooterLink[] = [
+const buildMembershipLinks = (redFrom: number, blueFrom: number): FooterLink[] => [
     { name: 'Join Now', href: '/sign-up' },
-    { name: 'SLR Red — $10/mo', href: '/membership' },
-    { name: 'SLR Blue — from $26/mo', href: '/membership' },
+    { name: `SLR Red — from $${redFrom}/mo`, href: '/membership' },
+    { name: `SLR Blue — from $${blueFrom}/mo`, href: '/membership' },
     { name: 'Membership 4 Life', href: '/membership' },
     { name: 'Compare Tiers', href: '/#tiers' }
 ];
@@ -66,7 +66,8 @@ const LinkColumn: FC<{
     </div>
 );
 
-const Footer: FC = () => {
+const Footer: FC<{ redFrom: number; blueFrom: number }> = ({ redFrom, blueFrom }) => {
+    const membershipLinks = buildMembershipLinks(redFrom, blueFrom);
     const pathname = usePathname();
     const lenis = useLenis();
 
@@ -103,8 +104,8 @@ const Footer: FC = () => {
                     scrollToTop();
                 }
             }
-            
-return;
+
+            return;
         }
 
         if (isCurrentPath) {
@@ -166,7 +167,7 @@ return;
 
             <div className='mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-6 sm:flex-row'>
                 <p className='text-center text-xs text-[#8A8A8F] sm:text-left'>
-                    © {new Date().getFullYear()} Smart Life Rewards Pty Ltd. All rights reserved. Australian Owned &amp;
+                    © {new Date().getFullYear()} SLR Life Pty Ltd. All rights reserved. Australian Owned &amp;
                     Operated.
                 </p>
 
