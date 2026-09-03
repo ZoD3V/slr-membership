@@ -68,7 +68,7 @@ const buildSteps = (redFrom: number, blueFrom: number, redWeekly: string): Step[
                 <Strong>discounts on fuel, groceries, and dining</Strong> across Australia to save every day.
             </>
         ),
-        cta: { label: 'Explore Discounts', href: '#partners' }
+        cta: { label: 'Explore Discounts', href: '/membership#beny' }
     }
 ];
 
