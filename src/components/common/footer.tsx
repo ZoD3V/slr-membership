@@ -167,8 +167,7 @@ const Footer: FC<{ redFrom: number; blueFrom: number }> = ({ redFrom, blueFrom }
 
             <div className='mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-6 sm:flex-row'>
                 <p className='text-center text-xs text-[#8A8A8F] sm:text-left'>
-                    © {new Date().getFullYear()} SLR Life Pty Ltd. All rights reserved. Australian Owned &amp;
-                    Operated.
+                    © {new Date().getFullYear()} SLR Life Pty Ltd. All rights reserved. Australian Owned &amp; Operated.
                 </p>
 
                 <button

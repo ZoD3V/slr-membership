@@ -25,9 +25,13 @@ function diff(target: number): Omit<Countdown, 'mounted'> {
     };
 }
 
+// Clock-free so the server render and the first client render always agree. Reading
+// Date.now() here instead would let `done` flip between the two and break hydration.
+const PENDING: Omit<Countdown, 'mounted'> = { days: 0, hours: 0, minutes: 0, seconds: 0, total: 0, done: false };
+
 export function useCountdown(targetIso: string): Countdown {
     const target = new Date(targetIso).getTime();
-    const [state, setState] = useState<Omit<Countdown, 'mounted'>>(() => diff(target));
+    const [state, setState] = useState<Omit<Countdown, 'mounted'>>(PENDING);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
