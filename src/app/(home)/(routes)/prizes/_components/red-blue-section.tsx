@@ -243,7 +243,7 @@ const RedBlueSection = async ({ content }: { content: PrizeContent }) => {
                         Join Us Now!
                     </GoldPillButton>
                     <Link
-                        href='/membership'
+                        href='/giveaway-rules'
                         className='inline-flex w-full items-center justify-center rounded-xl border border-[#FFD147] bg-[#FFD1471A] px-8 py-2.5 text-base font-bold tracking-wide text-[#FFDC75] uppercase shadow-[inset_0_1px_5px_rgba(255,220,117,0.15)] transition-all hover:bg-[#FFD147]/20 sm:w-auto lg:px-10 lg:py-3 lg:text-lg'>
                         Draw Rules
                     </Link>
