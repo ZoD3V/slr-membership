@@ -18,25 +18,25 @@ const features: Feature[] = [
     {
         number: '01',
         icon: '/icons/ic-calendar-gold.png',
-        title: 'Weekly Draws Every Cycle',
+        title: 'Cash Given Away Weekly',
         description:
-            "We run draws weekly and monthly — so you don't wait weeks to see results. More cycles means more winning opportunities across the same time period.",
-        stat: { value: 'Weekly', label: 'Draw Cadence' }
+            'Say goodbye to endless waiting. By breaking our huge prize pools down into weekly cash drops, your next chance to win is never more than a few days away.',
+        stat: { value: 'Weekly', label: 'Prize Draws' }
     },
     {
         number: '02',
-        icon: '/icons/ic-shield-gold.png',
-        title: 'Real Entries, Not Inflated',
+        icon: '/icons/ic-trophy3d-gold.webp',
+        title: 'Yes, You Can Win Multiple Times',
         description:
-            'No bundled or inflated entry counts that make the numbers look bigger than they are. We sell genuine entries with multiple options so you can pick what fits your budget.',
-        stat: { value: '100%', label: 'Genuine Entries' }
+            "Winning once doesn't knock you out! Your entries stay active for the entire month. Stack more entries to multiply your chances of winning cash over and over again.",
+        stat: { value: 'Up To 4', label: 'Multiple Wins' }
     },
     {
         number: '03',
         icon: '/icons/ic-scales-gold.png',
-        title: 'Better Odds · Red & Blue',
+        title: 'Stop Competing With Millions',
         description:
-            'Separate Red and Blue tiers keep competition balanced within each tier, so the odds improve compared to one single crowded monthly draw.',
+            "We don't dump everyone into one massive, impossible pool. By separating members into exclusive Red and Blue tiers, your odds of winning skyrocket compared to standard crowded giveaways.",
         tiers: true
     }
 ];
@@ -55,7 +55,7 @@ const TrustedSection = () => {
                 <p className='text-slr-muted mx-auto mt-4 max-w-2xl text-center text-sm md:text-base'>
                     Our platform is built to give members{' '}
                     <span className='font-semibold text-[#FFD959]'>more chances to win</span>,{' '}
-                    <span className='font-semibold text-[#FFD959]'>more transparent value</span>, and{' '}
+                    <span className='font-semibold text-[#FFD959]'>multiple wins per cycle</span>, and{' '}
                     <span className='font-semibold text-[#FFD959]'>better odds</span> through a tiered weekly-draw
                     structure.
                 </p>

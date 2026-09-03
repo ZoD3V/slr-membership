@@ -32,10 +32,11 @@ const initialData: SignUpFormData = {
     name: '',
     email: '',
     password: '',
-    state: 'VIC',
+    state: '',
     phone: '',
     dob: '',
     agreedToTerms: false,
+    marketingOptIn: false,
     tier: null,
     sub_tier: null
 };
@@ -105,7 +106,8 @@ export function RegisterForm({ pricing, className, ...props }: RegisterFormProps
                 phone: data.phone,
                 dob: data.dob,
                 tier,
-                sub_tier: subTier.toLowerCase()
+                sub_tier: subTier.toLowerCase(),
+                marketing_opt_in: data.marketingOptIn
             });
             setUserId(res.user_id);
             setRegisteredEmail(data.email);

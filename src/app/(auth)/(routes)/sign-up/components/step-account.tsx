@@ -26,6 +26,48 @@ type StepAccountProps = {
 
 type FieldErrors = Partial<Record<'name' | 'email' | 'password' | 'state' | 'phone' | 'dob' | 'agreedToTerms', string>>;
 
+const ConsentLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
+    <a
+        href={href}
+        target='_blank'
+        rel='noopener noreferrer'
+        onClick={(e) => e.stopPropagation()}
+        className='font-medium text-[#FFDC75] underline decoration-[#FFDC75]/40 underline-offset-2 hover:text-[#FFE066] hover:decoration-[#FFE066]'>
+        {children}
+    </a>
+);
+
+const ConsentRow = ({
+    id,
+    checked,
+    invalid = false,
+    onChange,
+    children
+}: {
+    id: string;
+    checked: boolean;
+    invalid?: boolean;
+    onChange: (next: boolean) => void;
+    children: React.ReactNode;
+}) => (
+    <div
+        className={cn(
+            'flex items-start gap-3 rounded-lg border p-3.5 transition-colors',
+            invalid ? 'border-red-500/50 bg-red-500/5' : 'border-white/10 bg-white/2 hover:bg-white/4'
+        )}>
+        <Checkbox
+            id={id}
+            checked={checked}
+            onCheckedChange={(next) => onChange(next === true)}
+            className='mt-0.5 size-5 shrink-0 border-white/20 focus-visible:ring-[#D4AF37]/30 data-[state=checked]:border-[#D4AF37] data-[state=checked]:bg-[#D4AF37] data-[state=checked]:text-[#131619]'
+            aria-invalid={invalid}
+        />
+        <label htmlFor={id} className='cursor-pointer text-xs leading-relaxed text-pretty text-white/85 select-none'>
+            {children}
+        </label>
+    </div>
+);
+
 const StepAccount = ({ data, onNext }: StepAccountProps) => {
     const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState<FieldErrors>({});
@@ -36,12 +78,14 @@ const StepAccount = ({ data, onNext }: StepAccountProps) => {
         state: data.state,
         phone: data.phone,
         dob: data.dob,
-        agreedToTerms: data.agreedToTerms ?? false
+        agreedToTerms: data.agreedToTerms ?? false,
+        marketingOptIn: data.marketingOptIn ?? false
     });
 
     const update = <K extends keyof typeof values>(key: K, value: (typeof values)[K]) => {
         setValues((v) => ({ ...v, [key]: value }));
-        if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
+        // marketingOptIn is never validated, so it has no entry to clear.
+        setErrors((e) => (e[key as keyof FieldErrors] ? { ...e, [key]: undefined } : e));
     };
 
     const handleDateSelect = (date: Date | undefined) => {
@@ -216,51 +260,28 @@ const StepAccount = ({ data, onNext }: StepAccountProps) => {
                 {errors.dob && <span className='text-xs text-red-400'>{errors.dob}</span>}
             </div>
 
-            <div className='grid gap-1.5'>
-                <div
-                    className={cn(
-                        'flex items-start gap-3 rounded-lg border p-3.5 transition-colors',
-                        errors.agreedToTerms
-                            ? 'border-red-500/50 bg-red-500/5'
-                            : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.04]'
-                    )}>
-                    <Checkbox
-                        id='agreedToTerms'
-                        checked={values.agreedToTerms}
-                        onCheckedChange={(checked) => {
-                            const next = checked === true;
-                            setValues((v) => ({ ...v, agreedToTerms: next }));
-                            if (errors.agreedToTerms) setErrors((e) => ({ ...e, agreedToTerms: undefined }));
-                        }}
-                        className='mt-0.5 shrink-0 border-white/20 focus-visible:ring-[#D4AF37]/30 data-[state=checked]:border-[#D4AF37] data-[state=checked]:bg-[#D4AF37] data-[state=checked]:text-[#131619]'
-                        aria-invalid={!!errors.agreedToTerms}
-                    />
-                    <label
-                        htmlFor='agreedToTerms'
-                        className='cursor-pointer text-xs leading-relaxed text-white/85 select-none'>
-                        I agree to the{' '}
-                        <a
-                            href='/terms'
-                            target='_blank'
-                            rel='noopener noreferrer'
-                            onClick={(e) => e.stopPropagation()}
-                            className='font-medium text-[#FFDC75] underline decoration-[#FFDC75]/40 underline-offset-2 hover:text-[#FFE066] hover:decoration-[#FFE066]'>
-                            Terms & Conditions
-                        </a>{' '}
-                        and{' '}
-                        <a
-                            href='/privacy'
-                            target='_blank'
-                            rel='noopener noreferrer'
-                            onClick={(e) => e.stopPropagation()}
-                            className='font-medium text-[#FFDC75] underline decoration-[#FFDC75]/40 underline-offset-2 hover:text-[#FFE066] hover:decoration-[#FFE066]'>
-                            Privacy Policy
-                        </a>
-                        , and consent to receiving weekly prize draw results, merchant reward updates, and member
-                        communications from Smart Life Rewards.
-                    </label>
-                </div>
-                {errors.agreedToTerms && <span className='text-xs text-red-400'>{errors.agreedToTerms}</span>}
+            <div className='grid gap-3'>
+                <ConsentRow
+                    id='agreedToTerms'
+                    checked={values.agreedToTerms}
+                    invalid={!!errors.agreedToTerms}
+                    onChange={(next) => {
+                        setValues((v) => ({ ...v, agreedToTerms: next }));
+                        if (errors.agreedToTerms) setErrors((e) => ({ ...e, agreedToTerms: undefined }));
+                    }}>
+                    I agree to the <ConsentLink href='/terms'>Terms &amp; Conditions</ConsentLink> and{' '}
+                    <ConsentLink href='/privacy'>Privacy Policy</ConsentLink>.{' '}
+                    <span className='text-white/50'>Required</span>
+                </ConsentRow>
+                {errors.agreedToTerms ? <span className='text-xs text-red-400'>{errors.agreedToTerms}</span> : null}
+
+                <ConsentRow
+                    id='marketingOptIn'
+                    checked={values.marketingOptIn}
+                    onChange={(next) => setValues((v) => ({ ...v, marketingOptIn: next }))}>
+                    Email me weekly winner announcements, member offers and merchant reward updates.{' '}
+                    <span className='text-white/50'>Optional</span>
+                </ConsentRow>
             </div>
 
             <Button

@@ -173,7 +173,7 @@ export default async function MemberDashboardPage() {
 
     return (
         <div className='mx-auto w-full max-w-7xl flex-1 space-y-8 px-4 py-6 md:space-y-12 md:px-6 md:py-8'>
-            <Greeting member={member} />
+            <Greeting member={member} isVisitor={isVisitor} />
 
             {isVisitor ? <VisitorUpgradeBanner /> : null}
 

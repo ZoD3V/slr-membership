@@ -15,6 +15,7 @@ export type SignUpFormData = {
     phone: string;
     dob: string;
     agreedToTerms: boolean;
+    marketingOptIn: boolean;
     tier: TierKey | null;
     sub_tier: SubTierCode | null;
 };

@@ -5,7 +5,7 @@ import { goldButtonStyle } from '@/lib/styles';
 import { cn } from '@/lib/utils';
 import type { DrawStatus } from '@/types/member';
 
-import { ExternalLink, MapPin, Ticket, Trophy } from 'lucide-react';
+import { ExternalLink, Ticket, Trophy } from 'lucide-react';
 
 interface DrawStatusCardProps {
     draw: DrawStatus;
@@ -52,9 +52,6 @@ export function DrawStatusCard({
                 {draw.title}
             </h3>
             <div className='mt-2 flex flex-wrap items-center gap-2'>
-                <span className='text-slr-muted inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/3 px-2.5 py-1 text-xs'>
-                    <MapPin className='text-slr-gold-label size-3.5' /> {draw.draw_pool}
-                </span>
                 <span className='text-slr-muted inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/3 px-2.5 py-1 text-xs'>
                     <Ticket className='text-slr-gold-label size-3.5' />
                     <span className='tabular-nums'>{draw.total_entries.toLocaleString('en-AU')}</span> entries

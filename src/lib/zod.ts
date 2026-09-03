@@ -28,5 +28,6 @@ export const SignUpSchema = object({
         .refine(isAdultDob, { message: `You must be at least ${MIN_AGE_YEARS} years old` }),
     agreedToTerms: boolean().refine((val) => val === true, {
         message: 'You must agree to the Terms & Conditions and Privacy Policy to continue.'
-    })
+    }),
+    marketingOptIn: boolean()
 });

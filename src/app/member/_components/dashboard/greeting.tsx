@@ -3,7 +3,7 @@ import type { CurrentMember } from '@/types/member';
 
 import { MapPin } from 'lucide-react';
 
-export function Greeting({ member }: { member: CurrentMember }) {
+export function Greeting({ member, isVisitor = false }: { member: CurrentMember; isVisitor?: boolean }) {
     const firstName = member.name.split(' ')[0];
 
     return (
@@ -11,16 +11,27 @@ export function Greeting({ member }: { member: CurrentMember }) {
             <div>
                 <div className='flex items-center gap-2'>
                     <p className='text-slr-gold-label text-[10px] font-semibold tracking-[0.2em] uppercase sm:text-xs'>
-                        Member Dashboard
+                        {isVisitor ? 'Visitor Pass' : 'Member Dashboard'}
                     </p>
                     <span aria-hidden className='slr-hairline-gold h-px w-16' />
                 </div>
-                <h1 className='font-bebas-neue mt-2 text-4xl leading-none tracking-wider uppercase sm:text-5xl md:text-6xl'>
-                    <span className='text-gradient-silver'>Welcome back,</span>{' '}
-                    <span className='text-gradient-gold'>{firstName}</span>
+                <h1 className='font-bebas-neue mt-2 text-4xl leading-none tracking-wider text-balance uppercase sm:text-5xl md:text-6xl'>
+                    {isVisitor ? (
+                        <>
+                            <span className='text-gradient-silver'>{firstName}, upgrade to</span>{' '}
+                            <span className='text-gradient-gold'>Red or Blue</span>
+                        </>
+                    ) : (
+                        <>
+                            <span className='text-gradient-silver'>Welcome back,</span>{' '}
+                            <span className='text-gradient-gold'>{firstName}</span>
+                        </>
+                    )}
                 </h1>
-                <p className='text-slr-muted mt-2 text-sm md:text-base'>
-                    Here&apos;s your membership &amp; draw summary.
+                <p className='text-slr-muted mt-2 text-sm text-pretty md:text-base'>
+                    {isVisitor
+                        ? 'Paid tiers unlock every weekly cash draw, partner discounts and the full e-book library.'
+                        : "Here's your membership & draw summary."}
                 </p>
             </div>
             <div className='flex items-center gap-2'>

@@ -16,7 +16,7 @@ const apps = [
 
 const SaveMoreWithBenySection = () => {
     return (
-        <section id='beny' className='bg-slr-ink relative isolate overflow-hidden py-16 md:py-24 scroll-mt-24'>
+        <section id='beny' className='bg-slr-ink relative isolate scroll-mt-24 overflow-hidden py-16 md:py-24'>
             <div
                 aria-hidden='true'
                 className='pointer-events-none absolute top-1/2 left-1/2 -z-10 h-105 w-105 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(190,40,120,0.35)_0%,transparent_70%)] blur-3xl'

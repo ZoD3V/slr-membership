@@ -15,6 +15,8 @@ export interface RegisterPayload {
     tier?: 'visitor' | 'red' | 'blue';
     sub_tier?: string | null;
     referral_code?: string;
+    /** Optional marketing consent. Ignored by the API until the backend stores it. */
+    marketing_opt_in?: boolean;
 }
 
 export interface RegisterResult {
