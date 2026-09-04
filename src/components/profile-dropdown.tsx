@@ -1,16 +1,12 @@
 'use client';
 
-import Link from 'next/link';
-
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuGroup,
     DropdownMenuItem,
     DropdownMenuSeparator,
-    DropdownMenuShortcut,
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { UserMenuContent } from '@/components/ui/user-menu-content';
@@ -40,25 +36,8 @@ export function ProfileDropdown({ user }: { user: any }) {
                 <DropdownMenuContent className='dashboard-theme dark w-56' align='end' forceMount>
                     <UserMenuContent user={user} />
                     <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                        <DropdownMenuItem asChild>
-                            <Link href='/settings'>
-                                Profile
-                                <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                            </Link>
-                        </DropdownMenuItem>
-
-                        <DropdownMenuItem asChild>
-                            <Link href='/settings'>
-                                Settings
-                                <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-                            </Link>
-                        </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
                     <DropdownMenuItem variant='destructive' onClick={() => setOpen(true)}>
                         Sign out
-                        <DropdownMenuShortcut className='text-current'>⇧⌘Q</DropdownMenuShortcut>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
