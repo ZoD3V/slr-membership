@@ -13,6 +13,7 @@ import { formatAdminTierName, subTierFromGroupAndName } from '@/lib/member';
 import type { TierGroup } from '@/types/member';
 
 import { MemberAdminActions } from './_components/member-admin-actions';
+import { MemberConsentsCard } from './_components/member-consents-card';
 import { MemberProfileForm } from './_components/member-profile-form';
 import { ArrowLeft, CircleAlert } from 'lucide-react';
 
@@ -67,6 +68,7 @@ export default async function MemberDetailPage({ params }: { params: Promise<{ u
     }
 
     const { membership, subscription, cycles, wins } = member;
+    const consents = member.consents ?? [];
 
     return (
         <div className='mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6'>
@@ -124,6 +126,8 @@ export default async function MemberDetailPage({ params }: { params: Promise<{ u
                 currentStatus={member.status}
                 currentTierCode={membership?.tier_code ?? ''}
             />
+
+            <MemberConsentsCard consents={consents} />
 
             <InfoCard title='Subscription'>
                 {subscription ? (

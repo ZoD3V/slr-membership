@@ -4,6 +4,7 @@ import type { AuStateCode } from '@/constant/au-states';
 
 import { API } from '../endpoints';
 import { apiFetch } from '../http';
+import type { ConsentInput } from './consents';
 
 export interface RegisterPayload {
     full_name: string;
@@ -15,8 +16,8 @@ export interface RegisterPayload {
     tier?: 'visitor' | 'red' | 'blue';
     sub_tier?: string | null;
     referral_code?: string;
-    /** Optional marketing consent. Ignored by the API until the backend stores it. */
-    marketing_opt_in?: boolean;
+    /** Written atomically with the account; the API captures IP and user agent itself. */
+    consents?: ConsentInput[];
 }
 
 export interface RegisterResult {

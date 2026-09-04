@@ -4,6 +4,7 @@ import type { AuStateCode } from '@/constant/au-states';
 
 import { API } from '../endpoints';
 import { apiFetch, apiFetchPaginated } from '../http';
+import type { MemberConsentSummary } from './consents';
 
 export interface TierCount {
     tier: string;
@@ -45,6 +46,7 @@ export interface AdminMemberListItem {
     billing_status?: string;
     created_at: string;
     draw_pass?: number | null;
+    consents?: MemberConsentSummary[];
 }
 
 export interface AdminMemberDetailMembership {
@@ -90,6 +92,7 @@ export interface AdminMemberDetail {
     status: 'active' | 'suspended' | 'deactivated' | string;
     created_at: string;
     membership: AdminMemberDetailMembership;
+    consents?: MemberConsentSummary[];
     subscription: AdminMemberDetailSubscription | null;
     cycles: AdminMemberDetailCycle[];
     wins: AdminMemberDetailWin[];

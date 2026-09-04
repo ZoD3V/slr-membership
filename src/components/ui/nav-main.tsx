@@ -22,6 +22,7 @@ import {
     LayoutGrid,
     type LucideIcon,
     Megaphone,
+    ShieldCheck,
     Sparkles,
     Ticket,
     Trophy,
@@ -47,7 +48,8 @@ const ITEMS: NavItem[] = [
     { title: 'Discounts', href: '/dashboard/discounts', icon: Ticket },
     { title: 'BENY', href: '/dashboard/beny', icon: UserCheck },
     { title: 'Ebooks', href: '/dashboard/ebooks', icon: BookOpen },
-    { title: 'Announcements', href: '/dashboard/announcements', icon: Megaphone }
+    { title: 'Announcements', href: '/dashboard/announcements', icon: Megaphone },
+    { title: 'Consents', href: '/dashboard/consents', icon: ShieldCheck }
 ];
 
 export function NavMain() {

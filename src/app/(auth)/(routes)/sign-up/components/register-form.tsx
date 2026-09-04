@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { register } from '@/lib/api/resources/auth';
+import { signUpConsents } from '@/lib/api/resources/consents';
 import { ApiError, apiErrorCode, apiErrorMessage } from '@/lib/api/types';
 import { type TierPricing, isSpinEligible, spinDiscountOf } from '@/lib/tier-pricing';
 import { cn } from '@/lib/utils';
@@ -107,7 +108,7 @@ export function RegisterForm({ pricing, className, ...props }: RegisterFormProps
                 dob: data.dob,
                 tier,
                 sub_tier: subTier.toLowerCase(),
-                marketing_opt_in: data.marketingOptIn
+                consents: signUpConsents(data.agreedToTerms, data.marketingOptIn)
             });
             setUserId(res.user_id);
             setRegisteredEmail(data.email);

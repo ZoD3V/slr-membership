@@ -88,6 +88,21 @@ export const membersColumns: Column[] = [
         }
     },
     {
+        key: 'marketing_email',
+        label: 'Marketing',
+        render: (row) => {
+            if (row.marketing_email === 'unset') {
+                return <span className='text-slr-dim whitespace-nowrap'>-</span>;
+            }
+
+            return row.marketing_email === 'in' ? (
+                <span className={cn(pill, 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400')}>Opted in</span>
+            ) : (
+                <span className={cn(pill, 'border-slate-500/40 bg-slate-500/10 text-slate-400')}>Opted out</span>
+            );
+        }
+    },
+    {
         key: 'registered_at',
         label: 'Registered',
         render: (row) => <span className='text-slr-dim whitespace-nowrap tabular-nums'>{row.registered_at || '-'}</span>

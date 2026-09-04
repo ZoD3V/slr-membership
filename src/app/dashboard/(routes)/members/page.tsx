@@ -3,6 +3,7 @@ import { DashboardPageShell } from '@/app/dashboard/_components/page-shell';
 import Heading from '@/components/ui/heading';
 import { handleApiAuthError } from '@/lib/api/guard';
 import { type AdminMemberListItem, getAdminMembersByTier } from '@/lib/api/resources/admin';
+import { marketingEmailState } from '@/lib/api/resources/consents';
 import { type SubTierCount, getMembershipStats } from '@/lib/api/resources/memberships';
 import { getAccessToken } from '@/lib/api/server';
 import { formatAdminTierName, subTierFromGroupAndName } from '@/lib/member';
@@ -55,6 +56,7 @@ export default async function MembersPage() {
                 status: m.status || '-',
                 billing_status: m.billing_status || '-',
                 draw_pass: m.draw_pass ?? '-',
+                marketing_email: marketingEmailState(m.consents),
                 registered_at: m.created_at ? m.created_at.slice(0, 10) : '-'
             };
         });

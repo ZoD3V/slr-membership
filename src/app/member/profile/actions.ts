@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { MIN_PASSWORD_LENGTH } from '@/constant/password';
 import { handleApiAuthError } from '@/lib/api/guard';
 import { changePassword } from '@/lib/api/resources/auth';
+import { type ConsentType, updateMyConsents } from '@/lib/api/resources/consents';
 import { updateMyProfile } from '@/lib/api/resources/users';
 import { getAccessToken } from '@/lib/api/server';
 import { ApiError, apiErrorMessage } from '@/lib/api/types';
@@ -69,6 +70,25 @@ export async function changePasswordAction(input: {
         return {
             ok: false,
             message: error instanceof ApiError ? apiErrorMessage(error) : 'Could not change your password.'
+        };
+    }
+}
+
+export async function updateConsentAction(consentType: ConsentType, agreed: boolean): Promise<ActionResult> {
+    const token = await getAccessToken();
+    if (!token) return { ok: false, message: 'Not authenticated.' };
+
+    try {
+        await updateMyConsents(token, [{ consent_type: consentType, agreed }]);
+        revalidatePath('/member/profile');
+
+        return { ok: true };
+    } catch (error) {
+        handleApiAuthError(error);
+
+        return {
+            ok: false,
+            message: error instanceof ApiError ? apiErrorMessage(error) : 'Could not save your preference.'
         };
     }
 }

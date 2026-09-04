@@ -39,6 +39,7 @@ export const API = {
         benyPending: '/api/v1/admin/beny/pending',
         benyActivate: (id: string) => `/api/v1/admin/beny/${id}/activate`,
         benyList: '/api/v1/admin/beny',
+        consents: '/api/v1/admin/consents',
         benyDeactivate: (id: string) => `/api/v1/admin/beny/${id}/deactivate`,
         csvGenerate: '/api/v1/admin/csv/generate',
         csvHistory: '/api/v1/admin/csv/history',
@@ -95,6 +96,10 @@ export const API = {
     },
     entries: {
         history: '/api/v1/entries/'
+    },
+    consents: {
+        me: '/api/v1/consents/me',
+        update: '/api/v1/consents'
     },
     prizes: {
         member: '/api/v1/prizes/'

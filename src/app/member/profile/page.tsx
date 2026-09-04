@@ -2,7 +2,11 @@ import type { Metadata } from 'next';
 
 import { TierBadge } from '@/components/common/tier-badge';
 import { getMemberProfile } from '@/data/profile';
+import { handleApiAuthError } from '@/lib/api/guard';
+import { type ConsentRecord, getMyConsents } from '@/lib/api/resources/consents';
+import { getAccessToken } from '@/lib/api/server';
 
+import { CommunicationPreferences } from './_components/communication-preferences';
 import { MembershipCardDialog } from './_components/membership-card-dialog';
 import { PersonalInfoSection } from './_components/personal-info-section';
 import { SecuritySection } from './_components/security-section';
@@ -26,7 +30,14 @@ function initials(name: string): string {
 }
 
 export default async function ProfilePage() {
-    const profile = await getMemberProfile();
+    const [profile, token] = await Promise.all([getMemberProfile(), getAccessToken()]);
+
+    let consents: ConsentRecord[] = [];
+    try {
+        consents = token ? await getMyConsents(token) : [];
+    } catch (error) {
+        handleApiAuthError(error);
+    }
 
     return (
         <div className='mx-auto w-full max-w-4xl flex-1 space-y-6 px-4 py-6 md:px-6 md:py-8'>
@@ -56,6 +67,8 @@ export default async function ProfilePage() {
             />
 
             <PersonalInfoSection profile={profile} />
+
+            <CommunicationPreferences consents={consents} />
 
             <div className='grid gap-6 lg:grid-cols-2'>
                 <SecuritySection />
