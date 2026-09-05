@@ -181,7 +181,7 @@ const TierCard: FC<{ tier: Tier; stageLabel: string }> = ({ tier, stageLabel }) 
 const RedBlueSection = async ({ content }: { content: PrizeContent }) => {
     const stats = buildStats(content);
     const pricing = await getTierPricing();
-    const priceLabel = (group: 'red' | 'blue') => `$${minPriceOf(pricing, group) / 100}/month`;
+    const priceLabel = (group: 'red' | 'blue') => `$${minPriceOf(pricing, group) / 100}/4 weeks`;
 
     return (
         <section className='relative isolate -mt-8 overflow-hidden bg-transparent py-16 md:-mt-12 md:py-24'>

@@ -27,7 +27,7 @@ const bebasNeue = Bebas_Neue({
 
 const siteName = 'Smart Life Rewards';
 const describeSite = (redFrom: number, blueFrom: number) =>
-    `Australia's best-value rewards club. Weekly state-based draws, partner discounts, e-books and digital offers — SLR Red (from $${redFrom}/mo) and SLR Premium (from $${blueFrom}/mo).`;
+    `Australia's best-value rewards club. Weekly state-based draws, partner discounts, e-books and digital offers — SLR Red (from $${redFrom} per 4 weeks) and SLR Premium (from $${blueFrom} per 4 weeks).`;
 const ogImage = '/images/background-metadata.webp';
 
 export async function generateMetadata(): Promise<Metadata> {

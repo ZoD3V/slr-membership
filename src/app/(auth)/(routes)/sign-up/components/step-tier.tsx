@@ -113,7 +113,7 @@ const StepTier = ({ data, pricing, onNext, onBack }: StepTierProps) => {
                                             <span className='text-gradient-gold font-bebas-neue text-2xl'>
                                                 ${dollarsOf(pricing, opt.code)}
                                             </span>
-                                            <span className='text-xs text-white/60'>/mo</span>
+                                            <span className='text-xs text-white/60'>/4 weeks</span>
                                         </span>
                                     </div>
                                     <div className='mt-1 flex flex-wrap items-center gap-2 text-xs text-white/70'>

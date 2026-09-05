@@ -11,7 +11,7 @@ export const menuItems: IMenuItem[] = [
     },
     {
         text: 'Prizes',
-        url: '/prizes'
+        url: '/#current-prizes'
     },
     {
         text: 'About',

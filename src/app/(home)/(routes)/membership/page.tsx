@@ -7,6 +7,7 @@ import {
     type TierOption,
     getMembershipTiers
 } from '@/lib/api/resources/memberships';
+import { weeklyPriceLabel } from '@/lib/prize-content';
 import { getMembershipOfferSchema } from '@/lib/seo/structured-data';
 import { getTierPricing, minPriceOf, tierPricingFrom } from '@/lib/tier-pricing';
 
@@ -22,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
     return {
         title: 'Membership · SLR Rewards',
-        description: `Compare Smart Life Rewards membership tiers — SLR Red (from $${minPriceOf(pricing, 'red') / 100}/mo) and SLR Premium (from $${minPriceOf(pricing, 'blue') / 100}/mo). Choose the plan that's right for you.`
+        description: `Compare Smart Life Rewards membership tiers — SLR Red (from $${minPriceOf(pricing, 'red') / 100} per 4 weeks) and SLR Premium (from $${minPriceOf(pricing, 'blue') / 100} per 4 weeks). Choose the plan that's right for you.`
     };
 }
 
@@ -36,7 +37,7 @@ const toDisplayMap = (options: TierOption[]): Record<string, TierDisplay> =>
     options.reduce<Record<string, TierDisplay>>((map, t) => {
         map[t.sub_tier.toUpperCase()] = {
             price: formatPrice(t.price_cents),
-            tokens: `${t.token} Token${t.token === 1 ? '' : 's'}`,
+            tokens: `${t.token} Entr${t.token === 1 ? 'y' : 'ies'}`,
             name: t.marketing_name,
             spin: t.spin ? `$${t.spin_discount_cents / 100} Off` : null
         };
@@ -44,7 +45,9 @@ const toDisplayMap = (options: TierOption[]): Record<string, TierDisplay> =>
         return map;
     }, {});
 
-const startFrom = (options: TierOption[]): string => formatPrice(Math.min(...options.map((t) => t.price_cents)));
+/** The hero box reads "Start From <x> /week", so this is the cheapest sub-tier spread over the 28-day cycle. */
+const startFrom = (options: TierOption[]): string =>
+    weeklyPriceLabel(Math.min(...options.map((t) => t.price_cents))).replace('/week', '');
 
 const MembershipPage = async () => {
     let tiers: MembershipTiers | null = null;
@@ -63,14 +66,14 @@ const MembershipPage = async () => {
     const schemaTiers = [
         {
             name: 'Smart Life Rewards Red',
-            description: `SLR Red Membership - starting from $${redFrom}/month. Access to Red draws, partner discounts, and digital e-books.`,
+            description: `SLR Red Membership - starting from $${redFrom} per 4 weeks. Access to Red draws, partner discounts, and digital e-books.`,
             price: redFrom.toFixed(2),
             priceCurrency: 'AUD',
             billingPeriod: 'P28D'
         },
         {
             name: 'Smart Life Rewards Premium (Blue)',
-            description: `SLR Premium Blue Membership - starting from $${blueFrom}/month. Full access to premium blue draws, complete discounts directory, e-books library, and BENY add-on.`,
+            description: `SLR Premium Blue Membership - starting from $${blueFrom} per 4 weeks. Full access to premium blue draws, complete discounts directory, e-books library, and BENY add-on.`,
             price: blueFrom.toFixed(2),
             priceCurrency: 'AUD',
             billingPeriod: 'P28D'

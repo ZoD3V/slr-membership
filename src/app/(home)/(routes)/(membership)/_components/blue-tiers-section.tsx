@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import { Disc3 } from 'lucide-react';
 
 const mainBenefits = [
-    '9 Draws Weekly/Monthly with bigger prizes',
+    'Draws Weekly/Monthly with bigger prizes',
     'Monthly bonus prize',
     'Community Discounts',
     'Access to E-books in Finance and Wellbeing',
@@ -198,9 +198,9 @@ const BlueTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispl
                                             Start From
                                         </span>
                                         <span className='text-gradient-gold font-bebas-neue text-3xl font-extrabold xl:text-4xl'>
-                                            {startFrom ?? '$12'}
+                                            {startFrom ?? '$3'}
                                         </span>
-                                        <span className='text-xs text-white/60'>/mo</span>
+                                        <span className='text-xs text-white/60'>/week</span>
                                     </div>
                                     <p className='text-slr-muted mt-1 text-xs'>
                                         1 entry = 1 weekly draw entry · Full platform access
@@ -248,7 +248,7 @@ const BlueTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispl
 
                             <div className='mt-6'>
                                 <p className='text-center text-xs font-bold tracking-widest text-white uppercase sm:text-sm'>
-                                    Extra Saving with Benny
+                                    Extra Saving with Beny
                                 </p>
                                 <div className='mt-4 flex divide-x divide-white/15'>
                                     {extraSavings.map(([line1, line2]) => (
@@ -314,7 +314,7 @@ const BlueTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispl
                                                     {l?.price ?? tier.price}
                                                 </span>
                                                 <span className={cn('text-xs font-medium xl:text-lg', tier.labelClass)}>
-                                                    /month
+                                                    /4 weeks
                                                 </span>
                                             </p>
                                         </div>
@@ -335,7 +335,7 @@ const BlueTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispl
                                                 'mt-1.5 text-[9px] font-semibold tracking-widest whitespace-nowrap uppercase sm:text-[14px] xl:text-sm',
                                                 tier.labelClass
                                             )}>
-                                            All Access
+                                            Each Draw
                                         </span>
                                     </div>
                                 </div>

@@ -71,7 +71,7 @@ const StepSuccess = ({ data, pricing, spinPrize }: StepSuccessProps) => {
                         <Detail label='Name' value={data.name} />
                         <Detail label='Email' value={data.email} />
                         <Detail label='State' value={`${data.state} · ${stateLabel}`} />
-                        <Detail label='Plan' value={`${planLabel} · $${planPrice}/mo`} />
+                        <Detail label='Plan' value={`${planLabel} · $${planPrice}/4 weeks`} />
                     </dl>
                 </div>
             </div>

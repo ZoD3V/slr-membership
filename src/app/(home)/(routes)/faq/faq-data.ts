@@ -21,7 +21,7 @@ export const buildCategories = (redFrom: number, blueFrom: number, benyPrice: nu
             },
             {
                 question: 'Is there a free option?',
-                answer: `No. Membership is paid only — SLR Red starts at $${redFrom}/month and SLR Premium (Blue) at $${blueFrom}/month. You can browse public pages and e-book listings without an account.`
+                answer: `No. Membership is paid only — SLR Red starts at $${redFrom} per 4 weeks and SLR Premium (Blue) at $${blueFrom} per 4 weeks. You can browse public pages and e-book listings without an account.`
             }
         ]
     },
@@ -30,7 +30,7 @@ export const buildCategories = (redFrom: number, blueFrom: number, benyPrice: nu
         items: [
             {
                 question: 'What are the membership tiers?',
-                answer: `There are two tiers: SLR Red (from $${redFrom}/month) with basic discounts and Red draws, and SLR Premium / Blue (from $${blueFrom}/month) with full access to all draws, e-books, and member-only deals. Red and Premium members can also add the BENY discount platform for an extra $${benyPrice}/month.`
+                answer: `There are two tiers: SLR Red (from $${redFrom} per 4 weeks) with basic discounts and Red draws, and SLR Premium / Blue (from $${blueFrom} per 4 weeks) with full access to all draws, e-books, and member-only deals. Red and Premium members can also add the BENY discount platform for an extra $${benyPrice}/month.`
             },
             {
                 question: 'How does billing work?',

@@ -14,17 +14,16 @@ type FooterLink = { name: string; href: string };
 const navigationLinks: FooterLink[] = [
     { name: 'Home', href: '/' },
     { name: 'Membership', href: '/membership' },
-    { name: 'Prizes', href: '/prizes' },
+    { name: 'Prizes', href: '/#current-prizes' },
     { name: 'About', href: '/about' },
     { name: 'Contact', href: '/contact' }
 ];
 
 const buildMembershipLinks = (redFrom: number, blueFrom: number): FooterLink[] => [
     { name: 'Join Now', href: '/sign-up' },
-    { name: `SLR Red — from $${redFrom}/mo`, href: '/membership' },
-    { name: `SLR Blue — from $${blueFrom}/mo`, href: '/membership' },
-    { name: 'Membership 4 Life', href: '/membership' },
-    { name: 'Compare Tiers', href: '/#tiers' }
+    { name: `SLR Red — from $${redFrom}/4 weeks`, href: '/membership' },
+    { name: `SLR Blue — from $${blueFrom}/4 weeks`, href: '/membership' },
+    { name: 'Compare Tiers', href: '/membership' }
 ];
 
 const supportLinks: FooterLink[] = [

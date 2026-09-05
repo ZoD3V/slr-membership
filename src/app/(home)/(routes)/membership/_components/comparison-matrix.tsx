@@ -181,13 +181,17 @@ const ComparisonMatrix = async () => {
                             <th className='p-4 text-center text-xs font-semibold tracking-widest text-[#E88888] uppercase md:p-5'>
                                 <div className='flex flex-col items-center gap-0.5'>
                                     <span>Red</span>
-                                    <span className='text-[10px] text-white/40 normal-case'>from ${redFrom}/mo</span>
+                                    <span className='text-[10px] text-white/40 normal-case'>
+                                        from ${redFrom}/4 weeks
+                                    </span>
                                 </div>
                             </th>
                             <th className='p-4 text-center text-xs font-semibold tracking-widest text-[#6AB0F0] uppercase md:p-5'>
                                 <div className='flex flex-col items-center gap-0.5'>
                                     <span>Premium</span>
-                                    <span className='text-[10px] text-white/40 normal-case'>from ${blueFrom}/mo</span>
+                                    <span className='text-[10px] text-white/40 normal-case'>
+                                        from ${blueFrom}/4 weeks
+                                    </span>
                                 </div>
                             </th>
                         </tr>

@@ -36,8 +36,8 @@ const buildSteps = (redFrom: number, blueFrom: number, redWeekly: string): Step[
         kicker: `From $${redWeekly} / Week`,
         body: (
             <>
-                Pick <Strong>{`Red ($${redFrom}/mo)`}</Strong> or <Strong>{`Blue ($${blueFrom}/mo)`}</Strong> across 2
-                separate draw pools. Level up to Blue for larger prize pools &amp; higher stakes.
+                Pick <Strong>{`Red ($${redFrom}/4 weeks)`}</Strong> or <Strong>{`Blue ($${blueFrom}/4 weeks)`}</Strong>{' '}
+                across 2 separate draw pools. Level up to Blue for larger prize pools &amp; higher stakes.
             </>
         ),
         cta: { label: 'View Tiers', href: '#tiers' }

@@ -17,14 +17,26 @@ type TierCardProps = {
 
     cta: string;
 
+    /** Rendered over the artwork's cleared price band, so the card follows live pricing. */
+    price: string;
+
     className?: string;
 
     buttonClassName: string;
 };
 
-const TierCard: FC<TierCardProps> = ({ image, width, height, alt, href, cta, className, buttonClassName }) => (
-    <div className={cn('relative w-full max-w-[18rem]', className)}>
+const TierCard: FC<TierCardProps> = ({ image, width, height, alt, href, cta, price, className, buttonClassName }) => (
+    <div className={cn('relative w-full max-w-[18rem]', className)} style={{ containerType: 'inline-size' }}>
         <Image src={image} alt={alt} width={width} height={height} className='h-auto w-full select-none' priority />
+        <div
+            aria-hidden='true'
+            className='pointer-events-none absolute inset-x-0 flex flex-col items-center leading-none font-extrabold text-white'
+            style={{ top: '25.8%' }}>
+            <span style={{ fontSize: '21cqw' }}>{price}</span>
+            <span className='tracking-[0.12em]' style={{ fontSize: '7.5cqw', marginTop: '1.5cqw' }}>
+                /WEEK
+            </span>
+        </div>
         <Link
             href={href}
             aria-label={cta}
@@ -38,14 +50,15 @@ const TierCard: FC<TierCardProps> = ({ image, width, height, alt, href, cta, cla
 
 const SavingTiersSection = async () => {
     const pricing = await getTierPricing();
-    const weekly = weeklyPriceLabel(minPriceOf(pricing, 'red')).replace('/week', '');
+    const redWeekly = weeklyPriceLabel(minPriceOf(pricing, 'red')).replace('/week', '');
+    const blueWeekly = weeklyPriceLabel(minPriceOf(pricing, 'blue')).replace('/week', '');
 
     return (
         <section id='saving-tiers' className='bg-slr-ink relative py-16 md:py-24'>
             <div className='mx-auto max-w-7xl px-4'>
                 <SectionHeading>
                     <span className='text-gradient-silver'>
-                        Get your weekly draw tickets <br className='hidden sm:block' /> from {weekly} a week
+                        Get your weekly draw tickets <br className='hidden sm:block' /> from {redWeekly} a week
                     </span>
                 </SectionHeading>
 
@@ -70,22 +83,24 @@ const SavingTiersSection = async () => {
 
                 <div className='mt-12 flex flex-col items-center justify-center gap-8 sm:flex-row sm:gap-4 lg:gap-8'>
                     <TierCard
-                        image='/images/card-slr-red.webp'
+                        image='/images/card-slr-red-v2.webp'
                         width={795}
                         height={1164}
                         alt='SLR Red tier — Red Standard'
                         href='/sign-up'
                         cta='Join SLR Red'
+                        price={redWeekly}
                         className='sm:w-44 md:w-52 lg:w-60'
                         buttonClassName='inset-x-[10%] bottom-[4.9%] h-[10%]'
                     />
                     <TierCard
-                        image='/images/card-slr-blue.webp'
+                        image='/images/card-slr-blue-v2.webp'
                         width={795}
                         height={1164}
                         alt='SLR Blue tier — Blue Standard'
                         href='/sign-up'
                         cta='Join SLR Blue'
+                        price={blueWeekly}
                         className='sm:w-44 md:w-52 lg:w-60'
                         buttonClassName='inset-x-[10%] bottom-[4.9%] h-[10%]'
                     />

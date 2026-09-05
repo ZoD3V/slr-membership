@@ -25,7 +25,7 @@ const TIER_ORDER: TierGroup[] = ['visitor', 'red', 'blue'];
 function priceLabel(pricing: TierPricing, group: TierGroup): string {
     if (group === 'visitor') return 'Free to join';
 
-    return `from $${minPriceOf(pricing, group) / 100}/month`;
+    return `from $${minPriceOf(pricing, group) / 100}/4 weeks`;
 }
 
 function toTierBreakdown(content: PrizeContent, pricing: TierPricing): PrizeTierBreakdown[] {

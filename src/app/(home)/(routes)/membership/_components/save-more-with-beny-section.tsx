@@ -10,8 +10,18 @@ const goldPillStyle: CSSProperties = {
 };
 
 const apps = [
-    { icon: '/icons/ic-apple.png', tagline: 'Download on the', name: 'App Store', href: '#' },
-    { icon: '/icons/ic-play-store.png', tagline: 'Get it on', name: 'Google Play', href: '#' }
+    {
+        icon: '/icons/ic-apple.png',
+        tagline: 'Download on the',
+        name: 'App Store',
+        href: 'https://apps.apple.com/au/app/beny/id1624827208'
+    },
+    {
+        icon: '/icons/ic-play-store.png',
+        tagline: 'Get it on',
+        name: 'Google Play',
+        href: 'https://play.google.com/store/apps/details?id=user.beny.com.au&hl=en_AU'
+    }
 ];
 
 const SaveMoreWithBenySection = () => {
@@ -37,7 +47,7 @@ const SaveMoreWithBenySection = () => {
                         </div>
 
                         <div className='relative mt-5 inline-block'>
-                            <span className='block bg-[linear-gradient(91deg,#F4A6C0_0%,#ED5C97_45%,#E0309A_100%)] bg-clip-text text-[88px] leading-none font-extrabold text-transparent sm:text-[112px] lg:text-[128px]'>
+                            <span className='block bg-[linear-gradient(91deg,#F4A6C0_0%,#ED5C97_45%,#E0309A_100%)] bg-clip-text pb-2 text-[88px] leading-[1.12] font-extrabold text-transparent sm:text-[112px] lg:text-[128px]'>
                                 Beny
                             </span>
                             <span
@@ -65,6 +75,8 @@ const SaveMoreWithBenySection = () => {
                                 <Link
                                     key={app.name}
                                     href={app.href}
+                                    target='_blank'
+                                    rel='noopener noreferrer'
                                     className='inline-flex items-center gap-3 rounded-xl border border-[#2A2D31] bg-[#16191D] px-5 py-3 transition-colors hover:border-[#403314]'>
                                     <Image src={app.icon} alt='' width={24} height={24} className='h-6 w-6 shrink-0' />
                                     <span className='leading-tight'>

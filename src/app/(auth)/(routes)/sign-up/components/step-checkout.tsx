@@ -133,7 +133,7 @@ const StepCheckout = ({ data, pricing, spinPrize, token, onBack }: StepCheckoutP
                     {discount > 0 && (
                         <SummaryRow
                             label='Spin Wheel discount'
-                            sub={`${spinPrize?.label}, first month only`}
+                            sub={`${spinPrize?.label}, first billing cycle only`}
                             value={`−$${discount.toFixed(2)}`}
                             highlight
                         />
@@ -145,8 +145,8 @@ const StepCheckout = ({ data, pricing, spinPrize, token, onBack }: StepCheckoutP
                         <div>
                             <p className='font-bebas-neue text-xl tracking-wider text-white uppercase'>Due today</p>
                             <p className='text-slr-muted text-xs'>
-                                Then ${(subtotal + (addBeny ? BENY_PRICE : 0)).toFixed(2)}/month from your next billing
-                                date.
+                                Then ${(subtotal + (addBeny ? BENY_PRICE : 0)).toFixed(2)} every 4 weeks from your next
+                                billing date.
                             </p>
                         </div>
                         <p className='font-bebas-neue text-3xl font-extrabold text-[#FFDC75]'>${total.toFixed(2)}</p>

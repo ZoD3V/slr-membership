@@ -92,7 +92,7 @@ const MoreMembersSection = () => {
                                 Target Prize
                             </p>
                             <p className='text-gradient-gold font-bebas-neue text-2xl leading-none sm:text-3xl md:text-4xl'>
-                                $24,000
+                                $29,000
                             </p>
                         </div>
                     </div>

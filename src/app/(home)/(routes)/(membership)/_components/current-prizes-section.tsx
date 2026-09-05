@@ -82,7 +82,7 @@ const CurrentPrizesSection = async () => {
             monthly: content?.blue_monthly?.trim() || FALLBACK.blue.monthly,
             monthlyNote,
             bonus: { amount: GRAND_BONUS.blue, note: bonusNote },
-            footer: '2x the prizes, 2x the rewards'
+            footer: 'Double prizes, double rewards'
         }
     ];
 

@@ -16,7 +16,7 @@ const PricingSection = async () => {
                     <p className='font-bebas-neue text-gradient-gold mt-2 text-[52px] font-extrabold md:text-[60px] lg:text-[60px] xl:text-[70px]'>
                         ${minPriceOf(pricing, 'red') / 100}
                     </p>
-                    <p className='text-slr-dim mt-1 text-[10px] sm:text-sm'>/month</p>
+                    <p className='text-slr-dim mt-1 text-[10px] sm:text-sm'>/4 weeks</p>
                 </div>
 
                 <div className='shadow-card-soft flex h-auto flex-col items-center justify-center rounded-xl border border-[#2878E84D] bg-[linear-gradient(154.36deg,#0E1828_0.82%,#142034_49.73%,#0E1828_98.65%)] p-3 text-center sm:p-4 md:h-55.5'>
@@ -26,7 +26,7 @@ const PricingSection = async () => {
                     <p className='font-bebas-neue text-gradient-gold mt-2 text-[52px] font-extrabold md:text-[60px] lg:text-[60px] xl:text-[70px]'>
                         ${minPriceOf(pricing, 'blue') / 100}
                     </p>
-                    <p className='text-slr-dim mt-1 text-[10px] sm:text-sm'>/month</p>
+                    <p className='text-slr-dim mt-1 text-[10px] sm:text-sm'>/4 weeks</p>
                 </div>
             </div>
 

@@ -265,8 +265,8 @@ export function CurrentPrizesContent({ poolAmount, poolText, stats, tiers }: Cur
                                 )}
                                 <div className='flex flex-col items-center justify-center text-center'>
                                     <p
-                                        className='font-bebas-neue text-[15px] leading-[1.1] tracking-wider min-[600px]:text-[24px] md:text-[40px]'
-                                        style={{ color: '#F3F4F6', textShadow: '0 0 12px rgba(255, 255, 255, 0.3)' }}>
+                                        className='text-gradient-gold font-bebas-neue text-[15px] leading-[1.1] tracking-wider min-[600px]:text-[24px] md:text-[40px]'
+                                        style={{ textShadow: '0 0 12px rgba(212, 175, 55, 0.35)' }}>
                                         {stat.value}
                                     </p>
                                     <p className='mt-1 text-[8px] font-medium tracking-widest text-white/60 uppercase sm:mt-1.5 sm:text-[10px] md:text-xs'>
@@ -324,9 +324,9 @@ export function CurrentPrizesContent({ poolAmount, poolText, stats, tiers }: Cur
                         JOIN NOW
                     </GoldPillButton>
                     <GoldOutlineButton
-                        href='/prizes'
+                        href='/membership'
                         className='w-1/2 px-2 py-2.5 text-[12px] whitespace-nowrap sm:w-auto sm:px-8 sm:text-base sm:whitespace-normal'>
-                        View Prizes
+                        View Membership
                     </GoldOutlineButton>
                 </div>
             </div>

@@ -70,7 +70,7 @@ const TierColumn: FC<{ tier: Tier; theme: TierTheme }> = ({ tier, theme }) => (
             style={{ color: theme.accent }}>
             {tier.price}
         </p>
-        <p className='mt-1 text-[10px] font-medium tracking-wider text-white uppercase'>/Month</p>
+        <p className='mt-1 text-[10px] font-medium tracking-wider text-white uppercase'>/4 Weeks</p>
 
         <div className='my-3 h-px w-8' style={{ background: theme.divider }} />
 

@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import { Disc3 } from 'lucide-react';
 
 const mainBenefits = [
-    '9 Draws Weekly/Monthly',
+    'Draws Weekly/Monthly',
     'Monthly bonus prize',
     'Community Discounts',
     'Access to E-books in Finance and Wellbeing',
@@ -157,9 +157,9 @@ const RedTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispla
                                             Start From
                                         </span>
                                         <span className='text-gradient-gold font-bebas-neue text-3xl font-extrabold xl:text-4xl'>
-                                            {startFrom ?? '$6'}
+                                            {startFrom ?? '$1.50'}
                                         </span>
-                                        <span className='text-xs text-white/60'>/mo</span>
+                                        <span className='text-xs text-white/60'>/week</span>
                                     </div>
                                     <p className='text-slr-muted mt-1 text-xs'>1 to 7 draw entries</p>
                                 </div>
@@ -266,7 +266,7 @@ const RedTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispla
                                                         'text-xs font-medium xl:text-lg',
                                                         isPlus ? 'text-black/85' : 'text-white/70'
                                                     )}>
-                                                    /month
+                                                    /4 weeks
                                                 </span>
                                             </p>
                                         </div>
@@ -287,8 +287,8 @@ const RedTiersSection = ({ live, startFrom }: { live?: Record<string, TierDispla
                                                 'mt-1.5 flex flex-col items-center text-[9px] leading-snug font-semibold tracking-[0.2em] uppercase sm:text-[14px] xl:text-sm',
                                                 tier.labelClass
                                             )}>
-                                            <span>Member</span>
-                                            <span>Entries</span>
+                                            <span>Each</span>
+                                            <span>Draw</span>
                                         </div>
                                     </div>
                                 </div>
