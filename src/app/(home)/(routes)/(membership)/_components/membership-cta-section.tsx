@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import AnchorLink from '@/components/common/anchor-link';
 import GoldCtaButton from '@/components/common/gold-cta-button';
 import SectionEyebrow from '@/components/common/section-eyebrow';
 import SectionHeading from '@/components/common/section-heading';
@@ -26,13 +27,13 @@ const MembershipCtaSection = () => {
                         JOIN NOW - IT`S FREE TO START
                     </GoldCtaButton>
 
-                    <Link href='#tiers' className='w-full md:w-fit'>
+                    <AnchorLink href='#tiers' className='w-full md:w-fit'>
                         <Button
                             variant='outline'
                             className='h-11 w-full rounded-xl border border-[#FFD147] bg-[#FFD1471A] font-semibold text-[#FFDC75] shadow-[inset_0px_8px_12px_0px_#FFFFFF14,inset_16px_24px_64px_-24px_#FFFFFF14,0px_24px_24px_-16px_#0000001F] transition-all hover:bg-[#FFD14726] hover:text-[#FFDC75] active:scale-[0.98]'>
                             View All Plans
                         </Button>
-                    </Link>
+                    </AnchorLink>
                 </div>
             </div>
         </section>

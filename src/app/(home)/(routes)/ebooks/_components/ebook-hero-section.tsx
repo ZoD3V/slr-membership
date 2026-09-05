@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import AnchorLink from '@/components/common/anchor-link';
+
 import { chapters, totalReadMinutes } from './ebook-chapters';
 import { BookMarked, CalendarDays, Clock } from 'lucide-react';
 
@@ -53,7 +55,7 @@ const EbookHeroSection = () => {
                     </div>
                 </div>
 
-                <Link
+                <AnchorLink
                     href='#guide'
                     aria-label='Read the Smart Living Blueprint'
                     className='mx-auto block w-full max-w-md transition-opacity hover:opacity-95 lg:mr-0 lg:ml-auto'>
@@ -65,7 +67,7 @@ const EbookHeroSection = () => {
                         priority
                         className='h-auto w-full'
                     />
-                </Link>
+                </AnchorLink>
             </div>
         </section>
     );

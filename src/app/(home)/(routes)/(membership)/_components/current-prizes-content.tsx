@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 import GoldOutlineButton from '@/components/common/gold-outline-button';
 import GoldPillButton from '@/components/common/gold-pill-button';
-import { type PrizeStat, formatPoolAmount } from '@/lib/prize-content';
+import { type PrizeStat, formatPoolAmount, poolFractionDigits } from '@/lib/prize-content';
 import { cn } from '@/lib/utils';
 
 import { useMotionValueEvent, useScroll } from 'motion/react';
@@ -254,7 +254,7 @@ export function CurrentPrizesContent({ poolAmount, poolText, stats, tiers }: Cur
                         ref={anchorRef}
                         className='text-gradient-gold font-bebas-neue text-[64px] leading-[0.9] tracking-wider tabular-nums sm:text-[90px] md:text-[130px]'
                         style={{ textShadow: '0 0 40px rgba(212,175,55,0.4)' }}>
-                        {poolAmount === null ? poolText : formatPoolAmount(amount)}
+                        {poolAmount === null ? poolText : formatPoolAmount(amount, poolFractionDigits(poolAmount))}
                     </h2>
 
                     <div className='mt-8 flex items-center justify-center gap-3 min-[600px]:gap-6 md:gap-10'>

@@ -3,10 +3,20 @@
 
 const CYCLE_WEEKS = 4; // 28-day billing cycle
 
-const poolFormatter = new Intl.NumberFormat('en-AU', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-});
+const poolFormatters = new Map<number, Intl.NumberFormat>();
+
+const poolFormatter = (fractionDigits: number) => {
+    let formatter = poolFormatters.get(fractionDigits);
+    if (!formatter) {
+        formatter = new Intl.NumberFormat('en-AU', {
+            minimumFractionDigits: fractionDigits,
+            maximumFractionDigits: fractionDigits
+        });
+        poolFormatters.set(fractionDigits, formatter);
+    }
+
+    return formatter;
+};
 
 /** " $3,700" -> 3700. Returns null when the CMS holds something unparseable. */
 export function parseAmount(value: string | null | undefined): number | null {
@@ -17,9 +27,18 @@ export function parseAmount(value: string | null | undefined): number | null {
     return Number.isFinite(amount) ? amount : null;
 }
 
-export function formatPoolAmount(amount: number): string {
-    return `$${poolFormatter.format(amount)}`;
+/**
+ * Pools are advertised as whole dollars, so no cents by default. The digit count is fixed by
+ * the caller rather than derived per value, otherwise the count-up animation would swap
+ * formats mid-flight and jitter the width.
+ */
+export function formatPoolAmount(amount: number, fractionDigits = 0): string {
+    return `$${poolFormatter(fractionDigits).format(amount)}`;
 }
+
+/** Cents are only worth showing when the CMS actually published them. */
+export const poolFractionDigits = (amount: number | null): number =>
+    amount !== null && !Number.isInteger(amount) ? 2 : 0;
 
 /** "@ 22 Prizes • One Month" -> ["22 Prizes", "One Month"]. Leading "@" and "For" are labels, not content. */
 export function splitSegments(value: string | null | undefined): string[] {

@@ -6,6 +6,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { useAnchorScroll } from '@/hooks/use-anchor-scroll';
+
 import { useLenis } from 'lenis/react';
 import { ArrowUp } from 'lucide-react';
 
@@ -69,6 +71,7 @@ const Footer: FC<{ redFrom: number; blueFrom: number }> = ({ redFrom, blueFrom }
     const membershipLinks = buildMembershipLinks(redFrom, blueFrom);
     const pathname = usePathname();
     const lenis = useLenis();
+    const scrollToAnchor = useAnchorScroll();
 
     const scrollToTop = () => {
         if (lenis) {
@@ -90,18 +93,11 @@ const Footer: FC<{ redFrom: number; blueFrom: number }> = ({ redFrom, blueFrom }
         const isCurrentPath = !targetPath || targetPath === pathname || (targetPath === '/' && pathname === '/');
 
         if (targetHash) {
-            if (isCurrentPath) {
+            if (isCurrentPath && !document.getElementById(targetHash)) {
                 e.preventDefault();
-                const targetElement = document.getElementById(targetHash);
-                if (targetElement) {
-                    if (lenis) {
-                        lenis.scrollTo(targetElement, { offset: -80, duration: 1.2 });
-                    } else {
-                        targetElement.scrollIntoView({ behavior: 'smooth' });
-                    }
-                } else {
-                    scrollToTop();
-                }
+                scrollToTop();
+            } else {
+                scrollToAnchor(e, href);
             }
 
             return;

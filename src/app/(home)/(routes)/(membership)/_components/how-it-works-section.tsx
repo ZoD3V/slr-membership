@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import AnchorLink from '@/components/common/anchor-link';
 import GoldPillButton from '@/components/common/gold-pill-button';
 import SectionEyebrow from '@/components/common/section-eyebrow';
 import { LIVE_DRAW_URL } from '@/constant/links';
@@ -137,10 +138,10 @@ const StepCard = ({ step }: { step: Step }) => {
                                 <ArrowRight className='h-4 w-4' strokeWidth={2.5} />
                             </a>
                         ) : (
-                            <Link href={step.cta.href} className={ctaClass}>
+                            <AnchorLink href={step.cta.href} className={ctaClass}>
                                 {step.cta.label}
                                 <ArrowRight className='h-4 w-4' strokeWidth={2.5} />
-                            </Link>
+                            </AnchorLink>
                         )}
 
                         {step.footnote ? (

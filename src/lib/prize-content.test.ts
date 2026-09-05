@@ -29,8 +29,9 @@ describe('parseAmount', () => {
 
 describe('formatPoolAmount', () => {
     it('always shows two decimals', () => {
-        expect(formatPoolAmount(0)).toBe('$0.00');
-        expect(formatPoolAmount(3700)).toBe('$3,700.00');
+        expect(formatPoolAmount(0)).toBe('$0');
+        expect(formatPoolAmount(3700)).toBe('$3,700');
+        expect(formatPoolAmount(3700.5, 2)).toBe('$3,700.50');
     });
 });
 
