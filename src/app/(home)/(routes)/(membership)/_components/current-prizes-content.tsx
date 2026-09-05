@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import Link from 'next/link';
 
+import GoldOutlineButton from '@/components/common/gold-outline-button';
 import GoldPillButton from '@/components/common/gold-pill-button';
 import { type PrizeStat, formatPoolAmount } from '@/lib/prize-content';
 import { cn } from '@/lib/utils';
@@ -22,6 +23,8 @@ export interface PrizeTierCard {
     weekly: string[];
     monthly: string;
     monthlyNote: string;
+    /** The milestone prize, shown below the monthly one — it unlocks at a higher member count. */
+    bonus: { amount: string; note: string };
     footer: string;
     borderGradient: string;
     surface: string;
@@ -141,11 +144,16 @@ function useTypewriter(text: string) {
     return { ref, typed };
 }
 
+const CARD_EASE = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+
 const TierCardBlock = ({ tier, shown, delayMs }: { tier: PrizeTierCard; shown: boolean; delayMs: number }) => (
     <div
         className='rounded-2xl p-0.5'
         style={{
-            background: tier.borderGradient
+            background: tier.borderGradient,
+            opacity: shown ? 1 : 0,
+            transform: shown ? 'translateY(0)' : 'translateY(30px)',
+            transition: `opacity 0.8s ${CARD_EASE} ${delayMs}ms, transform 0.8s ${CARD_EASE} ${delayMs}ms`
         }}>
         <div
             className='relative flex h-full flex-col overflow-hidden rounded-[14px]'
@@ -201,13 +209,22 @@ const TierCardBlock = ({ tier, shown, delayMs }: { tier: PrizeTierCard; shown: b
                     </div>
                 </div>
 
-                <div className='flex flex-col items-center text-center'>
+                <div className='-mt-2 flex flex-col items-center text-center'>
                     <p
-                        className='text-gradient-gold font-bebas-neue text-[40px] leading-none tracking-wider sm:text-[56px]'
-                        style={{ textShadow: '0 0 20px rgba(212,175,55,0.4)' }}>
+                        className='text-gradient-gold font-bebas-neue text-[32px] leading-none tracking-wider text-balance sm:text-[42px]'
+                        style={{ textShadow: '0 0 16px rgba(212,175,55,0.4)' }}>
                         {tier.monthly}
                     </p>
                     <span className='mt-0.5 text-xs tracking-[0.1em] text-white/60 uppercase'>{tier.monthlyNote}</span>
+                </div>
+
+                <div className='mt-3 flex flex-col items-center text-center'>
+                    <p
+                        className='text-gradient-gold font-bebas-neue text-[44px] leading-none tracking-wider whitespace-nowrap sm:text-[56px]'
+                        style={{ textShadow: '0 0 20px rgba(212,175,55,0.4)' }}>
+                        {tier.bonus.amount}
+                    </p>
+                    <span className='mt-0.5 text-xs tracking-[0.1em] text-white/60 uppercase'>{tier.bonus.note}</span>
                 </div>
             </div>
 
@@ -306,11 +323,11 @@ export function CurrentPrizesContent({ poolAmount, poolText, stats, tiers }: Cur
                         )}>
                         JOIN NOW
                     </GoldPillButton>
-                    <Link
-                        href='/membership'
-                        className='inline-flex w-1/2 items-center justify-center rounded-xl border border-[#FFD147] bg-[#FFD1471A] px-2 py-2.5 text-[12px] font-bold tracking-wide whitespace-nowrap text-[#FFDC75] uppercase shadow-[inset_0_1px_5px_rgba(255,220,117,0.15)] transition-all hover:bg-[#FFD147]/20 sm:w-auto sm:px-8 sm:text-base sm:whitespace-normal lg:px-10 lg:py-3 lg:text-lg'>
-                        View Memberships
-                    </Link>
+                    <GoldOutlineButton
+                        href='/prizes'
+                        className='w-1/2 px-2 py-2.5 text-[12px] whitespace-nowrap sm:w-auto sm:px-8 sm:text-base sm:whitespace-normal'>
+                        View Prizes
+                    </GoldOutlineButton>
                 </div>
             </div>
         </section>

@@ -1,7 +1,16 @@
 import { BLUE_TIER_CARD, RED_TIER_CARD } from '@/constant/tier-card-theme';
 import { getMembershipTiers } from '@/lib/api/resources/memberships';
 import { getPublicPrizeContent } from '@/lib/api/resources/prizes';
-import { membersCapLabel, minPriceCents, parseAmount, splitLines, toStat, weeklyPriceLabel } from '@/lib/prize-content';
+import {
+    GRAND_BONUS,
+    membersCapLabel,
+    membersCount,
+    minPriceCents,
+    parseAmount,
+    splitLines,
+    toStat,
+    weeklyPriceLabel
+} from '@/lib/prize-content';
 import type { PrizeContent } from '@/types/member';
 
 import { CurrentPrizesContent, type PrizeTierCard } from './current-prizes-content';
@@ -9,26 +18,27 @@ import { CurrentPrizesContent, type PrizeTierCard } from './current-prizes-conte
 // Shown when the prizes CMS or the tier pricing endpoint is unreachable, so the marketing
 // page still renders something truthful instead of an error state.
 const FALLBACK = {
-    pool: '$1900.00',
+    pool: '$7,380',
     stats: [
         { value: '100 Members', label: 'Competing Capped' },
         { value: 'Up To 34 Prizes', label: 'Every Month' },
         { value: '9 In 10 Winning', label: 'Chance Per Year' }
     ],
     membersCap: '100 Members Capped',
+    membersCount: '100',
     red: {
         price: '$1.50/week',
-        weekly: ['$100 Cash', '$75 Cash', '$50 Cash', '$25 Cash', '$10 Cash'],
-        monthly: '$5000 Bonus'
+        weekly: ['$200 Cash', '$150 Cash', '$100 Cash', '$50 Cash', '$25 Cash'],
+        monthly: '$500 Cash/Month'
     },
     blue: {
         price: '$3/week',
-        weekly: ['$500 Cash', '$250 Cash', '$150 Cash', '$100 Cash', '$50 Cash'],
-        monthly: '$10000 Bonus'
+        weekly: ['$400 Cash', '$300 Cash', '$150 Cash', '$70 Cash', '$25 Cash'],
+        monthly: '$1,000 Cash/Month'
     }
 };
 
-const MONTHLY_NOTE = 'For 1000 New Members';
+const unlockNote = (members: string) => `Unlocked at ${members} Members`;
 
 const perWeekAmount = (price: string) => price.replace('/week', '');
 
@@ -42,6 +52,8 @@ const CurrentPrizesSection = async () => {
     const poolAmount = parseAmount(poolHeadline);
 
     const membersCap = membersCapLabel(content?.stage_label) ?? FALLBACK.membersCap;
+    const monthlyNote = unlockNote(membersCount(content?.stage_label) ?? FALLBACK.membersCount);
+    const bonusNote = unlockNote(GRAND_BONUS.membersCount);
 
     const redMin = tiers ? minPriceCents(tiers.red) : null;
     const blueMin = tiers ? minPriceCents(tiers.blue) : null;
@@ -58,7 +70,8 @@ const CurrentPrizesSection = async () => {
             membersCap,
             weekly: redWeekly.length > 0 ? redWeekly : FALLBACK.red.weekly,
             monthly: content?.red_monthly?.trim() || FALLBACK.red.monthly,
-            monthlyNote: MONTHLY_NOTE,
+            monthlyNote,
+            bonus: { amount: GRAND_BONUS.red, note: bonusNote },
             footer: `Great prizes for only ${perWeekAmount(redPrice)} a week`
         },
         {
@@ -67,7 +80,8 @@ const CurrentPrizesSection = async () => {
             membersCap,
             weekly: blueWeekly.length > 0 ? blueWeekly : FALLBACK.blue.weekly,
             monthly: content?.blue_monthly?.trim() || FALLBACK.blue.monthly,
-            monthlyNote: MONTHLY_NOTE,
+            monthlyNote,
+            bonus: { amount: GRAND_BONUS.blue, note: bonusNote },
             footer: '2x the prizes, 2x the rewards'
         }
     ];

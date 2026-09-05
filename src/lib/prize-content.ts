@@ -37,11 +37,35 @@ export function splitLines(value: string | null | undefined): string[] {
         .filter(Boolean);
 }
 
-/** "For 100 Members • Stage 1" -> "100 Members Capped" */
-export function membersCapLabel(stageLabel: string | null | undefined): string | null {
+/** "For 100 Members • Stage 1" -> "100" */
+export function membersCount(stageLabel: string | null | undefined): string | null {
     const match = /([\d,]+)\s*members/i.exec(stageLabel ?? '');
 
-    return match ? `${match[1]} Members Capped` : null;
+    return match ? match[1] : null;
+}
+
+/**
+ * Milestone bonus prizes. The prizes CMS has no field for these yet, so the marketing page
+ * and the legal documents read them from here instead of each carrying their own copy.
+ */
+export const GRAND_BONUS = {
+    membersCount: '1,000',
+    red: '$5,000 Bonus',
+    blue: '$10,000 Bonus'
+} as const;
+
+/** The advertised pool exactly as the CMS holds it, falling back when the field is junk or empty. */
+export function poolLabel(headline: string | null | undefined, fallback: string): string {
+    const raw = headline?.trim();
+
+    return raw && parseAmount(raw) !== null ? raw : fallback;
+}
+
+/** "For 100 Members • Stage 1" -> "100 Members Capped" */
+export function membersCapLabel(stageLabel: string | null | undefined): string | null {
+    const count = membersCount(stageLabel);
+
+    return count ? `${count} Members Capped` : null;
 }
 
 /** Cheapest sub-tier price in cents -> "$2.50/week" over the 28-day cycle. */

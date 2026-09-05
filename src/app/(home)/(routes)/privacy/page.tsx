@@ -1,8 +1,6 @@
 import { Metadata } from 'next';
-import Link from 'next/link';
 
 import LegalDoc, {
-    LegalContactCard,
     LegalSection,
     LegalList as List,
     LegalSub as Sub,
@@ -13,40 +11,27 @@ import PageHero from '../_components/page-hero';
 export const metadata: Metadata = {
     title: 'Privacy Policy · SLR Rewards',
     description:
-        'How SLR Life Pty Ltd trading as Smart Life Rewards collects, holds, uses and discloses personal information under the Privacy Act 1988 (Cth).'
+        'How SLR Life Pty Ltd trading as Smart Life Rewards collects, holds, uses and discloses personal information.'
 };
 
-const AUSTRALIAN_LAWS = [
-    'Privacy Act 1988 (Cth);',
-    'Australian Privacy Principles;',
-    'Notifiable Data Breaches scheme;',
-    'Spam Act 2003 (Cth);',
-    'Australian Consumer Law;',
-    'Applicable promotional and trade-promotion requirements; and',
-    'Other applicable Australian laws.'
-];
+const MailLink = () => (
+    <a href='mailto:cs@smartliferewards.com.au' className='text-[#FFDC75] hover:underline'>
+        cs@smartliferewards.com.au
+    </a>
+);
 
 const PrivacyContact = () => (
-    <LegalContactCard title='Privacy Contact — Smart Life Rewards'>
-        <p className='mt-1'>
-            SLR Life Pty Ltd
-            <br />
-            28 Welcome Parade
-            <br />
-            Wyndham VIC 3024 Australia
-        </p>
-        <p className='mt-2'>
-            Email:{' '}
-            <a href='mailto:cs@smartliferewards.com.au' className='text-[#FFDC75] hover:underline'>
-                cs@smartliferewards.com.au
-            </a>
-            <br />
-            Website:{' '}
-            <Link href='/contact' className='text-[#FFDC75] hover:underline'>
-                Smart Life Rewards Website Contact Page
-            </Link>
-        </p>
-    </LegalContactCard>
+    <p>
+        Privacy Contact — Smart Life Rewards
+        <br />
+        SLR Life Pty Ltd
+        <br />
+        28 Welcome Parade, Wyndham VIC 3024, Australia
+        <br />
+        Email: <MailLink />
+        <br />
+        Website: Smart Life Rewards Website Contact Page
+    </p>
 );
 
 const sections: LegalSection[] = [
@@ -61,9 +46,10 @@ const sections: LegalSection[] = [
                     and associated services.
                 </Term>
                 <Term term='Member'>
-                    means a person registered with SLR, including an eligible Visitor, Red Member or Blue Member.
+                    means a person registered with SLR who holds an eligible Red Membership, Blue Membership, or both.
+                    &ldquo;Red Membership&rdquo; and &ldquo;Blue Membership&rdquo; encompass all associated subscription
+                    sub-tiers offered by SLR (including, but not limited to, Standard, Plus, Premium, and Elite levels).
                 </Term>
-                <Term term='Visitor'>means a person registered for a free SLR Visitor Membership.</Term>
                 <Term term='Paid Member'>means a Member holding an active paid Red or Blue Membership.</Term>
                 <Term term='Member Account'>
                     means the single personal SLR account established for a registered individual and identified through
@@ -74,18 +60,17 @@ const sections: LegalSection[] = [
                     opinion about an identified individual, or an individual who is reasonably identifiable.
                 </Term>
                 <Term term='Promotional Activities'>
-                    includes daily, weekly, monthly, Visitor, bonus and special promotions, Promotional Draws,
-                    giveaways, promotional rewards, Spin Wheel activities, referral promotions, Member benefits and
-                    other promotional campaigns conducted or administered by SLR.
+                    means daily, weekly, monthly, bonus and special promotions, Promotional Draws, giveaways,
+                    promotional rewards, Spin Wheel activities, referral promotions, Member benefits and other
+                    promotional campaigns conducted or administered by SLR.
                 </Term>
                 <Term term='Promotional Draw'>
-                    means an SLR daily, weekly, monthly, Visitor, bonus or special promotional game-of-chance activity.
+                    means an SLR daily, weekly, monthly, bonus or special promotional game-of-chance activity.
                 </Term>
-                <Term term='Token'>
+                <Term term='Entry'>
                     means a promotional participation allocation associated with an eligible SLR Membership level or
-                    Promotional Activity, as described in the applicable SLR Terms or Promotion Schedule. Where a
-                    Promotion Schedule specifies that Tokens are used for Promotional Draw participation, each eligible
-                    Token represents the promotional entry or chance specified in that Promotion Schedule.
+                    Promotional Activity, as described in the applicable SLR Terms or Promotion Schedule. Each eligible
+                    Entry represents the promotional chance specified in that Promotion Schedule.
                 </Term>
                 <Term term='Prize Pool'>
                     means the stated total value of prizes allocated to the promotion, period, Membership category or
@@ -120,8 +105,6 @@ const sections: LegalSection[] = [
                 </p>
                 <List
                     items={[
-                        'SLR Memberships;',
-                        'Visitor registrations;',
                         'Red Membership;',
                         'Blue Membership;',
                         'Members participating in both Red and Blue Membership;',
@@ -129,9 +112,8 @@ const sections: LegalSection[] = [
                         'Website and application use;',
                         'Promotional Activities;',
                         'Daily, weekly and monthly Promotional Draws;',
-                        'Visitor, bonus and special promotions;',
-                        'Token allocations;',
-                        'Promotional entries;',
+                        'Bonus and special promotions;',
+                        'Promotional Entries;',
                         'Prize Pool administration;',
                         'Prize and winner administration;',
                         'Promotional odds and participation calculations;',
@@ -149,9 +131,11 @@ const sections: LegalSection[] = [
                 />
                 <p>
                     SLR intends to handle Personal Information in accordance with applicable Australian laws and
-                    regulatory requirements, including where applicable:
+                    regulatory requirements, including where applicable the Privacy Act 1988 (Cth), the Australian
+                    Privacy Principles, the Notifiable Data Breaches scheme, the Spam Act 2003 (Cth), Australian
+                    Consumer Law, applicable promotional and trade-promotion requirements, and other applicable
+                    Australian laws.
                 </p>
-                <List items={AUSTRALIAN_LAWS} />
                 <p>
                     Use of the Platform is subject to this Privacy Policy and other applicable SLR Terms &amp;
                     Conditions.
@@ -169,7 +153,6 @@ const sections: LegalSection[] = [
                 </p>
 
                 <Sub>3.1 Identity information</Sub>
-                <p>SLR may collect:</p>
                 <List
                     items={[
                         'Full name;',
@@ -184,7 +167,6 @@ const sections: LegalSection[] = [
                 />
 
                 <Sub>3.2 Contact information</Sub>
-                <p>SLR may collect:</p>
                 <List
                     items={[
                         'Email address;',
@@ -197,10 +179,8 @@ const sections: LegalSection[] = [
                 />
 
                 <Sub>3.3 Member Account &amp; Membership information</Sub>
-                <p>SLR may collect and maintain:</p>
                 <List
                     items={[
-                        'Visitor Membership status;',
                         'Red Membership status;',
                         'Blue Membership status;',
                         'Whether a Member participates in Red, Blue or both Membership tiers;',
@@ -218,18 +198,14 @@ const sections: LegalSection[] = [
                     ]}
                 />
 
-                <Sub>3.4 Promotional &amp; Token information</Sub>
-                <p>SLR may collect and maintain information concerning:</p>
+                <Sub>3.4 Promotional &amp; Entry information</Sub>
                 <List
                     items={[
-                        'Token allocations;',
+                        'Entry allocations;',
                         'Promotional entries;',
                         'Red promotional participation;',
                         'Blue promotional participation;',
-                        'Visitor promotional participation;',
-                        'Daily Promotional Draws;',
-                        'Weekly Promotional Draws;',
-                        'Monthly Promotional Draws;',
+                        'Daily, weekly and monthly Promotional Draws;',
                         'Bonus promotions;',
                         'Special promotions;',
                         'Spin Wheel participation;',
@@ -240,13 +216,12 @@ const sections: LegalSection[] = [
                         'Promotional participation history;',
                         'Prize Pool administration;',
                         'Number of promotional opportunities;',
-                        'Entry and Token verification; and',
+                        'Entry verification; and',
                         'Records used to calculate or verify published promotional odds.'
                     ]}
                 />
 
                 <Sub>3.5 Prize &amp; winner information</Sub>
-                <p>SLR may collect:</p>
                 <List
                     items={[
                         'Prize claim information;',
@@ -260,13 +235,13 @@ const sections: LegalSection[] = [
                         'Bank account or PayID information required for prize payment;',
                         'Winner-notification records;',
                         'Prize-payment records;',
-                        'Prize-delivery information; and',
-                        'Information required for legally required winner publication, auditing or reporting.'
+                        'Prize-delivery information;',
+                        'Information required for legally required winner publication, auditing or reporting; and',
+                        "Information used for promotional winner announcements (for example, publishing a winner's first name and last initial on social media or email)."
                     ]}
                 />
 
                 <Sub>3.6 Billing &amp; payment information</Sub>
-                <p>SLR may collect limited billing and transaction-related information including:</p>
                 <List
                     items={[
                         'Stripe transaction references;',
@@ -287,7 +262,6 @@ const sections: LegalSection[] = [
                 </p>
 
                 <Sub>3.7 Member benefits, discounts &amp; Partner information</Sub>
-                <p>SLR may maintain records relating to:</p>
                 <List
                     items={[
                         'Member-benefit eligibility;',
@@ -297,13 +271,13 @@ const sections: LegalSection[] = [
                         'Voucher or grocery rewards;',
                         'Promotional rewards;',
                         'Merchandise;',
-                        'Community benefits; and',
+                        'Community benefits;',
+                        'E-books, guides, and digital content access; and',
                         'Other SLR benefits.'
                     ]}
                 />
 
                 <Sub>3.8 Technical &amp; Platform information</Sub>
-                <p>SLR may automatically collect information including:</p>
                 <List
                     items={[
                         'Device information;',
@@ -328,14 +302,13 @@ const sections: LegalSection[] = [
         )
     },
     {
-        heading: 'How Personal Information is collected',
+        heading: 'How personal information is collected',
         body: (
             <>
                 <p>SLR may collect Personal Information directly from individuals when they:</p>
                 <List
                     items={[
                         'Create an SLR Member Account;',
-                        'Register as a Visitor;',
                         'Join Red Membership;',
                         'Join Blue Membership;',
                         'Hold both Red and Blue Membership;',
@@ -344,7 +317,7 @@ const sections: LegalSection[] = [
                         'Cancel Membership;',
                         'Use the SLR website, app or Member portal;',
                         'Participate in Promotional Activities;',
-                        'Receive or use Tokens;',
+                        'Receive or use Entries;',
                         'Participate in Promotional Draws;',
                         'Use the Spin Wheel;',
                         'Use referral, tag-a-friend or promotional codes;',
@@ -359,22 +332,10 @@ const sections: LegalSection[] = [
                 />
                 <p>
                     SLR may also receive Personal Information from Third-Party Providers where reasonably necessary to
-                    administer:
+                    administer Membership, payments, Promotional Activities, Promotional Draws, Member benefits,
+                    identity verification, winner verification, fraud-prevention processes, customer communications, or
+                    legal and regulatory compliance.
                 </p>
-                <List
-                    items={[
-                        'Membership;',
-                        'Payments;',
-                        'Promotional Activities;',
-                        'Promotional Draws;',
-                        'Member benefits;',
-                        'Identity verification;',
-                        'Winner verification;',
-                        'Fraud-prevention processes;',
-                        'Customer communications; or',
-                        'Legal and regulatory compliance.'
-                    ]}
-                />
             </>
         )
     },
@@ -386,7 +347,6 @@ const sections: LegalSection[] = [
                 <List
                     items={[
                         'Establishing and administering Member Accounts;',
-                        'Administering Visitor Membership;',
                         'Administering Red Membership;',
                         'Administering Blue Membership;',
                         'Administering Members who hold both Red and Blue Membership;',
@@ -395,12 +355,12 @@ const sections: LegalSection[] = [
                         'Managing payment failures;',
                         'Processing cancellations and refunds;',
                         'Managing upgrades and downgrades;',
-                        'Allocating Tokens;',
+                        'Allocating Entries;',
                         'Recording promotional entries;',
                         'Administering Promotional Draws;',
                         'Confirming promotional eligibility;',
                         'Administering daily, weekly and monthly Promotional Draws;',
-                        'Administering Visitor, bonus and special promotions;',
+                        'Administering bonus and special promotions;',
                         'Calculating and administering Prize Pools;',
                         'Calculating, verifying and publishing promotional participation figures and odds;',
                         'Selecting and verifying winners;',
@@ -423,19 +383,12 @@ const sections: LegalSection[] = [
                         'Sending marketing communications where permitted by law.'
                     ]}
                 />
-                <p>SLR may also use aggregated or de-identified information for:</p>
-                <List
-                    items={[
-                        'Business analysis;',
-                        'Platform improvements;',
-                        'Promotional planning;',
-                        'Statistical analysis;',
-                        'Forecasting;',
-                        'Prize planning; and',
-                        'Other legitimate business purposes,'
-                    ]}
-                />
-                <p>provided individuals are not reasonably identifiable from that information.</p>
+                <p>
+                    SLR may also use aggregated or de-identified information for business analysis, Platform
+                    improvements, promotional planning, statistical analysis, forecasting, prize planning and other
+                    legitimate business purposes, provided individuals are not reasonably identifiable from that
+                    information.
+                </p>
             </>
         )
     },
@@ -445,39 +398,21 @@ const sections: LegalSection[] = [
             <>
                 <p>SLR generally operates on the basis of one person holding one SLR Member Account.</p>
                 <p>Subject to eligibility, one Member Account may hold:</p>
-                <List
-                    items={[
-                        'Visitor Membership;',
-                        'Red Membership;',
-                        'Blue Membership; or',
-                        'Red and Blue Membership concurrently.'
-                    ]}
-                />
+                <List items={['Red Membership;', 'Blue Membership; or', 'Red and Blue Membership concurrently.']} />
                 <p>
                     A Member does not need to create a second SLR account or provide a second email address merely to
                     participate in both Red and Blue Membership.
                 </p>
                 <p>
                     Where a Member holds both Red and Blue Memberships, SLR may separately record information associated
-                    with each tier, including:
+                    with each tier, including Membership status, Membership payments, Membership benefits, Entries,
+                    Promotional Draw eligibility and tier-specific entitlements.
                 </p>
-                <List
-                    items={[
-                        'Membership status;',
-                        'Membership payments;',
-                        'Membership benefits;',
-                        'Tokens;',
-                        'Promotional entries;',
-                        'Promotional Draw eligibility; and',
-                        'Tier-specific entitlements.'
-                    ]}
-                />
                 <p>
                     For SLR&rsquo;s unique individual Member count, a person holding both Red and Blue Membership
-                    generally remains one individual SLR Member unless a published statistic expressly measures:
+                    generally remains one individual SLR Member unless a published statistic expressly measures
+                    Memberships, Membership tiers, Entries or tier participation rather than individual people.
                 </p>
-                <List items={['Memberships;', 'Membership tiers;', 'Tokens;', 'Entries; or', 'Tier participation']} />
-                <p>rather than individual people.</p>
                 <p>
                     SLR may use identity, email, telephone, payment, technical or other relevant information to detect
                     and manage suspected duplicate accounts, fraud or misuse.
@@ -486,27 +421,15 @@ const sections: LegalSection[] = [
         )
     },
     {
-        heading: 'Promotional odds, Member numbers & Prize Pools',
+        heading: 'Promotional odds, member numbers & prize pools',
         body: (
             <>
                 <p>
                     SLR may use Membership and promotional participation information to calculate and publish
-                    information concerning:
+                    information concerning the number of Members, Red and Blue Membership participation, the number and
+                    frequency of prizes, Prize Pools, the number of promotional Entries, promotional participation,
+                    promotional odds and annualised promotional probabilities.
                 </p>
-                <List
-                    items={[
-                        'Number of Members;',
-                        'Visitor participation;',
-                        'Red Membership participation;',
-                        'Blue Membership participation;',
-                        'Number and frequency of prizes;',
-                        'Prize Pools;',
-                        'Number of promotional entries or Tokens;',
-                        'Promotional participation;',
-                        'Promotional odds; and',
-                        'Annualised promotional probabilities.'
-                    ]}
-                />
                 <p>
                     Where annualised odds are calculated across the eligible Red and Blue Membership tiers, SLR may use
                     relevant information concerning:
@@ -514,7 +437,7 @@ const sections: LegalSection[] = [
                 <List
                     items={[
                         'Number of eligible Members;',
-                        'Valid entries or Tokens;',
+                        'Valid Entries;',
                         'Red and Blue participation;',
                         'Number of prizes;',
                         'Frequency of prizes;',
@@ -525,30 +448,23 @@ const sections: LegalSection[] = [
                 <p>
                     Where SLR publishes Membership numbers, odds or other promotional statistics to the public, SLR
                     intends to use aggregated or de-identified information rather than identifying individual Members,
-                    except where identification is:
+                    except where identification is required for winner publication, required by law, necessary for prize
+                    administration or otherwise authorised. For promotional winner announcements on the SLR website,
+                    emails, or social media channels, SLR will generally only publish the winner&rsquo;s first name and
+                    the first letter of their last name to protect their privacy.
                 </p>
-                <List
-                    items={[
-                        'Required for winner publication;',
-                        'Required by law;',
-                        'Necessary for prize administration; or',
-                        'Otherwise authorised.'
-                    ]}
-                />
                 <p>An advertised overall SLR Prize Pool may include prizes allocated across:</p>
                 <List
                     items={[
-                        'Visitor promotions;',
                         'Red Member promotions;',
                         'Blue Member promotions;',
                         'Daily Promotional Draws;',
                         'Weekly Promotional Draws;',
                         'Monthly Promotional Draws;',
                         'Bonus Draws; and',
-                        'Special Promotions,'
+                        'Special Promotions, where stated by SLR.'
                     ]}
                 />
-                <p>where stated by SLR.</p>
             </>
         )
     },
@@ -581,11 +497,8 @@ const sections: LegalSection[] = [
                 />
                 <p>
                     Personal Information disclosed to a Third-Party Provider will generally be limited to information
-                    reasonably required for that provider to perform the relevant service.
-                </p>
-                <p>
-                    Third-Party Providers may have their own privacy policies, security arrangements, terms and legal
-                    obligations.
+                    reasonably required for that provider to perform the relevant service. Third-Party Providers may
+                    have their own privacy policies, security arrangements, terms and legal obligations.
                 </p>
                 <p>
                     Where applicable, SLR will take reasonable steps required by Australian privacy law when engaging
@@ -600,11 +513,9 @@ const sections: LegalSection[] = [
             <>
                 <p>
                     Membership payments may be processed through authorised third-party payment processors including
-                    Stripe, PayPal or another approved payment provider.
-                </p>
-                <p>
-                    Those providers may independently collect, process and retain payment-related Personal Information
-                    in accordance with their own privacy policies and terms.
+                    Stripe, PayPal or another approved payment provider. Those providers may independently collect,
+                    process and retain payment-related Personal Information in accordance with their own privacy
+                    policies and terms.
                 </p>
                 <p>
                     SLR does not ordinarily store complete payment-card details where those details are handled by the
@@ -612,23 +523,13 @@ const sections: LegalSection[] = [
                 </p>
                 <p>
                     Where SLR pays a prize using PayID, electronic funds transfer or another banking method, SLR may
-                    collect information reasonably necessary to:
+                    collect information reasonably necessary to verify the winner, verify account ownership, process the
+                    payment and maintain appropriate payment records.
                 </p>
-                <List
-                    items={[
-                        'Verify the winner;',
-                        'Verify account ownership;',
-                        'Process the payment; and',
-                        'Maintain appropriate payment records.'
-                    ]}
-                />
                 <p>
                     Members and prize recipients are responsible for ensuring payment and banking information they
-                    provide is accurate and current.
-                </p>
-                <p>
-                    SLR will take reasonable steps to address payment issues within its control but cannot guarantee the
-                    operation of independent banking or payment systems.
+                    provide is accurate and current. SLR will take reasonable steps to address payment issues within its
+                    control but cannot guarantee the operation of independent banking or payment systems.
                 </p>
             </>
         )
@@ -637,18 +538,9 @@ const sections: LegalSection[] = [
         heading: 'Cookies, analytics & digital technologies',
         body: (
             <>
-                <p>SLR&rsquo;s Platform may use:</p>
-                <List
-                    items={[
-                        'Cookies;',
-                        'Analytics technologies;',
-                        'Session technologies;',
-                        'Device information;',
-                        'Security technologies;',
-                        'Advertising or marketing measurement technologies; and',
-                        'Similar digital technologies.'
-                    ]}
-                />
+                <p>
+                    SLR&rsquo;s Platform may use cookies, analytics, session, device, security and similar technologies.
+                </p>
                 <p>These technologies may be used for:</p>
                 <List
                     items={[
@@ -665,9 +557,11 @@ const sections: LegalSection[] = [
                         'Understanding how SLR services are used.'
                     ]}
                 />
-                <p>Users may be able to restrict certain cookies through browser or device settings.</p>
-                <p>Disabling cookies may affect some Platform features.</p>
-                <p>Where required, SLR may provide additional cookie notices or consent controls.</p>
+                <p>
+                    Users may be able to restrict certain cookies through browser or device settings. Disabling cookies
+                    may affect some Platform features. Where required, SLR may provide additional cookie notices or
+                    consent controls.
+                </p>
             </>
         )
     },
@@ -675,28 +569,15 @@ const sections: LegalSection[] = [
         heading: 'Marketing, email & SMS communications',
         body: (
             <>
-                <p>SLR may send operational communications relating to:</p>
-                <List
-                    items={[
-                        'Member Accounts;',
-                        'Membership;',
-                        'Membership payments;',
-                        'Membership renewals;',
-                        'Security;',
-                        'Promotional Draw administration;',
-                        'Prize notifications;',
-                        'Member benefits;',
-                        'Customer support; and',
-                        'Important Platform information.'
-                    ]}
-                />
                 <p>
-                    SLR may also send commercial marketing or promotional email, SMS or other electronic communications
-                    where permitted by applicable law.
+                    SLR may send operational communications relating to Member Accounts, Membership, Membership
+                    payments, Membership renewals, security, Promotional Draw administration, prize notifications,
+                    Member benefits, customer support and important Platform information.
                 </p>
                 <p>
-                    Where required, SLR will obtain or rely upon an appropriate form of consent before sending
-                    commercial electronic marketing.
+                    SLR may also send commercial marketing or promotional email, SMS or other electronic communications
+                    where permitted by applicable law. Where required, SLR will obtain or rely upon an appropriate form
+                    of consent before sending commercial electronic marketing.
                 </p>
                 <p>
                     Creating an account, making an enquiry or completing an isolated transaction does not automatically
@@ -711,22 +592,15 @@ const sections: LegalSection[] = [
                     ]}
                 />
                 <p>SLR will process valid unsubscribe requests within the period required by applicable law.</p>
-                <p>Unsubscribing from marketing does not prevent SLR from sending necessary:</p>
-                <List
-                    items={[
-                        'Account communications;',
-                        'Security communications;',
-                        'Payment communications;',
-                        'Membership administration communications;',
-                        'Prize or winner communications; or',
-                        'Other service-related communications.'
-                    ]}
-                />
+                <p>
+                    Unsubscribing from marketing does not prevent SLR from sending necessary account, security, payment,
+                    Membership administration, prize or winner, or other service-related communications.
+                </p>
             </>
         )
     },
     {
-        heading: 'Disclosure of Personal Information',
+        heading: 'Disclosure of personal information',
         body: (
             <>
                 <p>SLR may disclose Personal Information where reasonably necessary:</p>
@@ -747,7 +621,7 @@ const sections: LegalSection[] = [
                         'To courts or tribunals;',
                         'To law-enforcement or government authorities where legally required;',
                         'In connection with an authorised corporate restructure, merger, acquisition, financing or sale; or',
-                        'With the person&rsquo;s consent or where otherwise permitted by law.'
+                        "With the person's consent or where otherwise permitted by law."
                     ]}
                 />
                 <p>
@@ -762,33 +636,27 @@ const sections: LegalSection[] = [
         body: (
             <>
                 <p>
-                    Some Third-Party Providers used by SLR may operate infrastructure, personnel or data-storage systems
-                    outside Australia.
+                    SLR primarily hosts and stores data within Australia (including via Digital Ocean Sydney). However,
+                    some Third-Party Providers used by SLR (such as payment processors and mailing services) may operate
+                    infrastructure, personnel or data-storage systems outside Australia.
                 </p>
                 <p>
                     Personal Information may therefore in some circumstances be processed, accessed or stored outside
-                    Australia.
+                    Australia. Where SLR is likely to disclose Personal Information to an overseas recipient, SLR will
+                    take reasonable steps required by applicable Australian privacy law.
                 </p>
-                <p>
-                    Where SLR is likely to disclose Personal Information to an overseas recipient, SLR will take
-                    reasonable steps required by applicable Australian privacy law.
-                </p>
-                <p>
-                    Where practicable, SLR will identify in this Privacy Policy or an applicable collection notice the
-                    countries in which overseas recipients are likely to be located.
-                </p>
-                <p>The relevant countries may depend on:</p>
+                <p>The countries in which these overseas recipients are likely to be located include:</p>
                 <List
                     items={[
-                        'SLR&rsquo;s hosting provider;',
-                        'Cloud-services provider;',
-                        'Communications provider;',
-                        'Analytics provider;',
-                        'Payment provider;',
-                        'Software provider; and',
-                        'Other Third-Party Providers used at the relevant time.'
+                        'United States of America (for example, Stripe); and',
+                        'European Union, including France (for example, Mailjet).'
                     ]}
                 />
+                <p>
+                    The specific countries may additionally depend on cloud-services providers, communications
+                    providers, analytics providers, payment providers, software providers and other Third-Party
+                    Providers used at the relevant time.
+                </p>
                 <p>
                     SLR will periodically review this section as its Third-Party Providers and data-hosting arrangements
                     are confirmed or changed.
@@ -802,18 +670,9 @@ const sections: LegalSection[] = [
             <>
                 <p>
                     SLR intends to take reasonable administrative, technical and organisational steps to protect
-                    Personal Information from:
+                    Personal Information from misuse, interference, loss, unauthorised access, unauthorised modification
+                    and unauthorised disclosure.
                 </p>
-                <List
-                    items={[
-                        'Misuse;',
-                        'Interference;',
-                        'Loss;',
-                        'Unauthorised access;',
-                        'Unauthorised modification; and',
-                        'Unauthorised disclosure.'
-                    ]}
-                />
                 <p>Security measures may include, where appropriate:</p>
                 <List
                     items={[
@@ -854,21 +713,13 @@ const sections: LegalSection[] = [
                 />
                 <p>
                     Where the Notifiable Data Breaches scheme applies and SLR experiences an eligible data breach, SLR
-                    will comply with applicable requirements concerning notification to:
+                    will comply with applicable requirements concerning notification to affected individuals and the
+                    Office of the Australian Information Commissioner.
                 </p>
-                <List items={['Affected individuals; and', 'The Office of the Australian Information Commissioner.']} />
-                <p>SLR may also notify relevant:</p>
-                <List
-                    items={[
-                        'Regulators;',
-                        'Payment providers;',
-                        'Service providers;',
-                        'Insurers;',
-                        'Professional advisers; or',
-                        'Law-enforcement authorities'
-                    ]}
-                />
-                <p>where required or reasonably necessary.</p>
+                <p>
+                    SLR may also notify relevant regulators, payment providers, service providers, insurers,
+                    professional advisers or law-enforcement authorities where required or reasonably necessary.
+                </p>
             </>
         )
     },
@@ -876,26 +727,13 @@ const sections: LegalSection[] = [
         heading: 'Data retention & deletion',
         body: (
             <>
-                <p>SLR may retain Personal Information and related records for as long as reasonably necessary for:</p>
-                <List
-                    items={[
-                        'Membership administration;',
-                        'Payment administration;',
-                        'Promotional administration;',
-                        'Token and entry records;',
-                        'Prize administration;',
-                        'Winner verification;',
-                        'Fraud prevention;',
-                        'Security;',
-                        'Audit requirements;',
-                        'Taxation and accounting requirements;',
-                        'Regulatory obligations;',
-                        'Complaints;',
-                        'Dispute resolution;',
-                        'Legal proceedings; and',
-                        'Other lawful business requirements.'
-                    ]}
-                />
+                <p>
+                    SLR may retain Personal Information and related records for as long as reasonably necessary for
+                    Membership administration, payment administration, promotional administration, Entry records, prize
+                    administration, winner verification, fraud prevention, security, audit requirements, taxation and
+                    accounting requirements, regulatory obligations, complaints, dispute resolution, legal proceedings
+                    and other lawful business requirements.
+                </p>
                 <p>Records retained may include:</p>
                 <List
                     items={[
@@ -903,7 +741,7 @@ const sections: LegalSection[] = [
                         'Membership records;',
                         'Payment references;',
                         'Promotional participation;',
-                        'Token and entry records;',
+                        'Entry records;',
                         'Prize and winner records;',
                         'Communications;',
                         'Compliance records;',
@@ -921,22 +759,21 @@ const sections: LegalSection[] = [
         )
     },
     {
-        heading: 'Access & correction of Personal Information',
+        heading: 'Access & correction of personal information',
         body: (
             <>
                 <p>Individuals may request access to Personal Information SLR holds about them.</p>
-                <p>Individuals may also request correction of Personal Information that they believe is:</p>
-                <List items={['Inaccurate;', 'Out of date;', 'Incomplete;', 'Irrelevant; or', 'Misleading.']} />
+                <p>
+                    Individuals may also request correction of Personal Information that they believe is inaccurate, out
+                    of date, incomplete, irrelevant or misleading.
+                </p>
                 <p>Requests may be submitted to:</p>
                 <PrivacyContact />
                 <p>
                     SLR may require reasonable evidence of identity before providing access to or correcting Personal
-                    Information.
-                </p>
-                <p>SLR will respond to requests in accordance with applicable law.</p>
-                <p>
-                    If SLR refuses an access or correction request where permitted by law, SLR will provide any reasons
-                    or notices required by applicable law.
+                    Information. SLR will respond to requests in accordance with applicable law. If SLR refuses an
+                    access or correction request where permitted by law, SLR will provide any reasons or notices
+                    required by applicable law.
                 </p>
             </>
         )
@@ -990,19 +827,11 @@ const sections: LegalSection[] = [
                     Closure of a Member Account does not necessarily require SLR to immediately delete all information
                     associated with that account.
                 </p>
-                <p>SLR may retain relevant records where reasonably necessary or legally required for:</p>
-                <List
-                    items={[
-                        'Payment and financial records;',
-                        'Prize administration;',
-                        'Promotional audit records;',
-                        'Fraud prevention;',
-                        'Security;',
-                        'Regulatory compliance;',
-                        'Legal claims; and',
-                        'Dispute resolution.'
-                    ]}
-                />
+                <p>
+                    SLR may retain relevant records where reasonably necessary or legally required for payment and
+                    financial records, prize administration, promotional audit records, fraud prevention, security,
+                    regulatory compliance, legal claims and dispute resolution.
+                </p>
                 <p>
                     Where a Member holds both Red and Blue Membership, the Member should clearly state whether they wish
                     to:
@@ -1024,11 +853,8 @@ const sections: LegalSection[] = [
             <>
                 <p>
                     Unless otherwise expressly displayed, paid SLR Membership operates on a recurring 28-day Membership
-                    Cycle.
-                </p>
-                <p>
-                    Members may cancel future recurring Membership payments using the cancellation method provided by
-                    SLR.
+                    Cycle. Members may cancel future recurring Membership payments using the cancellation method
+                    provided by SLR.
                 </p>
                 <p>
                     Cancellation generally prevents the next recurring Membership payment and does not automatically
@@ -1038,13 +864,9 @@ const sections: LegalSection[] = [
                     Where a Member holds both Red and Blue Membership, each tier may be administered and cancelled
                     separately within the same Member Account.
                 </p>
-                <p>Any entitlement to:</p>
-                <List items={['A refund;', 'Cancellation;', 'Remedy; or', 'Other consumer right']} />
                 <p>
-                    will be determined in accordance with SLR&rsquo;s General Terms &amp; Conditions and applicable
-                    Australian Consumer Law.
-                </p>
-                <p>
+                    Any entitlement to a refund, cancellation, remedy or other consumer right will be determined in
+                    accordance with SLR&rsquo;s General Terms &amp; Conditions and applicable Australian Consumer Law.
                     Where SLR approves a refund, processing times may depend on the applicable payment provider and
                     financial institution.
                 </p>
@@ -1056,26 +878,20 @@ const sections: LegalSection[] = [
         body: (
             <>
                 <p>
-                    Paid SLR Membership and paid-member Promotional Draw participation are intended for persons aged 18
-                    years or older unless expressly stated otherwise.
-                </p>
-                <p>
-                    Specific free Visitor promotions may have separate age or eligibility conditions where permitted by
-                    law.
+                    Paid SLR Membership and Promotional Draw participation are intended for persons aged 18 years or
+                    older unless expressly stated otherwise. Specific free promotions may have separate age or
+                    eligibility conditions where permitted by law.
                 </p>
                 <p>
                     SLR does not knowingly seek to collect Personal Information from children contrary to applicable
-                    law.
-                </p>
-                <p>
-                    If SLR becomes aware that Personal Information has been collected in circumstances where it should
-                    not have been collected, SLR will take reasonable steps appropriate to the circumstances.
+                    law. If SLR becomes aware that Personal Information has been collected in circumstances where it
+                    should not have been collected, SLR will take reasonable steps appropriate to the circumstances.
                 </p>
             </>
         )
     },
     {
-        heading: 'Third-party links & Partner services',
+        heading: 'Third-party links & partner services',
         body: (
             <>
                 <p>The SLR Platform may contain links to:</p>
@@ -1090,10 +906,10 @@ const sections: LegalSection[] = [
                         'Other third-party services.'
                     ]}
                 />
-                <p>Unless expressly stated otherwise, those services are independent from SLR.</p>
                 <p>
-                    SLR is not responsible for independent third parties&rsquo; privacy practices, website content or
-                    information-handling procedures.
+                    Unless expressly stated otherwise, those services are independent from SLR. SLR is not responsible
+                    for independent third parties&rsquo; privacy practices, website content or information-handling
+                    procedures.
                 </p>
                 <p>
                     Members should review the relevant third party&rsquo;s privacy policy before providing Personal
@@ -1106,17 +922,11 @@ const sections: LegalSection[] = [
         heading: 'Community & charitable initiatives',
         body: (
             <>
-                <p>SLR may support independent community or charitable organisations through:</p>
-                <List
-                    items={[
-                        'Donations;',
-                        'Fundraising initiatives;',
-                        'Promotional support;',
-                        'Food-support initiatives;',
-                        'Community campaigns; or',
-                        'Other initiatives.'
-                    ]}
-                />
+                <p>
+                    SLR may support independent community or charitable organisations through donations, fundraising
+                    initiatives, promotional support, food-support initiatives, community campaigns or other
+                    initiatives.
+                </p>
                 <p>
                     Where Personal Information is specifically collected in connection with a community, charitable or
                     fundraising activity, additional privacy notices or conditions may apply.
@@ -1124,15 +934,9 @@ const sections: LegalSection[] = [
                 <p>
                     SLR will not disclose a Member&rsquo;s Personal Information to a charity or community organisation
                     for that organisation&rsquo;s independent marketing merely because SLR supports or donates to that
-                    organisation unless:
+                    organisation unless the Member has authorised the disclosure, the disclosure is reasonably expected
+                    and permitted, or the disclosure is otherwise permitted or required by law.
                 </p>
-                <List
-                    items={[
-                        'The Member has authorised the disclosure;',
-                        'The disclosure is reasonably expected and permitted; or',
-                        'The disclosure is otherwise permitted or required by law.'
-                    ]}
-                />
             </>
         )
     },
@@ -1152,7 +956,7 @@ const sections: LegalSection[] = [
                         'Membership administration;',
                         'Payment processing;',
                         'Promotional eligibility;',
-                        'Token or entry administration;',
+                        'Entry administration;',
                         'Winner verification;',
                         'Prize payment or delivery;',
                         'Fraud prevention;',
@@ -1181,13 +985,12 @@ const sections: LegalSection[] = [
                         'Platform changes;',
                         'Regulatory developments;',
                         'Changes in privacy law; or',
-                        'Changes in SLR&rsquo;s Personal Information handling practices.'
+                        "Changes in SLR's Personal Information handling practices."
                     ]}
                 />
-                <p>The current Privacy Policy will be published on the SLR website.</p>
                 <p>
-                    Where a material change requires additional notice or consent under applicable law, SLR will take
-                    appropriate steps.
+                    The current Privacy Policy will be published on the SLR website. Where a material change requires
+                    additional notice or consent under applicable law, SLR will take appropriate steps.
                 </p>
                 <p>
                     The Last Updated date displayed at the beginning of this Privacy Policy identifies the date of the
@@ -1200,32 +1003,19 @@ const sections: LegalSection[] = [
         heading: 'Contact information & Australian privacy rights',
         body: (
             <>
-                <div className='text-slr-muted rounded-xl border border-white/10 bg-black/20 p-4 text-sm'>
-                    <p className='font-semibold text-white/90'>Smart Life Rewards (SLR)</p>
-                    <p className='mt-1'>
-                        SLR Life Pty Ltd Trading as Smart Life Rewards
-                        <br />
-                        ABN: 99 696 467 473
-                    </p>
-                    <p className='mt-2'>
-                        Business &amp; Privacy Correspondence Address:
-                        <br />
-                        28 Welcome Parade
-                        <br />
-                        Wyndham VIC 3024 Australia
-                    </p>
-                    <p className='mt-2'>
-                        Privacy &amp; Customer Support Email:{' '}
-                        <a href='mailto:cs@smartliferewards.com.au' className='text-[#FFDC75] hover:underline'>
-                            cs@smartliferewards.com.au
-                        </a>
-                        <br />
-                        Website Support:{' '}
-                        <Link href='/contact' className='text-[#FFDC75] hover:underline'>
-                            Smart Life Rewards Website Contact Page
-                        </Link>
-                    </p>
-                </div>
+                <p>
+                    Smart Life Rewards (SLR)
+                    <br />
+                    SLR Life Pty Ltd trading as Smart Life Rewards
+                    <br />
+                    ABN 99 696 467 473
+                    <br />
+                    Business &amp; privacy correspondence address: 28 Welcome Parade, Wyndham VIC 3024, Australia
+                    <br />
+                    Privacy &amp; customer support email: <MailLink />
+                    <br />
+                    Website support: Smart Life Rewards Website Contact Page
+                </p>
                 <p>
                     Nothing in this Privacy Policy is intended to exclude, restrict or modify privacy, consumer or other
                     legal rights that cannot lawfully be excluded.
@@ -1263,14 +1053,11 @@ const PrivacyPage = () => {
                 intro={
                     <>
                         <p>
-                            Issued by SLR Life Pty Ltd trading as Smart Life Rewards (SLR) Australia. ABN 99 696 467
+                            Issued by SLR Life Pty Ltd trading as Smart Life Rewards (SLR), Australia. ABN 99 696 467
                             473. Business address: 28 Welcome Parade, Wyndham VIC 3024, Australia.
                         </p>
                         <p className='mt-3'>
-                            Privacy &amp; customer support email:{' '}
-                            <a href='mailto:cs@smartliferewards.com.au' className='text-[#FFDC75] hover:underline'>
-                                cs@smartliferewards.com.au
-                            </a>
+                            Privacy &amp; customer support email: <MailLink />
                         </p>
                     </>
                 }

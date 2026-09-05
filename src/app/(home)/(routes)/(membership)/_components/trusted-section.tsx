@@ -1,7 +1,11 @@
 import Image from 'next/image';
 
+import { Reveal } from '@/components/common/reveal';
 import SectionEyebrow from '@/components/common/section-eyebrow';
 import SectionHeading from '@/components/common/section-heading';
+
+/** Cards land one after another rather than as a block, so the eye reads them in order. */
+const CARD_DELAY = [0.4, 1.1, 1.8];
 
 type Feature = {
     number: string;
@@ -61,9 +65,10 @@ const TrustedSection = () => {
                 </p>
 
                 <div className='mt-12 grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3'>
-                    {features.map((feature) => (
-                        <div
+                    {features.map((feature, index) => (
+                        <Reveal
                             key={feature.number}
+                            delay={CARD_DELAY[index] ?? 0}
                             className='bg-card-dark-navy shadow-card-soft flex h-full flex-col rounded-2xl border border-[#A0B4D259] p-6'>
                             <div className='flex items-start justify-between'>
                                 <span className='font-bebas-neue text-gradient-gold text-[44px] leading-none font-extrabold'>
@@ -108,7 +113,7 @@ const TrustedSection = () => {
                                     </div>
                                 )}
                             </div>
-                        </div>
+                        </Reveal>
                     ))}
                 </div>
             </div>

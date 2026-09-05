@@ -1,15 +1,19 @@
 import Image from 'next/image';
-import Link from 'next/link';
 
+import GoldOutlineButton from '@/components/common/gold-outline-button';
 import GoldPillButton from '@/components/common/gold-pill-button';
+import { FadeUp, MaskSlideUp } from '@/components/common/reveal';
 import { compareAnnouncements, getRunningText } from '@/lib/api/resources/announcements';
 
 const FALLBACK_TICKER = [
     '$2,100 PRIZE POOL',
     'ONLY 100 MEMBERS COMPETING',
     'ODDS 9 IN 10 P/A',
-    '4-6 PRIZE DRAWS EVERY FRIDAY'
+    'UP TO 10 PRIZE DRAWS EVERY FRIDAY'
 ];
+
+// The headline pair lands first, then the strapline, then everything below it.
+const STEP = { headline: 0.2, strapline: 1.5, rest: 2.7 };
 
 async function loadTickerSegments(): Promise<string[]> {
     try {
@@ -44,25 +48,31 @@ const HeroSection = async () => {
                 </div>
 
                 <div className='mb-5 text-center'>
-                    <h1 className='text-xl font-semibold text-white uppercase md:text-2xl xl:text-3xl'>
-                        Australia&apos;s <span className='text-red-600'>Best Value</span>
-                    </h1>
-                    <h1 className='text-gradient-silver text-center text-[34px] leading-[100%] font-extrabold tracking-[0.03em] drop-shadow-[-3.78px_15.12px_33.65px_rgba(12,13,67,0.37)] [leading-trim:cap-height] sm:text-[54px] md:text-[64px] xl:text-[72px]'>
-                        REWARDS CLUB
-                    </h1>
+                    <MaskSlideUp delay={STEP.headline}>
+                        <h1 className='text-xl font-semibold text-white uppercase md:text-2xl xl:text-3xl'>
+                            Australia&apos;s <span className='text-red-600'>Best Value</span>
+                        </h1>
+                    </MaskSlideUp>
 
-                    <div className='mt-4 flex w-full items-center justify-center gap-2'>
-                        <div className='h-px w-8 bg-[linear-gradient(270deg,#FFFFFF_0%,#14171A_100%)]'></div>
+                    {/* The display drop-shadow spills well past the text box, so the clip needs headroom. */}
+                    <MaskSlideUp delay={STEP.headline} bleed={60}>
+                        <h1 className='text-gradient-silver text-center text-[34px] leading-[100%] font-extrabold tracking-[0.03em] drop-shadow-[-3.78px_15.12px_33.65px_rgba(12,13,67,0.37)] [leading-trim:cap-height] sm:text-[54px] md:text-[64px] xl:text-[72px]'>
+                            REWARDS CLUB
+                        </h1>
+                    </MaskSlideUp>
+
+                    <MaskSlideUp delay={STEP.strapline} className='mt-4 flex w-full items-center justify-center gap-2'>
+                        <div className='h-px w-8 bg-[linear-gradient(270deg,#FFFFFF_0%,#14171A_100%)]' />
 
                         <p className='text-xs font-semibold text-[#E8E9E9] uppercase md:text-sm'>
                             Helping Australians Beat the Cost of Living
                         </p>
 
-                        <div className='h-px w-8 bg-[linear-gradient(90deg,#FFFFFF_0%,#14171A_100%)]'></div>
-                    </div>
+                        <div className='h-px w-8 bg-[linear-gradient(90deg,#FFFFFF_0%,#14171A_100%)]' />
+                    </MaskSlideUp>
                 </div>
 
-                <div className='mb-8 flex justify-center'>
+                <FadeUp delay={STEP.rest} className='mb-8 flex justify-center'>
                     <Image
                         src='/images/slr-list-reward.webp'
                         alt='List SLR Rewards'
@@ -71,20 +81,24 @@ const HeroSection = async () => {
                         priority
                         className='h-auto w-auto'
                     />
-                </div>
+                </FadeUp>
 
-                <div className='mx-auto mt-8 flex w-full max-w-xs flex-col items-center gap-3 sm:max-w-none sm:flex-row sm:justify-center'>
-                    <GoldPillButton href='/sign-up' className='w-full sm:w-auto'>
+                <FadeUp
+                    delay={STEP.rest}
+                    className='mx-auto mt-8 flex w-full max-w-sm flex-row justify-center gap-2 px-2 sm:max-w-none sm:gap-4'>
+                    <GoldPillButton
+                        href='/sign-up'
+                        className='w-1/2 gap-1 px-2 py-2.5 text-[12px] whitespace-nowrap sm:w-auto sm:gap-2 sm:px-8 sm:text-base sm:whitespace-normal'>
                         JOIN NOW
                     </GoldPillButton>
-                    <Link
-                        href='/membership'
-                        className='inline-flex w-full items-center justify-center rounded-xl border border-[#FFD147] bg-[#FFD1471A] px-8 py-2.5 text-base font-bold tracking-wide text-[#FFDC75] uppercase shadow-[inset_0_1px_5px_rgba(255,220,117,0.15)] transition-all hover:bg-[#FFD147]/20 sm:w-auto lg:px-10 lg:py-3 lg:text-lg'>
-                        View Membership
-                    </Link>
-                </div>
+                    <GoldOutlineButton
+                        href='#current-prizes'
+                        className='w-1/2 px-2 py-2.5 text-[12px] whitespace-nowrap sm:w-auto sm:px-8 sm:text-base sm:whitespace-normal'>
+                        View Prizes
+                    </GoldOutlineButton>
+                </FadeUp>
 
-                <div className='relative mt-12 flex justify-center'>
+                <FadeUp delay={STEP.rest} className='relative mt-12 flex justify-center'>
                     <div className='relative w-full max-w-7xl'>
                         <Image
                             src='/images/giveaway-win.webp'
@@ -128,7 +142,7 @@ const HeroSection = async () => {
                             </div>
                         </div>
                     </div>
-                </div>
+                </FadeUp>
             </div>
         </section>
     );

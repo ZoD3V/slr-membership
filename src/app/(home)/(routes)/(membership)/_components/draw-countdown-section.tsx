@@ -5,7 +5,8 @@ import { useEffect, useState } from 'react';
 // Draws run Friday 8:00pm AEST. AEST is treated as a fixed UTC+10 offset, so the
 // countdown does not shift when the browser sits in another timezone.
 const AEST_OFFSET_MS = 10 * 60 * 60 * 1000;
-const FIRST_DRAW_MS = Date.UTC(2026, 8, 11, 10, 0, 0);
+// Competition Rules: cycle opens 11 Sep 2026, first draw 18 Sep 2026 at 8:00 PM AEST.
+const FIRST_DRAW_MS = Date.UTC(2026, 8, 18, 10, 0, 0);
 const FRIDAY = 5;
 const DRAW_HOUR_AEST = 20;
 
@@ -89,7 +90,7 @@ const DrawCountdownSection = () => {
                         aria-hidden='true'
                     />
                     <h2 className='font-bebas-neue m-0 max-w-[60%] text-center text-4xl leading-none font-medium tracking-wider uppercase sm:max-w-[70%] sm:text-5xl lg:text-[50px]'>
-                        <span className='text-gradient-gold'>Secure your entry before the Friday night draw!</span>
+                        <span className='text-gradient-gold'>Get your entries before the next draw!</span>
                     </h2>
                     <div
                         className='h-px w-12 shrink-0 sm:w-20 lg:w-32'

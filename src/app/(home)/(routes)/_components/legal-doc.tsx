@@ -3,6 +3,8 @@ import { ReactNode } from 'react';
 export type LegalSection = {
     heading: string;
     body: ReactNode;
+    /** Explicit clause number. Set it where the source document's numbering is not sequential. */
+    number?: number | string;
 };
 
 export const LegalSub = ({ children }: { children: ReactNode }) => (
@@ -52,7 +54,7 @@ const LegalDoc = ({ lastUpdated, intro, sections, contactEmail = 'cs@smartlifere
                         {sections.map((section, idx) => (
                             <div key={section.heading}>
                                 <h2 className='font-bebas-neue text-xl tracking-wider text-white uppercase md:text-2xl'>
-                                    {idx + 1}. {section.heading}
+                                    {section.number ?? idx + 1}. {section.heading}
                                 </h2>
                                 <div className='text-slr-muted mt-3 space-y-3 text-sm leading-relaxed md:text-base'>
                                     {section.body}

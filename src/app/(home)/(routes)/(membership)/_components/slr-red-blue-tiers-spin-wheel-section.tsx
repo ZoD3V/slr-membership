@@ -110,7 +110,7 @@ const TierCard: FC<{ name: string; tiers: Tier[]; theme: TierTheme }> = ({ name,
                 <span className='h-px w-12 sm:w-16' style={{ background: theme.itemBorder }} />
             </div>
             <p className='mt-2 text-center text-[10px] font-medium tracking-wider text-white uppercase sm:text-xs'>
-                Membership includes choice of entries
+                Membership tier determines your number of entries
             </p>
 
             <div className={cn('mt-4 grid gap-2 sm:gap-3', theme.columns)}>
