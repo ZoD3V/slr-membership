@@ -42,7 +42,7 @@ const socials = [
         href: 'https://www.facebook.com/share/1CcxZ86yHn/?mibextid=wwXIfr'
     },
     { icon: '/icons/ic-instagram.png', label: 'Instagram', href: 'https://www.instagram.com/smartliferewards' },
-    { icon: '/icons/ic-tiktok.png', label: 'TikTok', href: 'www.tiktok.com/@smartlife.rewards' }
+    { icon: '/icons/ic-tiktok.png', label: 'TikTok', href: 'https://www.tiktok.com/@smartlife.rewards' }
 ];
 
 const LinkColumn: FC<{
