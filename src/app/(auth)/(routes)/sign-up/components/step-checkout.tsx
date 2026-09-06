@@ -9,6 +9,7 @@ import { AU_STATES } from '@/constant/au-states';
 import { useSafeHours } from '@/hooks/use-safe-hours';
 import { createMembershipCheckout } from '@/lib/api/resources/stripe';
 import { ApiError, apiErrorMessage } from '@/lib/api/types';
+import { toAuE164 } from '@/lib/au-phone';
 import { SAFE_HOURS_MESSAGE, isSafeHoursError } from '@/lib/safe-hours';
 import { goldButtonStyle } from '@/lib/styles';
 import { type TierPricing, dollarsOf } from '@/lib/tier-pricing';
@@ -51,13 +52,20 @@ const StepCheckout = ({ data, pricing, spinPrize, token, onBack }: StepCheckoutP
         }
         setRedirecting(true);
         try {
+            // BENY bills separately from the membership, so it returns its own Stripe session.
+            // Open it before redirecting, otherwise the member is queued for activation on a
+            // subscription they were never given the chance to pay for.
             if (addBeny) {
                 const { subscribeBeny } = await import('@/lib/api/resources/beny');
-                await subscribeBeny(token, {
+                const beny = await subscribeBeny(token, {
                     name: data.name,
                     email: data.email,
-                    phone: data.phone
+                    phone: toAuE164(data.phone)
                 });
+                if (beny.checkout_url) {
+                    window.open(beny.checkout_url, '_blank', 'noopener,noreferrer');
+                    toast.info(`Finish the $${BENY_PRICE} BENY payment in the new tab to activate it.`);
+                }
             }
 
             const { url } = await createMembershipCheckout(token, {

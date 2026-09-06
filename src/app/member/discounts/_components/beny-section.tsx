@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { BENY_MONTHLY_PRICE } from '@/constant/tiers';
 import { BENY_CATEGORIES } from '@/data/discounts';
 import { type BenyStatusValue, isBenyCancelled, isBenyWindingDown } from '@/lib/api/resources/beny';
+import { AU_PHONE_MESSAGE, isAuPhone, toAuE164 } from '@/lib/au-phone';
 import { goldButtonStyle, inputClassName } from '@/lib/styles';
 import { cn } from '@/lib/utils';
 import type { MemberProfile } from '@/types/member';
@@ -70,15 +71,23 @@ export function BenySection({
 
     const canSubscribe = status === 'inactive' || isBenyCancelled(status);
 
+    const [phoneError, setPhoneError] = useState<string | null>(null);
+
     const handleSubmitAttempt = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!isAuPhone(form.phone)) {
+            setPhoneError(AU_PHONE_MESSAGE);
+
+            return;
+        }
+        setPhoneError(null);
         setConfirmOpen(true);
     };
 
     const handleConfirmSubscribe = () => {
         setConfirmOpen(false);
         startTransition(async () => {
-            const res = await subscribeBenyAction(form);
+            const res = await subscribeBenyAction({ ...form, phone: toAuE164(form.phone) });
             if (res.ok) {
                 setStatus(res.status);
                 setShowForm(false);
@@ -170,8 +179,8 @@ export function BenySection({
                         ) : (
                             <span className='inline-flex items-start gap-2 text-sm text-white/90'>
                                 <Clock className='text-slr-gold-label mt-0.5 size-4 shrink-0' />
-                                Pending activation — you&apos;ll receive access details by email shortly, then download
-                                the BENY app to start saving.
+                                Pending activation — your BENY access will be activated within 1 business day.
+                                We&apos;ll email your access details, then download the BENY app to start saving.
                             </span>
                         )}
                         <button
@@ -196,8 +205,8 @@ export function BenySection({
                     (showForm ? (
                         <form onSubmit={handleSubmitAttempt} className='space-y-3'>
                             <p className='text-slr-muted text-sm'>
-                                Enter your details to add BENY. You&apos;ll be redirected to secure checkout for the
-                                {`$${BENY_MONTHLY_PRICE}/month`} subscription.
+                                We&apos;ll use these details to activate your BENY account. You&apos;ll be redirected to
+                                secure checkout for the {`$${BENY_MONTHLY_PRICE}/month`} subscription.
                             </p>
                             <div className='grid gap-3 sm:grid-cols-3'>
                                 <Input
@@ -215,14 +224,21 @@ export function BenySection({
                                     value={form.email}
                                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                                 />
-                                <Input
-                                    required
-                                    type='tel'
-                                    className={inputClassName}
-                                    placeholder='Phone'
-                                    value={form.phone}
-                                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                                />
+                                <div>
+                                    <Input
+                                        required
+                                        type='tel'
+                                        className={inputClassName}
+                                        placeholder='Phone (e.g. 0412 345 678)'
+                                        aria-invalid={phoneError ? true : undefined}
+                                        value={form.phone}
+                                        onChange={(e) => {
+                                            setForm({ ...form, phone: e.target.value });
+                                            if (phoneError) setPhoneError(null);
+                                        }}
+                                    />
+                                    {phoneError ? <p className='mt-1 text-xs text-red-400'>{phoneError}</p> : null}
+                                </div>
                             </div>
                             <div className='flex items-center gap-2'>
                                 <button
