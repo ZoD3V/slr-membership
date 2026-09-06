@@ -183,14 +183,16 @@ export function BenySection({
                                 We&apos;ll email your access details, then download the BENY app to start saving.
                             </span>
                         )}
-                        <button
-                            type='button'
-                            onClick={() => setConfirmCancelOpen(true)}
-                            disabled={isPending}
-                            className='inline-flex shrink-0 items-center gap-2 rounded-lg border border-white/15 px-4 py-1.5 text-sm font-semibold text-white/80 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-60'>
-                            {isPending ? <Loader2Icon className='size-4 animate-spin' /> : null}
-                            Cancel BENY
-                        </button>
+                        {status === 'active' ? (
+                            <button
+                                type='button'
+                                onClick={() => setConfirmCancelOpen(true)}
+                                disabled={isPending}
+                                className='inline-flex shrink-0 items-center gap-2 rounded-lg border border-white/15 px-4 py-1.5 text-sm font-semibold text-white/80 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-60'>
+                                {isPending ? <Loader2Icon className='size-4 animate-spin' /> : null}
+                                Cancel BENY
+                            </button>
+                        ) : null}
                     </div>
                 ) : null}
 
