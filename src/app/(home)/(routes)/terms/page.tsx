@@ -557,7 +557,7 @@ const buildSections = (pricing: TierPricing, pool: string, membersCap: string): 
                     <Link href='/giveaway-rules' className='text-[#FFDC75] hover:underline'>
                         Competition Rules
                     </Link>{' '}
-                    for the current cycle set entry close at 7:30 PM AEST and the draw at 8:00 PM AEST each Friday.
+                    for the current cycle set entry close at 6:30 PM AEST and the draw at 8:00 PM AEST each Friday.
                 </p>
             </>
         )
