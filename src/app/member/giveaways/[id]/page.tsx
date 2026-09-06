@@ -195,7 +195,7 @@ export default async function GiveawayDetailPage({ params }: { params: Promise<{
                         <div className='flex items-center gap-2'>
                             <ShieldCheck className='text-slr-gold-label size-5 shrink-0' />
                             <h2 className='font-bebas-neue text-lg tracking-wide text-white uppercase'>
-                                TPAL Certification
+                                Certified Draw
                             </h2>
                         </div>
                         <p className='text-slr-muted mt-2 text-sm leading-relaxed'>{giveaway.tpal_note}</p>

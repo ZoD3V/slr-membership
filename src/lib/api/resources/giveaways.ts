@@ -68,12 +68,13 @@ export interface ApiGiveawayDetail {
 
 export const GIVEAWAY_RULES = [
     'Entries are allocated automatically each 28-day cycle — no manual entry needed.',
-    'Your number of entries equals your active tokens for the cycle.',
-    'Winners are drawn externally and certified via TPAL (randomdraws.com.au).',
+    'Your number of entries is set by your membership tier for the cycle.',
+    'Entries close 6:30 PM AEST each Friday; the draw runs at 8:00 PM AEST.',
+    'Winners are drawn by the TPAL digital draw system or SLR’s provably fair draw engine, audited with SHA-256 verification.',
     'Entries reset every cycle and do not carry over.'
 ];
 const TPAL_NOTE =
-    'Draws are conducted externally and certified via TPAL (randomdraws.com.au). Entry lists are exported per tier each cycle.';
+    'Draws are run on the TPAL digital draw system, SLR’s own provably fair random draw engine, or another lawful random-draw system identified by SLR. Every draw announcement is audited to certified trade promotion standards using cryptographic SHA-256 verification.';
 
 export function tierGroupFromApi(tier: string | undefined): TierGroup {
     const t = tier?.toUpperCase();
