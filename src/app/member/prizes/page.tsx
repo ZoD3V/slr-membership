@@ -124,9 +124,8 @@ export default async function PrizesPage() {
                     </section>
 
                     <p className='text-slr-dim mx-auto max-w-2xl text-center text-xs leading-relaxed'>
-                        Prize pool figures are indicative and updated by SLR each membership stage. Draws are run on the
-                        TPAL digital draw system or SLR&rsquo;s own provably fair draw engine, audited with SHA-256
-                        verification.
+                        Prize pool figures are indicative and updated by SLR each membership stage. All prizes are drawn
+                        externally at randomdraws.com.au under TPAL certification.
                     </p>
                 </>
             )}
