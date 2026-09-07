@@ -35,6 +35,17 @@ function formatExpiryLongDate(iso: string | null | undefined): string {
     return `${day} ${month} ${year}`;
 }
 
+function ReadOnlyField({ label, value }: { label: string; value: string }) {
+    return (
+        <div>
+            <p className='text-slr-muted text-xs font-semibold'>{label}</p>
+            <p className='border-slr-navy-border text-slr-muted mt-1.5 truncate rounded-md border bg-black/20 px-3 py-2 text-sm'>
+                {value || '-'}
+            </p>
+        </div>
+    );
+}
+
 export function BenySection({
     status: initialStatus,
     userProfile,
@@ -210,37 +221,35 @@ export function BenySection({
                                 We&apos;ll use these details to activate your BENY account. You&apos;ll be redirected to
                                 secure checkout for the {`$${BENY_MONTHLY_PRICE}/month`} subscription.
                             </p>
-                            <div className='grid gap-3 sm:grid-cols-3'>
+                            {/* Name and email come from the account so billing and BENY stay on one identity. */}
+                            <div className='grid gap-3 sm:grid-cols-2'>
+                                <ReadOnlyField label='Full name' value={form.name} />
+                                <ReadOnlyField label='Email' value={form.email} />
+                            </div>
+                            <div>
+                                <label htmlFor='beny-phone' className='text-slr-muted text-xs font-semibold'>
+                                    Phone number for BENY activation
+                                </label>
                                 <Input
                                     required
-                                    className={inputClassName}
-                                    placeholder='Full name'
-                                    value={form.name}
-                                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                                    id='beny-phone'
+                                    type='tel'
+                                    className={`${inputClassName} mt-1.5`}
+                                    placeholder='0412 345 678'
+                                    aria-invalid={phoneError ? true : undefined}
+                                    value={form.phone}
+                                    onChange={(e) => {
+                                        setForm({ ...form, phone: e.target.value });
+                                        if (phoneError) setPhoneError(null);
+                                    }}
                                 />
-                                <Input
-                                    required
-                                    type='email'
-                                    className={inputClassName}
-                                    placeholder='Email'
-                                    value={form.email}
-                                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                                />
-                                <div>
-                                    <Input
-                                        required
-                                        type='tel'
-                                        className={inputClassName}
-                                        placeholder='Phone (e.g. 0412 345 678)'
-                                        aria-invalid={phoneError ? true : undefined}
-                                        value={form.phone}
-                                        onChange={(e) => {
-                                            setForm({ ...form, phone: e.target.value });
-                                            if (phoneError) setPhoneError(null);
-                                        }}
-                                    />
-                                    {phoneError ? <p className='mt-1 text-xs text-red-400'>{phoneError}</p> : null}
-                                </div>
+                                {phoneError ? (
+                                    <p className='mt-1 text-xs text-red-400'>{phoneError}</p>
+                                ) : (
+                                    <p className='text-slr-dim mt-1 text-xs'>
+                                        This is the number our admin uses to invite you on BENY.
+                                    </p>
+                                )}
                             </div>
                             <div className='flex items-center gap-2'>
                                 <button
