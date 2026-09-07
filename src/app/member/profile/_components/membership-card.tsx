@@ -118,7 +118,5 @@ export function MembershipCard({ name, subTier, memberId, joinedAt }: Membership
 }
 
 function subTierNameFormat(code: SubTierCode): string {
-    if (code === 'VISITOR') return 'VISITOR';
-
     return `SLR ${code}`;
 }

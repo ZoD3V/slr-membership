@@ -3,10 +3,8 @@ import type { TierPricing } from '@/lib/tier-pricing';
 import type { SubTierCode } from '@/types/member';
 
 import { ManageMembershipActions } from './manage-membership-actions';
-import { UpgradePlanPicker } from './upgrade-plan-picker';
 
 interface ManageTierProps {
-    isVisitor: boolean;
     pricing: TierPricing;
     currentSubTier: SubTierCode;
     nextRenewalIso: string | null;
@@ -16,7 +14,6 @@ interface ManageTierProps {
 }
 
 export function ManageTier({
-    isVisitor,
     pricing,
     currentSubTier,
     nextRenewalIso,
@@ -24,9 +21,7 @@ export function ManageTier({
     billingStatus,
     cancelAtPeriodEnd
 }: ManageTierProps) {
-    return isVisitor ? (
-        <UpgradePlanPicker pricing={pricing} />
-    ) : (
+    return (
         <ManageMembershipActions
             currentSubTier={currentSubTier}
             pricing={pricing}

@@ -3,8 +3,6 @@ import { BENY_MONTHLY_PRICE, SUB_TIERS } from '@/constant/tiers';
 import { type TierPricing, codesForGroup } from '@/lib/tier-pricing';
 import type { SubTierCode } from '@/types/member';
 
-// Visitor sign-up is closed — new accounts must pick a paid tier. Existing Visitor
-// members keep their tier, so the platform-wide TierGroup still has 'visitor'.
 export type TierKey = 'red' | 'blue';
 
 export type SignUpFormData = {
@@ -42,7 +40,6 @@ export const subTiersForGroup = (pricing: TierPricing, group: TierKey): SubTierO
 
 export const subTierLabel = (code: SubTierCode): string => {
     const meta = SUB_TIERS[code];
-    if (meta.group === 'visitor') return 'Visitor';
 
     return `SLR ${meta.group === 'red' ? 'Red' : 'Blue'} · ${meta.marketingName}`;
 };

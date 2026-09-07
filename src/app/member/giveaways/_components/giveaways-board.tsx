@@ -36,20 +36,9 @@ export function GiveawaysBoard({
     nextRenewalIso?: string | null;
 }) {
     const memberGroup = tierGroupOf(memberSubTier);
-    const tabs = visibleGiveawayTabs(memberGroup);
+    const tabs = visibleGiveawayTabs();
 
     const [active, setActive] = useState<TierGroup>(tabs.includes(memberGroup) ? memberGroup : (tabs[0] ?? 'red'));
-
-    if (tabs.length === 0) {
-        return (
-            <div className='space-y-4'>
-                <p className='text-slr-muted text-sm'>
-                    Your weekly Visitor draw. Upgrade to RED or BLUE to unlock cash draws and more.
-                </p>
-                <GiveawayGrid items={giveaways.filter((g) => g.tier_group === 'visitor')} />
-            </div>
-        );
-    }
 
     return (
         <div className='space-y-5'>

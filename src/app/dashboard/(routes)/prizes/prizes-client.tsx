@@ -22,7 +22,7 @@ const formSchema = z.object({
     stage_label: z.string().min(1, 'Required'),
     odds: z.string().min(1, 'Required'),
 
-    visitor_prize: z.string().trim().min(1, 'Required'),
+    visitor_prize: z.string(),
     red_weekly: z.string().trim().min(1, 'Required'),
     red_monthly: z.string().trim().min(1, 'Required'),
     blue_weekly: z.string().trim().min(1, 'Required'),
@@ -37,7 +37,7 @@ function toFormValues(content: PrizeContent): FormValues {
         prize_count: content.prize_count,
         stage_label: content.stage_label,
         odds: content.odds,
-        visitor_prize: content.visitor_prize,
+        visitor_prize: content.visitor_prize ?? '',
         red_weekly: content.red_weekly,
         red_monthly: content.red_monthly,
         blue_weekly: content.blue_weekly,
@@ -138,23 +138,6 @@ export function PrizesClient({ content }: { content: PrizeContent }) {
                             <CardTitle>Prize breakdown</CardTitle>
                         </CardHeader>
                         <CardContent className='space-y-6'>
-                            <fieldset className='min-w-0 space-y-3'>
-                                <legend className='text-sm font-semibold'>Visitor</legend>
-                                <FormField
-                                    control={form.control}
-                                    name='visitor_prize'
-                                    render={({ field }) => (
-                                        <FormItem className='min-w-0'>
-                                            <FormLabel>Prize</FormLabel>
-                                            <FormControl>
-                                                <Textarea rows={2} className='min-h-16 resize-y' {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </fieldset>
-
                             <fieldset className='min-w-0 space-y-3'>
                                 <legend className='text-sm font-semibold'>SLR RED</legend>
                                 <div className='grid gap-3 sm:grid-cols-2'>

@@ -55,10 +55,7 @@ export function EntryHistoryTable({ entries }: { entries: EntryCycle[] }) {
                                 </td>
                                 <td className='px-4 py-3'>
                                     <div className='flex items-center gap-2'>
-                                        <TierBadge
-                                            subTier={((e.tier?.toUpperCase() || 'VISITOR') as SubTierCode) || 'VISITOR'}
-                                            size='sm'
-                                        />
+                                        <TierBadge subTier={(e.tier?.toUpperCase() as SubTierCode) || 'R1'} size='sm' />
                                     </div>
                                     {tierChangeLabel(entries, index) && (
                                         <p className='text-slr-gold-label mt-1 text-[10px] uppercase'>
@@ -96,10 +93,7 @@ export function EntryHistoryTable({ entries }: { entries: EntryCycle[] }) {
                         </div>
 
                         <div className='mt-3 flex flex-wrap items-center gap-2'>
-                            <TierBadge
-                                subTier={((e.tier?.toUpperCase() || 'VISITOR') as SubTierCode) || 'VISITOR'}
-                                size='sm'
-                            />
+                            <TierBadge subTier={(e.tier?.toUpperCase() as SubTierCode) || 'R1'} size='sm' />
                             {tierChangeLabel(entries, index) && (
                                 <span className='text-slr-gold-label text-[10px] uppercase'>
                                     {tierChangeLabel(entries, index)}

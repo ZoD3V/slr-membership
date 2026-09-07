@@ -31,7 +31,6 @@ import { MembershipSummaryCard } from './_components/dashboard/membership-summar
 import { QuickActions } from './_components/dashboard/quick-actions';
 import { RenewalSpinCard } from './_components/dashboard/renewal-spin-card';
 import { UpcomingGiveaways } from './_components/dashboard/upcoming-giveaways';
-import { VisitorUpgradeBanner } from './_components/dashboard/visitor-upgrade-banner';
 import { CircleAlert, Gift } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -62,8 +61,7 @@ export default async function MemberDashboardPage() {
         if (result?.status === 'rejected') handleApiAuthError(result.reason);
     }
 
-    const publicDiscounts =
-        tierGroupOf(member.sub_tier) === 'visitor' ? [] : await getPublicDiscounts().catch(() => [] as Discount[]);
+    const publicDiscounts = await getPublicDiscounts().catch(() => [] as Discount[]);
 
     const membership = membershipR?.status === 'fulfilled' ? membershipR.value : null;
     const rawCycle = entriesR?.status === 'fulfilled' ? entriesR.value.current_cycle : null;
@@ -83,7 +81,6 @@ export default async function MemberDashboardPage() {
     const subTier = membership ? subTierCodeOf(membership.subTierId) : member.sub_tier;
     const memberGroup = tierGroupOf(subTier);
 
-    const isVisitor = memberGroup === 'visitor';
     const memberTokens = cycle?.total_token ?? 0;
 
     // Stripe period end is the billing source of truth; cycle end_at can drift from it
@@ -142,7 +139,7 @@ export default async function MemberDashboardPage() {
     const isCancelled = summary.billing_status === 'canceled';
 
     const drawEyebrow = giveawayDraw ? 'Current Draw' : 'Current Cycle';
-    const drawDateWord = isVisitor || isCancelled ? 'Ends' : giveawayDraw ? 'Draws' : 'Renews';
+    const drawDateWord = isCancelled ? 'Ends' : giveawayDraw ? 'Draws' : 'Renews';
 
     const featuredDiscounts: Discount[] = publicDiscounts
         .filter((d) => d.is_featured && (d.title?.trim() || d.partner_name?.trim()))
@@ -173,13 +170,11 @@ export default async function MemberDashboardPage() {
 
     return (
         <div className='mx-auto w-full max-w-7xl flex-1 space-y-8 px-4 py-6 md:space-y-12 md:px-6 md:py-8'>
-            <Greeting member={member} isVisitor={isVisitor} />
+            <Greeting member={member} />
 
-            {isVisitor ? <VisitorUpgradeBanner /> : null}
+            {!member.email_verified_at ? <EmailVerificationBanner /> : null}
 
-            {!isVisitor && !member.email_verified_at ? <EmailVerificationBanner /> : null}
-
-            {!isVisitor && billing?.cancel_at_period_end && cycle?.end_at ? (
+            {billing?.cancel_at_period_end && cycle?.end_at ? (
                 <CancelledMembershipBanner accessEndsAt={cycle.end_at} />
             ) : null}
 
@@ -189,7 +184,7 @@ export default async function MemberDashboardPage() {
 
             <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
                 {membership || cycle ? (
-                    <MembershipSummaryCard summary={summary} isVisitor={isVisitor} className='lg:col-span-1' />
+                    <MembershipSummaryCard summary={summary} className='lg:col-span-1' />
                 ) : (
                     <EmptyState
                         icon={CircleAlert}
@@ -223,9 +218,9 @@ export default async function MemberDashboardPage() {
                 )}
             </div>
 
-            <QuickActions isVisitor={isVisitor} />
+            <QuickActions />
 
-            {!isVisitor && featuredDiscounts.length > 0 && <FeaturedDiscounts discounts={featuredDiscounts} />}
+            {featuredDiscounts.length > 0 && <FeaturedDiscounts discounts={featuredDiscounts} />}
 
             {upcomingGiveaways.length > 0 ? (
                 <UpcomingGiveaways giveaways={upcomingGiveaways} />
@@ -235,7 +230,7 @@ export default async function MemberDashboardPage() {
                     title='Prize Draws Unavailable'
                     description='We couldn’t load the active draws right now. Please try again shortly.'
                 />
-            ) : isVisitor ? null : (
+            ) : (
                 <EmptyState
                     icon={Gift}
                     title='No Active Prize Draws'

@@ -23,13 +23,6 @@ const PAID_BENEFITS = [
     'Upgrade or cancel anytime'
 ];
 
-const VISITOR_BENEFITS = [
-    'Free to join — no credit card required',
-    'Weekly visitor giveaways & bonus draws',
-    'Upgrade to RED or BLUE anytime',
-    'No commitment — cancel anytime'
-];
-
 interface TierCardProps {
     subTier: SubTierCode;
     priceCents: number;
@@ -43,7 +36,7 @@ interface TierCardProps {
 export function TierCard({ subTier, priceCents, billingStatus, nextRenewal, children }: TierCardProps) {
     const meta = SUB_TIERS[subTier];
     const visual = TIER_VISUALS[meta.group];
-    const benefits = meta.group === 'visitor' ? VISITOR_BENEFITS : PAID_BENEFITS;
+    const benefits = PAID_BENEFITS;
 
     return (
         <section className='bg-card-dark-navy border-slr-navy-border rounded-2xl border p-5 md:p-6'>

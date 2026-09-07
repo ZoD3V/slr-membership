@@ -30,7 +30,10 @@ export function getSubTierMeta(code: SubTierCode) {
 }
 
 export function tierGroupOf(code: SubTierCode): TierGroup {
-    return SUB_TIERS[code].group;
+    const group = SUB_TIERS[code].group;
+
+    // Visitor was retired. Accounts still carrying it read as the lowest paid tier.
+    return group === 'visitor' ? 'red' : group;
 }
 
 const TIER_RANK: Record<TierGroup, number> = { visitor: 0, red: 1, blue: 2 };
@@ -39,8 +42,8 @@ export function tierRank(group: TierGroup): number {
     return TIER_RANK[group];
 }
 
-export function visibleGiveawayTabs(memberGroup: TierGroup): TierGroup[] {
-    return memberGroup === 'visitor' ? [] : ['red', 'blue'];
+export function visibleGiveawayTabs(): TierGroup[] {
+    return ['red', 'blue'];
 }
 
 export function isGiveawayLocked(giveawayTier: TierGroup, memberGroup: TierGroup): boolean {
@@ -48,8 +51,6 @@ export function isGiveawayLocked(giveawayTier: TierGroup, memberGroup: TierGroup
 }
 
 export function isGiveawayEnterable(giveawayTier: TierGroup, memberGroup: TierGroup): boolean {
-    if (memberGroup === 'visitor') return giveawayTier === 'visitor';
-
     return giveawayTier !== 'visitor' && !isGiveawayLocked(giveawayTier, memberGroup);
 }
 
