@@ -11,7 +11,7 @@ import { getPrizePool } from '@/lib/api/resources/prizes';
 import { getAccessToken } from '@/lib/api/server';
 import { formatShortDate, tierGroupOf } from '@/lib/member';
 import { type TierPricing, getTierPricing, minPriceOf } from '@/lib/tier-pricing';
-import type { PrizeContent, PrizeTierBreakdown, TierGroup } from '@/types/member';
+import type { PrizeContent, PrizeTierBreakdown } from '@/types/member';
 
 import { PrizeTierCard } from './_components/prize-tier-card';
 import { CircleAlert, Sparkles } from 'lucide-react';
@@ -20,22 +20,15 @@ export const metadata: Metadata = {
     title: 'Prizes · SLR Member'
 };
 
-const TIER_ORDER: TierGroup[] = ['visitor', 'red', 'blue'];
-
-function priceLabel(pricing: TierPricing, group: TierGroup): string {
-    if (group === 'visitor') return 'Free to join';
-
-    return `from $${minPriceOf(pricing, group) / 100}/4 weeks`;
-}
+const TIER_ORDER = ['red', 'blue'] as const;
 
 function toTierBreakdown(content: PrizeContent, pricing: TierPricing): PrizeTierBreakdown[] {
     return TIER_ORDER.map((group) => ({
         tier_group: group,
-        tier_label: group === 'visitor' ? 'Visitor' : `SLR ${TIER_VISUALS[group].label}`,
-        price_label: priceLabel(pricing, group),
-        weekly:
-            group === 'visitor' ? content.visitor_prize : group === 'red' ? content.red_weekly : content.blue_weekly,
-        monthly: group === 'visitor' ? null : group === 'red' ? content.red_monthly : content.blue_monthly
+        tier_label: `SLR ${TIER_VISUALS[group].label}`,
+        price_label: `from $${minPriceOf(pricing, group) / 100}/4 weeks`,
+        weekly: group === 'red' ? content.red_weekly : content.blue_weekly,
+        monthly: group === 'red' ? content.red_monthly : content.blue_monthly
     }));
 }
 
@@ -96,7 +89,7 @@ export default async function PrizesPage() {
                             </h2>
                             <span className='text-slr-dim text-xs'>Your tier is highlighted</span>
                         </div>
-                        <div className='grid gap-4 md:grid-cols-3'>
+                        <div className='grid gap-4 md:grid-cols-2'>
                             {toTierBreakdown(content, pricing).map((tier) => (
                                 <PrizeTierCard
                                     key={tier.tier_group}
