@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { BLUE_TIER_CARD, MONEY_ARTWORK, RED_TIER_CARD, type TierCardTheme } from '@/constant/tier-card-theme';
+import { isBenyEligibleSubTier } from '@/constant/tiers';
 import { GOLD_GRADIENT, goldButtonStyle } from '@/lib/styles';
 import { type TierPricing, dollarsOf, minPriceOf, spinDiscountOf } from '@/lib/tier-pricing';
 import { cn } from '@/lib/utils';
@@ -134,16 +135,18 @@ const StepTier = ({ data, pricing, onNext, onBack }: StepTierProps) => {
                     })}
                 </div>
 
-                <div className='rounded-xl border border-white/10 bg-white/2 p-4'>
-                    <div className='flex flex-wrap items-baseline gap-2'>
-                        <span className='font-bebas-neue text-lg tracking-wider text-white uppercase'>BENY add-on</span>
-                        <span className='text-sm font-semibold text-[#FFDC75]'>${BENY_PRICE}/month</span>
+                {isBenyEligibleSubTier(subCode) && (
+                    <div className='rounded-xl border border-white/10 bg-white/2 p-4'>
+                        <div className='flex flex-wrap items-baseline gap-2'>
+                            <span className='font-bebas-neue text-lg tracking-wider text-white uppercase'>BENY add-on</span>
+                            <span className='text-sm font-semibold text-[#FFDC75]'>${BENY_PRICE}/month</span>
+                        </div>
+                        <p className='text-slr-muted mt-0.5 text-xs'>
+                            Premium third-party discount platform. Optional, billed separately — add it from your dashboard
+                            once your membership is active.
+                        </p>
                     </div>
-                    <p className='text-slr-muted mt-0.5 text-xs'>
-                        Premium third-party discount platform. Optional, billed separately — add it from your dashboard
-                        once your membership is active.
-                    </p>
-                </div>
+                )}
 
                 <div className='flex flex-wrap gap-3'>
                     <Button type='button' variant='outline' onClick={() => setPhase('group')} className={backBtn}>

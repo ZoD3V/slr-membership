@@ -15,6 +15,7 @@ import { goldButtonStyle, inputClassName } from '@/lib/styles';
 import { type TierPricing, dollarsOf } from '@/lib/tier-pricing';
 
 import { BENY_PRICE, SignUpFormData, SpinPrize, subTierLabel } from './types';
+import { isBenyEligibleSubTier } from '@/constant/tiers';
 import { ArrowLeft, CreditCard, Loader2Icon, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -42,6 +43,8 @@ const StepCheckout = ({ data, pricing, spinPrize, token, onBack }: StepCheckoutP
 
     const subtotal = dollarsOf(pricing, subTier);
     const discount = Math.min(spinPrize?.discountAmount ?? 0, subtotal);
+    const canAddBeny = isBenyEligibleSubTier(subTier);
+    const willAddBeny = canAddBeny && addBeny;
     // BENY is billed on its own Stripe subscription, so it never appears on the membership checkout.
     const total = subtotal - discount;
 
@@ -51,7 +54,7 @@ const StepCheckout = ({ data, pricing, spinPrize, token, onBack }: StepCheckoutP
 
             return;
         }
-        if (addBeny && !isAuPhone(benyPhone)) {
+        if (willAddBeny && !isAuPhone(benyPhone)) {
             setBenyPhoneError(AU_PHONE_MESSAGE);
 
             return;
@@ -59,30 +62,23 @@ const StepCheckout = ({ data, pricing, spinPrize, token, onBack }: StepCheckoutP
         setBenyPhoneError(null);
         setRedirecting(true);
         try {
-            // BENY bills separately from the membership, so it returns its own Stripe session.
-            // Open it before redirecting, otherwise the member is queued for activation on a
-            // subscription they were never given the chance to pay for.
-            if (addBeny) {
+            if (willAddBeny) {
                 const { subscribeBeny } = await import('@/lib/api/resources/beny');
-                const beny = await subscribeBeny(token, {
+                await subscribeBeny(token, {
                     name: data.name,
                     email: data.email,
                     phone: toAuE164(benyPhone)
                 });
-                if (beny.checkout_url) {
-                    window.open(beny.checkout_url, '_blank', 'noopener,noreferrer');
-                    toast.info(`Finish the $${BENY_PRICE} BENY payment in the new tab to activate it.`);
-                }
             }
 
             const { url } = await createMembershipCheckout(token, {
                 sub_tier: subTier.toLowerCase(),
-                beny: addBeny
+                beny: willAddBeny
             });
             if (process.env.NODE_ENV === 'development') {
                 console.log('[SignUp Checkout Created]', {
                     endpoint: 'POST /api/v1/membership/checkout',
-                    payload: { sub_tier: subTier.toLowerCase(), beny: addBeny },
+                    payload: { sub_tier: subTier.toLowerCase(), beny: willAddBeny },
                     url
                 });
             }
@@ -127,7 +123,7 @@ const StepCheckout = ({ data, pricing, spinPrize, token, onBack }: StepCheckoutP
                         value={`$${subtotal.toFixed(2)}`}
                     />
 
-                    {addBeny ? (
+                    {willAddBeny ? (
                         <>
                             <div className='h-px w-full bg-white/10' />
                             <SummaryRow
@@ -162,7 +158,7 @@ const StepCheckout = ({ data, pricing, spinPrize, token, onBack }: StepCheckoutP
                         <p className='font-bebas-neue text-3xl font-extrabold text-[#FFDC75]'>${total.toFixed(2)}</p>
                     </div>
 
-                    {addBeny ? (
+                    {willAddBeny ? (
                         <p className='rounded-lg border border-[#D4AF3759] bg-[#D4AF371A]/10 p-3 text-xs leading-relaxed font-bold text-[#FFDC75]'>
                             BENY is not on the Stripe page above. You&apos;ll be charged ${BENY_PRICE.toFixed(2)}/month
                             for BENY separately, once an SLR Admin activates it within 1 business day.
@@ -171,54 +167,56 @@ const StepCheckout = ({ data, pricing, spinPrize, token, onBack }: StepCheckoutP
                 </div>
             </div>
 
-            <div className='flex items-start gap-3 rounded-xl border border-[#D4AF3759] bg-[#D4AF371A]/5 p-4 transition-all hover:bg-[#D4AF371A]/10'>
-                <Checkbox
-                    id='beny'
-                    checked={addBeny}
-                    onCheckedChange={(checked) => setAddBeny(Boolean(checked))}
-                    className='mt-1 border-[#FFD147] data-[state=checked]:bg-[#FFD147] data-[state=checked]:text-[#131619]'
-                />
-                <div className='grid gap-1.5 leading-none'>
-                    <label
-                        htmlFor='beny'
-                        className='cursor-pointer text-sm font-bold tracking-wide text-white uppercase select-none'>
-                        Add BENY Add-on — +${BENY_PRICE.toFixed(2)}/month
-                    </label>
-                    <p className='text-slr-muted text-xs leading-relaxed'>
-                        Access premium brand discounts through the BENY app. Billed directly to your card on Stripe (+$
-                        {BENY_PRICE.toFixed(2)}/mo). Access requires manual activation and confirmation by an SLR Admin
-                        after registration.
-                    </p>
+            {canAddBeny ? (
+                <div className='flex items-start gap-3 rounded-xl border border-[#D4AF3759] bg-[#D4AF371A]/5 p-4 transition-all hover:bg-[#D4AF371A]/10'>
+                    <Checkbox
+                        id='beny'
+                        checked={addBeny}
+                        onCheckedChange={(checked) => setAddBeny(Boolean(checked))}
+                        className='mt-1 border-[#FFD147] data-[state=checked]:bg-[#FFD147] data-[state=checked]:text-[#131619]'
+                    />
+                    <div className='grid gap-1.5 leading-none'>
+                        <label
+                            htmlFor='beny'
+                            className='cursor-pointer text-sm font-bold tracking-wide text-white uppercase select-none'>
+                            Add BENY Add-on — +${BENY_PRICE.toFixed(2)}/month
+                        </label>
+                        <p className='text-slr-muted text-xs leading-relaxed'>
+                            Access premium brand discounts through the BENY app. Billed directly to your card on Stripe (+$
+                            {BENY_PRICE.toFixed(2)}/mo). Access requires manual activation and confirmation by an SLR Admin
+                            after registration.
+                        </p>
 
-                    {addBeny ? (
-                        <div className='mt-2'>
-                            <label htmlFor='beny-phone' className='text-slr-muted text-xs font-semibold'>
-                                Phone number for BENY activation
-                            </label>
-                            <Input
-                                id='beny-phone'
-                                type='tel'
-                                className={`${inputClassName} mt-1.5`}
-                                placeholder='0412 345 678'
-                                aria-invalid={benyPhoneError ? true : undefined}
-                                value={benyPhone}
-                                onChange={(e) => {
-                                    setBenyPhone(e.target.value);
-                                    if (benyPhoneError) setBenyPhoneError(null);
-                                }}
-                            />
-                            {benyPhoneError ? (
-                                <p className='mt-1 text-xs text-red-400'>{benyPhoneError}</p>
-                            ) : (
-                                <p className='text-slr-dim mt-1 text-xs'>
-                                    This is the number our admin uses to invite you on BENY. Change it if BENY should
-                                    reach you on a different number.
-                                </p>
-                            )}
-                        </div>
-                    ) : null}
+                        {addBeny ? (
+                            <div className='mt-2'>
+                                <label htmlFor='beny-phone' className='text-slr-muted text-xs font-semibold'>
+                                    Phone number for BENY activation
+                                </label>
+                                <Input
+                                    id='beny-phone'
+                                    type='tel'
+                                    className={`${inputClassName} mt-1.5`}
+                                    placeholder='0412 345 678'
+                                    aria-invalid={benyPhoneError ? true : undefined}
+                                    value={benyPhone}
+                                    onChange={(e) => {
+                                        setBenyPhone(e.target.value);
+                                        if (benyPhoneError) setBenyPhoneError(null);
+                                    }}
+                                />
+                                {benyPhoneError ? (
+                                    <p className='mt-1 text-xs text-red-400'>{benyPhoneError}</p>
+                                ) : (
+                                    <p className='text-slr-dim mt-1 text-xs'>
+                                        This is the number our admin uses to invite you on BENY. Change it if BENY should
+                                        reach you on a different number.
+                                    </p>
+                                )}
+                            </div>
+                        ) : null}
+                    </div>
                 </div>
-            </div>
+            ) : null}
 
             {safeHoursLocked ? <SafeHoursNotice /> : null}
 

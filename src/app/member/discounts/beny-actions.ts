@@ -1,5 +1,7 @@
 'use server';
 
+import { isBenyEligibleSubTier } from '@/constant/tiers';
+import { getMemberProfile } from '@/data/profile';
 import { type BenyStatusValue, type BenySubscribePayload, cancelBeny, subscribeBeny } from '@/lib/api/resources/beny';
 import { getAccessToken } from '@/lib/api/server';
 import { ApiError } from '@/lib/api/types';
@@ -21,6 +23,11 @@ function toBenyError(error: unknown): BenyActionResult {
 export async function subscribeBenyAction(payload: BenySubscribePayload): Promise<BenyActionResult> {
     const token = await getAccessToken();
     if (!token) return { ok: false, message: 'Not authenticated.' };
+
+    const profile = await getMemberProfile();
+    if (!isBenyEligibleSubTier(profile.sub_tier)) {
+        return { ok: false, message: 'BENY add-on is not available for Standard tiers.' };
+    }
 
     try {
         const data = await subscribeBeny(token, payload);

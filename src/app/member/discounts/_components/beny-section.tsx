@@ -4,13 +4,13 @@ import { useEffect, useState, useTransition } from 'react';
 
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Input } from '@/components/ui/input';
-import { BENY_MONTHLY_PRICE } from '@/constant/tiers';
+import { BENY_MONTHLY_PRICE, isBenyEligibleSubTier } from '@/constant/tiers';
 import { BENY_CATEGORIES } from '@/data/discounts';
 import { type BenyStatusValue, isBenyCancelled, isBenyWindingDown } from '@/lib/api/resources/beny';
 import { AU_PHONE_MESSAGE, isAuPhone, toAuE164 } from '@/lib/au-phone';
 import { goldButtonStyle, inputClassName } from '@/lib/styles';
 import { cn } from '@/lib/utils';
-import type { MemberProfile } from '@/types/member';
+import type { MemberProfile, SubTierCode } from '@/types/member';
 
 import { cancelBenyAction, subscribeBenyAction } from '../beny-actions';
 import { Check, Clock, Fuel, Heart, Loader2Icon, type LucideIcon, ShoppingBag, Sparkles } from 'lucide-react';
@@ -49,11 +49,13 @@ function ReadOnlyField({ label, value }: { label: string; value: string }) {
 export function BenySection({
     status: initialStatus,
     userProfile,
+    subTier,
     cancelledAt = null,
     expiresAt = null
 }: {
     status: BenyStatusValue;
     userProfile?: MemberProfile | null;
+    subTier?: SubTierCode | string | null;
     cancelledAt?: string | null;
     expiresAt?: string | null;
 }) {
@@ -80,7 +82,9 @@ export function BenySection({
         }
     }, [userProfile]);
 
-    const canSubscribe = status === 'inactive' || isBenyCancelled(status);
+    const effectiveSubTier = subTier ?? userProfile?.sub_tier;
+    const isEligible = isBenyEligibleSubTier(effectiveSubTier);
+    const canSubscribe = isEligible && (status === 'inactive' || isBenyCancelled(status));
 
     const [phoneError, setPhoneError] = useState<string | null>(null);
 
@@ -107,14 +111,7 @@ export function BenySection({
                     email: userProfile?.email ?? '',
                     phone: userProfile?.phone ?? ''
                 });
-                if (res.checkoutUrl) {
-                    window.open(res.checkoutUrl, '_blank', 'noopener,noreferrer');
-                    toast.success(
-                        `Complete your $${BENY_MONTHLY_PRICE}/month payment in the new tab to finish adding BENY.`
-                    );
-                } else {
-                    toast.success('BENY requested — pending admin activation.');
-                }
+                toast.success('BENY requested — pending admin activation.');
             } else {
                 toast.error(res.code ? `${res.message} (${res.code})` : res.message);
             }
@@ -218,8 +215,8 @@ export function BenySection({
                     (showForm ? (
                         <form onSubmit={handleSubmitAttempt} className='space-y-3'>
                             <p className='text-slr-muted text-sm'>
-                                We&apos;ll use these details to activate your BENY account. You&apos;ll be redirected to
-                                secure checkout for the {`$${BENY_MONTHLY_PRICE}/month`} subscription.
+                                We&apos;ll use these details to activate your BENY account. Your access will be
+                                activated within 1 business day.
                             </p>
                             {/* Name and email come from the account so billing and BENY stay on one identity. */}
                             <div className='grid gap-3 sm:grid-cols-2'>
@@ -258,7 +255,7 @@ export function BenySection({
                                     className='inline-flex h-10 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold uppercase disabled:opacity-60'
                                     style={goldButtonStyle}>
                                     {isPending ? <Loader2Icon className='size-4 animate-spin' /> : null}
-                                    Continue to checkout
+                                    Confirm &amp; Add BENY
                                 </button>
                                 <button
                                     type='button'
@@ -286,6 +283,14 @@ export function BenySection({
                             </button>
                         </div>
                     ))}
+
+                {!isEligible && (status === 'inactive' || isBenyCancelled(status)) && (
+                    <div className='flex flex-wrap items-center justify-between gap-3'>
+                        <span className='text-slr-muted text-sm'>
+                            BENY add-on is available exclusively for Plus, Premium, and Elite plans.
+                        </span>
+                    </div>
+                )}
             </div>
 
             <ConfirmDialog
@@ -296,7 +301,7 @@ export function BenySection({
                 cancelBtnText='Keep membership only'
                 isLoading={isPending}
                 handleConfirm={handleConfirmSubscribe}
-                desc={`This will add the helper BENY savings addon. Confirming this will charge an extra $${BENY_MONTHLY_PRICE.toFixed(2)} AUD per month recursively on Stripe.`}
+                desc={`This will request the BENY savings add-on ($${BENY_MONTHLY_PRICE.toFixed(2)} AUD/month). Your access will be activated within 1 business day.`}
             />
 
             <ConfirmDialog

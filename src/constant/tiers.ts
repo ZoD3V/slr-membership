@@ -99,6 +99,22 @@ export const BENY_MONTHLY_PRICE = 4;
 
 export const SPIN_ELIGIBLE_SUB_TIERS: ReadonlySet<SubTierCode> = new Set(['R4', 'R7', 'B4', 'B7', 'B10']);
 
+export const BENY_ELIGIBLE_SUB_TIERS: ReadonlySet<SubTierCode> = new Set(['R4', 'R7', 'B4', 'B7', 'B10']);
+
+export function isBenyEligibleSubTier(code: SubTierCode | string | null | undefined): boolean {
+    if (!code) return false;
+    const upper = code.toUpperCase();
+
+    return upper === 'R4' || upper === 'R7' || upper === 'B4' || upper === 'B7' || upper === 'B10';
+}
+
+export function isStandardSubTier(code: SubTierCode | string | null | undefined): boolean {
+    if (!code) return false;
+    const upper = code.toUpperCase();
+
+    return upper === 'R1' || upper === 'B1';
+}
+
 export interface TierVisual {
     label: string;
     poolLabel: string;

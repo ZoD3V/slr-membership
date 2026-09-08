@@ -112,6 +112,7 @@ export default async function MembershipPage() {
             <BenySection
                 status={benyStatus}
                 userProfile={profile}
+                subTier={subTier}
                 cancelledAt={benyCancelledAt}
                 expiresAt={benyExpiresAt ?? billing?.next_renewal_at ?? null}
             />
