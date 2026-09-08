@@ -115,11 +115,6 @@ export default async function PrizesPage() {
                             <DrawRulesBody html={drawRules?.content} fallback={GIVEAWAY_RULES} />
                         </div>
                     </section>
-
-                    <p className='text-slr-dim mx-auto max-w-2xl text-center text-xs leading-relaxed'>
-                        Prize pool figures are indicative and updated by SLR each membership stage. All prizes are drawn
-                        externally at randomdraws.com.au under TPAL certification.
-                    </p>
                 </>
             )}
         </div>

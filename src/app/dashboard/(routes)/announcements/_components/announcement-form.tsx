@@ -52,7 +52,7 @@ const formSchema = z.object({
         .string()
         .min(1, 'Content is required')
         .refine(hasText, 'Content is required')
-        .refine((value) => value.length <= 5000, 'Keep the content under 5000 characters'),
+        .refine((value) => value.length <= 50000, 'Keep the content under 50,000 characters'),
     linkUrl: z
         .string()
         .trim()
