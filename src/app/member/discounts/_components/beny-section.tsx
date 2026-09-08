@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import type { MemberProfile, SubTierCode } from '@/types/member';
 
 import { cancelBenyAction, subscribeBenyAction } from '../beny-actions';
-import { Check, Clock, Fuel, Heart, Loader2Icon, type LucideIcon, ShoppingBag, Sparkles } from 'lucide-react';
+import { Check, Clock, CreditCard, Fuel, Heart, Loader2Icon, type LucideIcon, ShoppingBag, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 const CATEGORY_ICON: Record<string, LucideIcon> = {
@@ -215,8 +215,8 @@ export function BenySection({
                     (showForm ? (
                         <form onSubmit={handleSubmitAttempt} className='space-y-3'>
                             <p className='text-slr-muted text-sm'>
-                                We&apos;ll use these details to activate your BENY account. Your access will be
-                                activated within 1 business day.
+                                We&apos;ll use these details to activate your BENY account. The ${BENY_MONTHLY_PRICE.toFixed(2)}/month
+                                fee will be charged directly to your card on file.
                             </p>
                             {/* Name and email come from the account so billing and BENY stay on one identity. */}
                             <div className='grid gap-3 sm:grid-cols-2'>
@@ -296,12 +296,32 @@ export function BenySection({
             <ConfirmDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                title='Add BENY Add-on?'
-                confirmText={isPending ? 'Adding...' : 'Yes, add addon'}
-                cancelBtnText='Keep membership only'
+                title='Confirm BENY Subscription'
+                confirmText={isPending ? 'Processing...' : 'Confirm & Charge Card'}
+                cancelBtnText='Cancel'
                 isLoading={isPending}
                 handleConfirm={handleConfirmSubscribe}
-                desc={`This will request the BENY savings add-on ($${BENY_MONTHLY_PRICE.toFixed(2)} AUD/month). Your access will be activated within 1 business day.`}
+                desc={
+                    <div className='space-y-3 pt-1 text-sm'>
+                        <p className='text-white/90'>
+                            You are subscribing to the <strong>BENY savings add-on</strong> for{' '}
+                            <span className='text-slr-gold-label font-semibold'>
+                                ${BENY_MONTHLY_PRICE.toFixed(2)} AUD / month
+                            </span>
+                            .
+                        </p>
+                        <div className='flex items-start gap-3 rounded-xl border border-[#D4AF3759] bg-[#D4AF371A]/15 p-3.5 text-left'>
+                            <CreditCard className='text-slr-gold-label mt-0.5 size-4 shrink-0' />
+                            <div>
+                                <p className='text-xs font-semibold text-[#FFDC75]'>Direct Card Charge</p>
+                                <p className='mt-0.5 text-xs leading-relaxed text-white/80'>
+                                    This payment will be charged directly to the credit/debit card on your account.
+                                    Access will be activated by an SLR Admin within 1 business day.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                }
             />
 
             <ConfirmDialog
